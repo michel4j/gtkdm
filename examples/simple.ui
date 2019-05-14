@@ -81,8 +81,8 @@
             <property name="labels">Byte 0, Byte 1, Byte 2, Byte 3, Byte 4, Byte 5, Byte 6, Byte 7</property>
           </object>
           <packing>
-            <property name="x">428</property>
-            <property name="y">162</property>
+            <property name="x">436</property>
+            <property name="y">422</property>
           </packing>
         </child>
         <child>
@@ -133,16 +133,16 @@
         <child>
           <object class="LineMonitor">
             <property name="width_request">601</property>
-            <property name="height_request">80</property>
+            <property name="height_request">20</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:cathodeTempM</property>
             <property name="color">rgb(78,154,6)</property>
-            <property name="line_width">4</property>
+            <property name="line_width">10</property>
           </object>
           <packing>
-            <property name="x">65</property>
-            <property name="y">367</property>
+            <property name="x">63</property>
+            <property name="y">389</property>
           </packing>
         </child>
         <child>
@@ -158,6 +158,19 @@
           <packing>
             <property name="x">204</property>
             <property name="y">411</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Indicator">
+            <property name="width_request">117</property>
+            <property name="height_request">26</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:GV1:positionM</property>
+          </object>
+          <packing>
+            <property name="x">520</property>
+            <property name="y">29</property>
           </packing>
         </child>
       </object>
