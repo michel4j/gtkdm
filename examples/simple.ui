@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtkplugin" version="0.0"/>
+  <object class="GtkWindow" id="window1">
+    <property name="can_focus">False</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="Display">
+        <property name="width_request">750</property>
+        <property name="height_request">500</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkImage">
+            <property name="width_request">600</property>
+            <property name="height_request">200</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">header.png</property>
+          </object>
+          <packing>
+            <property name="x">65</property>
+            <property name="y">159</property>
+          </packing>
+        </child>
+        <child>
+          <object class="TextMonitor">
+            <property name="width_request">100</property>
+            <property name="height_request">28</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="visible_window">False</property>
+            <property name="channel">michel:PM1:intensityM</property>
+            <property name="color">rgb(32,74,135)</property>
+          </object>
+          <packing>
+            <property name="x">128</property>
+            <property name="y">106</property>
+          </packing>
+        </child>
+        <child>
+          <object class="TextMonitor">
+            <property name="width_request">100</property>
+            <property name="height_request">25</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:PM2:X:positionM</property>
+            <property name="color">rgb(115,210,22)</property>
+          </object>
+          <packing>
+            <property name="x">283</property>
+            <property name="y">47</property>
+          </packing>
+        </child>
+        <child>
+          <object class="LineMonitor">
+            <property name="width_request">66</property>
+            <property name="height_request">46</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="arrow">True</property>
+            <property name="direction">south</property>
+          </object>
+          <packing>
+            <property name="x">143</property>
+            <property name="y">131</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Byte">
+            <property name="width_request">230</property>
+            <property name="height_request">36</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:GV1:positionM</property>
+            <property name="columns">4</property>
+            <property name="labels">Byte 0, Byte 1, Byte 2, Byte 3, Byte 4, Byte 5, Byte 6, Byte 7</property>
+          </object>
+          <packing>
+            <property name="x">428</property>
+            <property name="y">162</property>
+          </packing>
+        </child>
+        <child>
+          <object class="ScaleControl">
+            <property name="width_request">77</property>
+            <property name="height_request">143</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:H1:setCurrentC</property>
+            <property name="increment">0.10000000000000001</property>
+            <property name="inverted">True</property>
+            <property name="maximum">5</property>
+            <property name="minimum">-5</property>
+            <property name="orientation">vertical</property>
+          </object>
+          <packing>
+            <property name="x">424</property>
+            <property name="y">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="TextControl">
+            <property name="width_request">20</property>
+            <property name="height_request">22</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="channel">michel:H1:setCurrentC</property>
+            <property name="xalign">1</property>
+          </object>
+          <packing>
+            <property name="x">62</property>
+            <property name="y">38</property>
+          </packing>
+        </child>
+        <child>
+          <object class="TextLabel">
+            <property name="width_request">100</property>
+            <property name="height_request">20</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="text">Beam Transport</property>
+          </object>
+          <packing>
+            <property name="x">147</property>
+            <property name="y">447</property>
+          </packing>
+        </child>
+        <child>
+          <object class="LineMonitor">
+            <property name="width_request">601</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:cathodeTempM</property>
+            <property name="color">rgb(78,154,6)</property>
+            <property name="line_width">4</property>
+          </object>
+          <packing>
+            <property name="x">65</property>
+            <property name="y">367</property>
+          </packing>
+        </child>
+        <child>
+          <object class="LineMonitor">
+            <property name="width_request">31</property>
+            <property name="height_request">36</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="arrow">True</property>
+            <property name="direction">north-east</property>
+            <property name="line_width">0.69999999999999996</property>
+          </object>
+          <packing>
+            <property name="x">204</property>
+            <property name="y">411</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
