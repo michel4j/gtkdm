@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glade-catalog name="gtkplugin" library="gladepython" depends="gtk+" domain="glade-3">
+  <init-function>glade_python_init</init-function>
+
+  <glade-widget-classes>
+    <glade-widget-class name="Display" generic-name="display" title="Display" icon-name="widget-gtk-window"/>
+    <glade-widget-class name="TextMonitor" generic-name="textmonitor" title="TextMonitor" icon-name="widget-gtk-label"/>
+    <glade-widget-class name="LineMonitor" generic-name="linemonitor" title="LineMonitor" icon-name="widget-gtk-separator"/>
+    <glade-widget-class name="Byte" generic-name="byte" title="Byte" icon-name="widget-gtk-stacksidebar"/>
+    <glade-widget-class name="ScaleControl" generic-name="scalecontrol" title="ScaleControl" icon-name="widget-gtk-scale"/>
+    <glade-widget-class name="TextControl" generic-name="textcontrol" title="TextControl" icon-name="widget-gtk-entry"/>
+    <glade-widget-class name="TextLabel" generic-name="textlabel" title="Textlabel" icon-name="widget-gtk-label"/>
+  </glade-widget-classes>
+  
+  <glade-widget-group name="gtkdm" title="GtkDM">
+    <glade-widget-class-ref name="Display"/>
+    <glade-widget-class-ref name="TextMonitor"/>
+    <glade-widget-class-ref name="LineMonitor"/>
+    <glade-widget-class-ref name="Byte"/>
+    <glade-widget-class-ref name="ScaleControl"/>
+    <glade-widget-class-ref name="TextControl"/>
+    <glade-widget-class-ref name="TextLabel"/>
+
+  </glade-widget-group>
+
+</glade-catalog>

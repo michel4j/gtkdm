@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+
+import argparse
+import os, sys
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from gtkdm import widgets
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Gtk Display Manager for EPICS.')
+    parser.add_argument('display', metavar='display', type=str, help='Display File Name')
+    parser.add_argument('-v', action='store_true', help='Verbose Logging')
+    parser.add_argument('-m', '--macros', type=str, help='Macros', required=False)
+    args = parser.parse_args()
+
+    builder = Gtk.Builder()
+    builder.add_from_file(args.display)
+
+    #print(builder.get_objects())
+    window = builder.get_object("window1")
+    window.connect('destroy', lambda x: Gtk.main_quit())
+    window.show_all()
+
+    Gtk.main()

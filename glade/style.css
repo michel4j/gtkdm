@@ -1,0 +1,20 @@
+.gtkdm label, .gtkdm entry {
+    font-size: 95%;
+}
+
+.gtkdm entry {
+    min-height: 0px;
+    border-radius: 3px;
+}
+
+.gtkdm-inactive, .gtkdm-inactive * {
+    color: #ffffff;
+}
+
+.gtkdm-warning {
+    color: #CA9900;
+}
+
+.gtkdm-critical {
+    color: #FC0000;
+}
