@@ -2,13 +2,13 @@
     font-size: 95%;
 }
 
-.gtkdm entry {
+.gtkdm entry, .gtkdm button {
     min-height: 0px;
     border-radius: 3px;
 }
 
 .gtkdm-inactive, .gtkdm-inactive * {
-    color: #ffffff;
+    opacity: 0.5;
 }
 
 .gtkdm-warning {

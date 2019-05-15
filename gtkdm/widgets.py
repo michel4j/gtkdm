@@ -2,14 +2,50 @@ from math import atan2, pi, cos, sin, ceil
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk, Gio
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf
 import gepics
+
+
+
+COLORS = {
+    'R': '#ef2929',
+    'G': '#73d216',
+    'Y': '#fce94f',
+    'O': '#fcaf3e',
+    'P': '#ad7fa8',
+    'B': '#729fcf',
+    'K': '#000000',
+    'A': '#888a85',
+    'C': '#17becf',
+    'W': '#ffffff',
+    'M': '#88419d'
+}
+
+
+class ColorSequence(object):
+    def __init__(self, sequence):
+        self.values = [self.parse(COLORS.get(v, '#000000')) for v in sequence]
+
+    def __call__(self, value):
+        if value < len(self.values):
+            return self.values[value]
+        else:
+            return self.values[-1]
+
+    @staticmethod
+    def parse(spec):
+        col = Gdk.RGBA()
+        col.parse(spec)
+        return col
 
 
 def pix(v):
     """Round to neareast 0.5 for cairo drawing"""
-    x = round(v*2)
-    return x/2 if x%2 else (x+1)/2
+    x = round(v * 2)
+    return x / 2 if x % 2 else (x + 1) / 2
+
+
+Direction = Gdk.WindowEdge
 
 
 class Display(Gtk.Fixed):
@@ -17,8 +53,6 @@ class Display(Gtk.Fixed):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-Direction = Gdk.WindowEdge
 
 
 class TextMonitor(Gtk.EventBox):
@@ -49,10 +83,10 @@ class TextMonitor(Gtk.EventBox):
         self.label.set_markup(text)
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.CRITICAL:
+        if alarm == gepics.Alarm.MAJOR:
             self.get_style_context().remove_class('gtkdm-warning')
             self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.WARNING:
+        elif alarm == gepics.Alarm.MINOR:
             self.get_style_context().add_class('gtkdm-warning')
             self.get_style_context().remove_class('gtkdm-critical')
         else:
@@ -86,8 +120,6 @@ class TextLabel(Gtk.EventBox):
 
     def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
-
-
 
 
 class LineMonitor(Gtk.Widget):
@@ -178,14 +210,19 @@ class Byte(Gtk.Widget):
     offset = GObject.Property(type=int, minimum=0, maximum=4, default=0, nick='Byte Offset')
     big_endian = GObject.Property(type=bool, default=False, nick='Big-Endian')
     labels = GObject.Property(type=str, default='', nick='Labels')
-    color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    colors = GObject.Property(type=str, default='AG', nick='Colors')
     columns = GObject.Property(type=int, minimum=1, maximum=8, default=1, nick='Columns')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Border')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._view_bits = ['0'] * 8
         self._view_labels = [''] * 8
         self.set_size_request(196, 40)
+        self.palette = ColorSequence(self.colors)
+        self.theme = {
+            'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+        }
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -193,31 +230,22 @@ class Byte(Gtk.Widget):
         col_width = allocation.width / self.columns
 
         # draw boxes
-        if not self.color:
-            self.props.color = Gdk.RGBA(red=0.0, green=1.0, blue=0.0, alpha=1.0)
+        style = self.get_style_context()
+        self.theme['label'] = style.get_color(style.get_state())
 
-        if self.pv.is_active():
-            border_color = Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=1.0)
-        else:
-            border_color = Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0)
-        label_color = self.get_style_context().get_color(Gtk.StateFlags.NORMAL)
-
-        cr.set_line_width(1)
-        #cr.set_font_size(9)
+        cr.set_line_width(0.75)
 
         for i in range(8):
             x = pix((i // stride) * col_width + 4)
             y = pix(4 + (i % stride) * 14)
             cr.rectangle(x, y, 10, 10)
-            if self._view_bits[i] == '1':
-                cr.set_source_rgba(*self.color)
-            else:
-                cr.set_source_rgba(0.5, 0.5, 0.5, 1.0)
+            color = self.palette(int(self._view_bits[i]))
+            cr.set_source_rgba(*color)
             cr.fill_preserve()
-            cr.set_source_rgba(*border_color)
+            cr.set_source_rgba(*self.theme['border'])
             cr.stroke()
 
-            cr.set_source_rgba(*label_color)
+            cr.set_source_rgba(*self.theme['label'])
             label = self._view_labels[i]
             xb, yb, w, h = cr.text_extents(label)[:4]
             cr.move_to(x + 14, y + h - 1)
@@ -261,23 +289,26 @@ class Byte(Gtk.Widget):
         self.queue_draw()
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.CRITICAL:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.WARNING:
-            self.get_style_context().add_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
-        else:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
+        if self.alarm:
+            style = self.get_style_context()
+            if alarm == gepics.Alarm.MAJOR:
+                style.remove_class('gtkdm-warning')
+                style.add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                style.add_class('gtkdm-warning')
+                style.remove_class('gtkdm-critical')
+            else:
+                style.remove_class('gtkdm-warning')
+                style.remove_class('gtkdm-critical')
 
     def on_active(self, pv, connected):
         if connected:
             self.pv.get_with_metadata()
-            self.get_style_context().remove_class('gtkdm-inactive')
+            self.set_sensitive(True)
+            self.theme['border'] = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
         else:
-            self.get_style_context().add_class('gtkdm-inactive')
-
+            self.set_sensitive(False)
+            self.theme['border'] = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
         self.queue_draw()
 
 
@@ -285,30 +316,35 @@ class Indicator(Gtk.Widget):
     __gtype_name__ = 'Indicator'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
-    color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Border')
+    colors = GObject.Property(type=str, default='72', nick='Colors')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_size_request(196, 40)
-        self.box_color = self.color
         self.pv = None
         self.label_pv = None
+        self.palette = ColorSequence(self.colors)
+        self.theme = {
+            'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+            'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+        }
 
     def do_draw(self, cr):
-        cr.set_line_width(0.5)
+        cr.set_line_width(0.75)
         x = 4.5
         y = 4.5
-        label_color = self.get_style_context().get_color(Gtk.StateFlags.NORMAL)
-        if self.box_color:
-            cr.set_source_rgba(*self.box_color)
-
+        style = self.get_style_context()
+        self.theme['label'] = style.get_color(style.get_state())
+        cr.set_source_rgba(*self.theme['fill'])
         cr.rectangle(x, y, 10, 10)
         cr.fill_preserve()
-        cr.set_source_rgba(*label_color)
+        cr.set_source_rgba(*self.theme['border'])
         cr.stroke()
 
         xb, yb, w, h = cr.text_extents(self.label)[:4]
         cr.move_to(x + 14, y + h - 1.5)
+        cr.set_source_rgba(*self.theme['label'])
         cr.show_text(self.label)
 
     def do_realize(self):
@@ -329,6 +365,8 @@ class Indicator(Gtk.Widget):
         self.set_realized(True)
         window.set_background_pattern(None)
 
+        self.palette = ColorSequence(self.colors)
+
         pv_name = self.channel
         if pv_name:
             self.pv = gepics.PV(pv_name)
@@ -345,32 +383,30 @@ class Indicator(Gtk.Widget):
         self.queue_draw()
 
     def on_change(self, pv, value):
-        if value:
-            self.box_color = Gdk.RGBA(red=0.0, green=1.0, blue=0.0, alpha=1.0)
-        else:
-            self.box_color = Gdk.RGBA(red=0.5, green=0.5, blue=0.5, alpha=1.0)
+        self.theme['fill'] = self.palette(value)
         self.queue_draw()
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.CRITICAL:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.WARNING:
-            self.get_style_context().add_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
-        else:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
+        if self.alarm:
+            style = self.get_style_context()
+            if alarm == gepics.Alarm.MAJOR:
+                style.remove_class('gtkdm-warning')
+                style.add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                style.add_class('gtkdm-warning')
+                style.remove_class('gtkdm-critical')
+            else:
+                style.remove_class('gtkdm-warning')
+                style.remove_class('gtkdm-critical')
 
     def on_active(self, pv, connected):
         if connected:
             self.pv.get_with_metadata()
-            self.get_style_context().remove_class('gtkdm-inactive')
-            self.box_color = Gdk.RGBA(red=0.0, green=1.0, blue=0.0, alpha=0.0)
+            self.set_sensitive(True)
+            self.theme['border'] = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
         else:
-            self.get_style_context().add_class('gtkdm-inactive')
-            self.box_color = Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0)
-
+            self.set_sensitive(False)
+            self.theme['border'] = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
         self.queue_draw()
 
 
@@ -398,9 +434,7 @@ class ScaleControl(Gtk.EventBox):
     def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
         self.adjustment.configure(0.0, self.minimum, self.maximum, self.increment, 0, 0)
-
         position = Gtk.PositionType.TOP if self.orientation == Gtk.Orientation.HORIZONTAL else Gtk.PositionType.LEFT
-
         self.scale.clear_marks()
         self.scale.add_mark(self.minimum, position, '{}'.format(self.minimum))
         self.scale.add_mark(self.maximum, position, '{}'.format(self.maximum))
@@ -419,10 +453,10 @@ class ScaleControl(Gtk.EventBox):
         self.in_progress = False
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.CRITICAL:
+        if alarm == gepics.Alarm.MAJOR:
             self.get_style_context().remove_class('gtkdm-warning')
             self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.WARNING:
+        elif alarm == gepics.Alarm.MINOR:
             self.get_style_context().add_class('gtkdm-warning')
             self.get_style_context().remove_class('gtkdm-critical')
         else:
@@ -471,10 +505,10 @@ class TextControl(Gtk.EventBox):
         self.in_progress = False
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.CRITICAL:
+        if alarm == gepics.Alarm.MAJOR:
             self.get_style_context().remove_class('gtkdm-warning')
             self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.WARNING:
+        elif alarm == gepics.Alarm.MINOR:
             self.get_style_context().add_class('gtkdm-warning')
             self.get_style_context().remove_class('gtkdm-critical')
         else:
@@ -489,8 +523,52 @@ class TextControl(Gtk.EventBox):
             self.set_sensitive(False)
 
 
-TextControl.set_css_name('textcontrol')
+class CommandButton(Gtk.EventBox):
+    __gtype_name__ = 'CommandButton'
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    label = GObject.Property(type=str, default='', nick='Label')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.button = Gtk.Button(label=self.label)
+        self.pv = None
+        self.label_pv = None
+        self.bind_property('label', self.button, 'label', GObject.BindingFlags.DEFAULT)
+        self.connect('realize', self.on_realize)
+        self.button.connect('clicked', self.on_clicked)
+        self.add(self.button)
+
+    def on_clicked(self, button):
+        self.pv.put(1)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('active', self.on_active)
+
+            if not self.label:
+                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv.connect('changed', self.on_label_change)
+
+    def on_label_change(self, pv, value):
+        self.props.label = value
+        self.queue_draw()
+
+    def on_active(self, pv, connected):
+        if connected:
+            self.pv.get_with_metadata()
+            self.set_sensitive(True)
+        else:
+            self.set_sensitive(False)
+
+#TODO
+# Choice Button
+# Check Button
+# Toggle Button
+# Spin Button
+# Combo Box
 
 
-
-__all__ = ['LineMonitor', 'TextMonitor', 'Display', 'ScaleControl', 'TextControl', 'TextLabel']
+__all__ = ['LineMonitor', 'TextMonitor', 'Display', 'ScaleControl', 'TextControl', 'TextLabel', 'CommandButton']

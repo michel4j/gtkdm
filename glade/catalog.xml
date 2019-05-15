@@ -11,6 +11,7 @@
     <glade-widget-class name="ScaleControl" generic-name="scalecontrol" title="ScaleControl" icon-name="widget-gtk-scale"/>
     <glade-widget-class name="TextControl" generic-name="textcontrol" title="TextControl" icon-name="widget-gtk-entry"/>
     <glade-widget-class name="TextLabel" generic-name="textlabel" title="Textlabel" icon-name="widget-gtk-label"/>
+    <glade-widget-class name="CommandButton" generic-name="commandbutton" title="CommandButton" icon-name="widget-gtk-button"/>
   </glade-widget-classes>
   
   <glade-widget-group name="gtkdm" title="GtkDM">
@@ -22,7 +23,7 @@
     <glade-widget-class-ref name="ScaleControl"/>
     <glade-widget-class-ref name="TextControl"/>
     <glade-widget-class-ref name="TextLabel"/>
-
+    <glade-widget-class-ref name="CommandButton"/>
   </glade-widget-group>
 
 </glade-catalog>

@@ -5,6 +5,7 @@
   <requires lib="gtkplugin" version="0.0"/>
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <child>
       <placeholder/>
     </child>
@@ -126,8 +127,8 @@
             <property name="text">Beam Transport</property>
           </object>
           <packing>
-            <property name="x">147</property>
-            <property name="y">447</property>
+            <property name="x">113</property>
+            <property name="y">451</property>
           </packing>
         </child>
         <child>
@@ -163,14 +164,84 @@
         <child>
           <object class="Indicator">
             <property name="width_request">117</property>
-            <property name="height_request">26</property>
+            <property name="height_request">21</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
+            <property name="colors">YGRO</property>
           </object>
           <packing>
             <property name="x">520</property>
             <property name="y">29</property>
+          </packing>
+        </child>
+        <child>
+          <object class="CommandButton">
+            <property name="width_request">36</property>
+            <property name="height_request">20</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:initAllSQ</property>
+            <property name="label">Reset</property>
+          </object>
+          <packing>
+            <property name="x">575</property>
+            <property name="y">104</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="width_request">255</property>
+            <property name="height_request">43</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="layout_style">start</property>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">button</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">button</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">button</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <style>
+              <class name="linked"/>
+            </style>
+          </object>
+          <packing>
+            <property name="x">224</property>
+            <property name="y">457</property>
           </packing>
         </child>
       </object>
