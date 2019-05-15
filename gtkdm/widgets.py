@@ -435,6 +435,8 @@ class ScaleControl(Gtk.EventBox):
         self.get_style_context().add_class('gtkdm')
         self.adjustment.configure(0.0, self.minimum, self.maximum, self.increment, 0, 0)
         position = Gtk.PositionType.TOP if self.orientation == Gtk.Orientation.HORIZONTAL else Gtk.PositionType.LEFT
+        value_pos = Gtk.PositionType.BOTTOM if self.orientation == Gtk.Orientation.HORIZONTAL else Gtk.PositionType.RIGHT
+        self.scale.props.value_pos = value_pos
         self.scale.clear_marks()
         self.scale.add_mark(self.minimum, position, '{}'.format(self.minimum))
         self.scale.add_mark(self.maximum, position, '{}'.format(self.maximum))

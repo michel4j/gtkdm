@@ -244,6 +244,20 @@
             <property name="y">457</property>
           </packing>
         </child>
+        <child>
+          <object class="ScaleControl">
+            <property name="width_request">149</property>
+            <property name="height_request">61</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:cathodeCurrentC</property>
+            <property name="maximum">20</property>
+          </object>
+          <packing>
+            <property name="x">246</property>
+            <property name="y">82</property>
+          </packing>
+        </child>
       </object>
     </child>
   </object>
