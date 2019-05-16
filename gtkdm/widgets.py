@@ -45,6 +45,15 @@ def pix(v):
     return x / 2 if x % 2 else (x + 1) / 2
 
 
+def radians(a):
+    return (a*pi/180)
+
+
+def ticks(lo, hi, step):
+    return [i*step+ceil(float(lo)/step)*step for i in range(1+int(ceil((float(hi)-lo)/step)))]
+
+
+
 Direction = Gdk.WindowEdge
 
 
@@ -60,6 +69,7 @@ class TextMonitor(Gtk.EventBox):
 
     channel = channel = GObject.Property(type=str, default='', nick='PV Name')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,6 +77,7 @@ class TextMonitor(Gtk.EventBox):
         self.add(self.label)
         self.pv = None
         self.connect('realize', self.on_realize)
+        self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
 
     def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
@@ -79,7 +90,7 @@ class TextMonitor(Gtk.EventBox):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        text = '<tt>{:>8s}</tt> {}'.format(pv.char_value, pv.units) if pv.units else pv.char_value
+        text = '<tt>{}</tt> {}'.format(pv.char_value, pv.units) if pv.units else pv.char_value
         self.label.set_markup(text)
 
     def on_alarm(self, pv, alarm):
@@ -565,12 +576,178 @@ class CommandButton(Gtk.EventBox):
         else:
             self.set_sensitive(False)
 
+
+class ChoiceButton(Gtk.EventBox):
+    __gtype_name__ = 'ChoiceButton'
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    orientation = GObject.Property(type=Gtk.Orientation, default=Gtk.Orientation.VERTICAL, nick='Orientation')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.pv = None
+        self.label_pv = None
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.connect('realize', self.on_realize)
+        self.in_progress = False
+        self.bind_property('orientation', self.box, 'orientation', GObject.BindingFlags.DEFAULT)
+        self.buttons = [Gtk.ToggleButton(label='Choice 1'), Gtk.ToggleButton(label='Choice 2'), Gtk.ToggleButton(label='Choice 3')]
+        for i, btn in enumerate(self.buttons):
+            self.box.pack_start(btn, False, False, 0)
+            btn.connect('toggled', self.on_toggled, i)
+        self.add(self.box)
+
+    def on_toggled(self, button, i):
+        if not self.in_progress:
+            self.pv.put(i)
+
+    def on_realize(self, obj):
+        self.box.get_style_context().add_class('linked')
+        self.get_style_context().add_class('gtkdm')
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('active', self.on_active)
+            self.pv.connect('changed', self.on_change)
+
+    def on_active(self, pv, connected):
+        if connected:
+            for i, label in enumerate(pv.enum_strs):
+                if i < len(self.buttons):
+                    self.buttons[i].props.label = label
+                else:
+                    btn = Gtk.ToggleButton(label=label)
+                    btn.connect('toggled', self.on_toggled, i)
+                    self.buttons.append(btn)
+                    self.box.pack_start(btn, False, False, 0)
+
+            for btn in self.buttons[i+1:]:
+                btn.destroy()
+
+            self.set_sensitive(True)
+        else:
+            self.set_sensitive(False)
+
+    def on_change(self, pv, value):
+        self.in_progress = True
+        for i, btn in enumerate(self.buttons):
+            btn.set_active(i==value)
+        self.in_progress = False
+
+
+class Gauge(Gtk.Widget):
+    __gtype_name__ = 'Gauge'
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    angle = GObject.Property(type=int, minimum=90, maximum=335, default=270, nick='Angle')
+    step = GObject.Property(type=float, default=10., nick='Step Size')
+    ticks = GObject.Property(type=int, default=5, nick='Ticks/Step')
+    minimum = GObject.Property(type=float, default=0., nick='Minimum')
+    maximum = GObject.Property(type=float, default=100., nick='Maximum')
+    label = GObject.Property(type=str, default='', nick='Label')
+    units = GObject.Property(type=bool, default=True, nick='Show Units')
+    levels = GObject.Property(type=bool, default=False, nick='Show Levels')
+    colors = GObject.Property(type=str, default='GOR', nick='Colors')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_size_request(120, 100)
+        self.palette = ColorSequence(self.colors)
+
+    def do_draw(self, cr):
+        allocation = self.get_allocation()
+        x = allocation.width/2
+        y = allocation.height/2
+        r = 4*x/5
+
+        style = self.get_style_context()
+        color = style.get_color(style.get_state())
+        cr.set_source_rgba(*color)
+        cr.set_line_width(1)
+
+        minimum = (self.minimum//self.step)*self.step
+        maximum = ceil(self.maximum//self.step)*self.step
+
+        half_angle = self.angle/2
+        start_angle = radians(270 - half_angle)
+        end_angle = radians(270 + half_angle)
+        offset = r*sin(90-radians(half_angle))/2
+        angle_scale = (end_angle - start_angle)/(maximum - minimum)
+        tick_width = 10
+        y += offset
+        cr.arc(pix(x), pix(y), r, start_angle, end_angle)
+        cr.stroke()
+
+        rs = r - tick_width/2
+        re = r + tick_width/2
+
+        for tick in ticks(minimum, maximum, self.step):
+            tick_angle = angle_scale*(tick-minimum) + start_angle
+            tx1 = x + rs * cos(tick_angle)
+            ty1 = y + rs * sin(tick_angle)
+            tx2 = x + re * cos(tick_angle)
+            ty2 = y + re * sin(tick_angle)
+
+            cr.move_to(pix(tx2), pix(ty2))
+            cr.line_to(pix(tx1), pix(ty1))
+            cr.stroke()
+
+    def do_realize(self):
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.visual = self.get_visual()
+        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
+        WAT = Gdk.WindowAttributesType
+        mask = WAT.X | WAT.Y | WAT.VISUAL
+        window = Gdk.Window(self.get_parent_window(), attr, mask);
+        self.set_window(window)
+        self.register_window(window)
+        self.set_realized(True)
+        window.set_background_pattern(None)
+
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('alarm', self.on_alarm)
+            self.pv.connect('active', self.on_active)
+
+    def on_change(self, pv, value):
+        self.queue_draw()
+
+    def on_alarm(self, pv, alarm):
+        style = self.get_style_context()
+        if alarm == gepics.Alarm.MAJOR:
+            style.remove_class('gtkdm-warning')
+            style.add_class('gtkdm-critical')
+        elif alarm == gepics.Alarm.MINOR:
+            style.add_class('gtkdm-warning')
+            style.remove_class('gtkdm-critical')
+        else:
+            style.remove_class('gtkdm-warning')
+            style.remove_class('gtkdm-critical')
+
+    def on_active(self, pv, connected):
+        if connected:
+            pars = self.pv.get_ctrlvars()
+            print(pars)
+            self.set_sensitive(True)
+        else:
+            self.set_sensitive(False)
+        self.queue_draw()
+
+
 #TODO
-# Choice Button
 # Check Button
 # Toggle Button
 # Spin Button
 # Combo Box
 
 
-__all__ = ['LineMonitor', 'TextMonitor', 'Display', 'ScaleControl', 'TextControl', 'TextLabel', 'CommandButton']
+__all__ = [
+    'LineMonitor', 'TextMonitor', 'Display', 'ScaleControl', 'TextControl',
+    'TextLabel', 'CommandButton', 'ChoiceButton'
+]

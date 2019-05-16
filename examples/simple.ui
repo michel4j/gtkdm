@@ -37,10 +37,11 @@
             <property name="visible_window">False</property>
             <property name="channel">michel:PM1:intensityM</property>
             <property name="color">rgb(32,74,135)</property>
+            <property name="xalign">0.5</property>
           </object>
           <packing>
-            <property name="x">128</property>
-            <property name="y">106</property>
+            <property name="x">119</property>
+            <property name="y">102</property>
           </packing>
         </child>
         <child>
@@ -49,12 +50,14 @@
             <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="visible_window">False</property>
             <property name="channel">michel:PM2:X:positionM</property>
             <property name="color">rgb(115,210,22)</property>
+            <property name="xalign">0.5</property>
           </object>
           <packing>
-            <property name="x">283</property>
-            <property name="y">47</property>
+            <property name="x">524</property>
+            <property name="y">50</property>
           </packing>
         </child>
         <child>
@@ -88,8 +91,8 @@
         </child>
         <child>
           <object class="ScaleControl">
-            <property name="width_request">77</property>
-            <property name="height_request">143</property>
+            <property name="width_request">55</property>
+            <property name="height_request">128</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:H1:setCurrentC</property>
@@ -101,21 +104,21 @@
           </object>
           <packing>
             <property name="x">424</property>
-            <property name="y">5</property>
+            <property name="y">20</property>
           </packing>
         </child>
         <child>
           <object class="TextControl">
-            <property name="width_request">20</property>
-            <property name="height_request">22</property>
+            <property name="width_request">67</property>
+            <property name="height_request">28</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="channel">michel:H1:setCurrentC</property>
             <property name="xalign">1</property>
           </object>
           <packing>
-            <property name="x">62</property>
-            <property name="y">38</property>
+            <property name="x">534</property>
+            <property name="y">115</property>
           </packing>
         </child>
         <child>
@@ -177,71 +180,16 @@
         </child>
         <child>
           <object class="CommandButton">
-            <property name="width_request">36</property>
-            <property name="height_request">20</property>
+            <property name="width_request">62</property>
+            <property name="height_request">28</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:initAllSQ</property>
             <property name="label">Reset</property>
           </object>
           <packing>
-            <property name="x">575</property>
-            <property name="y">104</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButtonBox">
-            <property name="width_request">255</property>
-            <property name="height_request">43</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="layout_style">start</property>
-            <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">button</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">button</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">button</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <style>
-              <class name="linked"/>
-            </style>
-          </object>
-          <packing>
-            <property name="x">224</property>
-            <property name="y">457</property>
+            <property name="x">602</property>
+            <property name="y">115</property>
           </packing>
         </child>
         <child>
@@ -254,8 +202,38 @@
             <property name="maximum">20</property>
           </object>
           <packing>
-            <property name="x">246</property>
-            <property name="y">82</property>
+            <property name="x">266</property>
+            <property name="y">53</property>
+          </packing>
+        </child>
+        <child>
+          <object class="ChoiceButton">
+            <property name="width_request">56</property>
+            <property name="height_request">47</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:autoC</property>
+          </object>
+          <packing>
+            <property name="x">319</property>
+            <property name="y">411</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Gauge">
+            <property name="width_request">98</property>
+            <property name="height_request">92</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="angle">170</property>
+            <property name="channel">michel:cathodeTempM</property>
+            <property name="levels">True</property>
+            <property name="minimum">20</property>
+            <property name="step">15</property>
+          </object>
+          <packing>
+            <property name="x">18</property>
+            <property name="y">21</property>
           </packing>
         </child>
       </object>
