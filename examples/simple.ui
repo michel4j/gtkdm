@@ -92,7 +92,7 @@
         </child>
         <child>
           <object class="ScaleControl">
-            <property name="width_request">55</property>
+            <property name="width_request">68</property>
             <property name="height_request">128</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -104,7 +104,7 @@
             <property name="orientation">vertical</property>
           </object>
           <packing>
-            <property name="x">424</property>
+            <property name="x">452</property>
             <property name="y">20</property>
           </packing>
         </child>
@@ -176,7 +176,7 @@
             <property name="size">12</property>
           </object>
           <packing>
-            <property name="x">520</property>
+            <property name="x">548</property>
             <property name="y">29</property>
           </packing>
         </child>
@@ -204,8 +204,8 @@
             <property name="maximum">20</property>
           </object>
           <packing>
-            <property name="x">266</property>
-            <property name="y">53</property>
+            <property name="x">286</property>
+            <property name="y">112</property>
           </packing>
         </child>
         <child>
@@ -223,20 +223,103 @@
         </child>
         <child>
           <object class="Gauge">
-            <property name="width_request">149</property>
-            <property name="height_request">126</property>
+            <property name="width_request">155</property>
+            <property name="height_request">117</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="angle">200</property>
+            <property name="angle">160</property>
             <property name="channel">michel:cathodeTempM</property>
             <property name="levels">True</property>
             <property name="maximum">200</property>
-            <property name="step">25</property>
-            <property name="ticks">4</property>
+            <property name="step">30</property>
+            <property name="ticks">3</property>
           </object>
           <packing>
-            <property name="x">63</property>
-            <property name="y">8</property>
+            <property name="x">57</property>
+            <property name="y">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Gauge">
+            <property name="width_request">140</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="angle">100</property>
+            <property name="channel">michel:CM1:intensityM</property>
+            <property name="levels">True</property>
+            <property name="maximum">50</property>
+            <property name="step">15</property>
+            <property name="units">False</property>
+          </object>
+          <packing>
+            <property name="x">225</property>
+            <property name="y">13</property>
+          </packing>
+        </child>
+        <child>
+          <object class="ChoiceButton">
+            <property name="width_request">152</property>
+            <property name="height_request">24</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:gunOnC</property>
+            <property name="orientation">horizontal</property>
+          </object>
+          <packing>
+            <property name="x">512</property>
+            <property name="y">464</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton">
+            <property name="width_request">118</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="x">543</property>
+            <property name="y">319</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSwitch">
+            <property name="width_request">50</property>
+            <property name="height_request">26</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="x">395</property>
+            <property name="y">33</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText">
+            <property name="width_request">100</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="x">71</property>
+            <property name="y">321</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton">
+            <property name="label" translatable="yes">checkbutton</property>
+            <property name="width_request">100</property>
+            <property name="height_request">28</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="draw_indicator">True</property>
+          </object>
+          <packing>
+            <property name="x">547</property>
+            <property name="y">4</property>
           </packing>
         </child>
       </object>

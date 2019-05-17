@@ -26,11 +26,14 @@ class ColorSequence(object):
     def __init__(self, sequence):
         self.values = [self.parse(COLORS.get(v, '#000000')) for v in sequence]
 
-    def __call__(self, value):
+    def __call__(self, value, alpha=1.0):
         if value < len(self.values):
-            return self.values[value]
+            col = self.values[value].copy()
+            col.alpha = alpha
         else:
-            return self.values[-1]
+            col = self.values[-1].copy()
+            col.alpha = alpha
+        return col
 
     @staticmethod
     def parse(spec):
@@ -38,6 +41,10 @@ class ColorSequence(object):
         col.parse(spec)
         return col
 
+def alpha(rgba, a):
+    col = rgba.copy()
+    col.alpha = a
+    return col
 
 def pix(v):
     """Round to neareast 0.5 for cairo drawing"""
@@ -90,7 +97,7 @@ class TextMonitor(Gtk.EventBox):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        text = '<tt>{}</tt> {}'.format(pv.char_value, pv.units) if pv.units else pv.char_value
+        text = '{} {}'.format(pv.char_value, pv.units) if pv.units else pv.char_value
         self.label.set_markup(text)
 
     def on_alarm(self, pv, alarm):
@@ -653,6 +660,9 @@ class Gauge(Gtk.Widget):
         super().__init__(*args, **kwargs)
         self.set_size_request(120, 100)
         self.palette = ColorSequence(self.colors)
+        self.ctrlvars = None
+        self.value = 0
+        self.units_label = 'mA'
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -663,7 +673,7 @@ class Gauge(Gtk.Widget):
         style = self.get_style_context()
         color = style.get_color(style.get_state())
         cr.set_source_rgba(*color)
-        cr.set_line_width(1)
+        cr.set_line_width(0.75)
 
         minimum = (self.minimum//self.step)*self.step
         maximum = ceil(self.maximum//self.step)*self.step
@@ -684,6 +694,39 @@ class Gauge(Gtk.Widget):
 
         major = ticks(minimum, maximum, self.step)
         minor = ticks(minimum, maximum, self.step/(self.ticks+1))
+
+        # levels
+        cr.set_line_width(2)
+        rl = 2*r/3
+        if self.levels and self.ctrlvars:
+            lolo = self.ctrlvars['lower_alarm_limit']*angle_scale + start_angle
+            lo = self.ctrlvars['lower_warning_limit']*angle_scale + start_angle
+            hi = self.ctrlvars['upper_warning_limit']*angle_scale + start_angle
+            hihi = self.ctrlvars['upper_alarm_limit']*angle_scale + start_angle
+
+            if lolo > start_angle:
+                cr.set_source_rgba(*self.palette(2, alpha=0.6))
+                cr.arc(x, y, rl, start_angle, lolo)
+                cr.stroke()
+            if lo > lolo:
+                cr.set_source_rgba(*self.palette(1, alpha=0.6))
+                cr.arc(x, y, rl, lolo, lo)
+                cr.stroke()
+            if hi > lo:
+                cr.set_source_rgba(*self.palette(0, alpha=0.6))
+                cr.arc(x, y, rl, lo, hi)
+                cr.stroke()
+            if hihi > hi:
+                cr.set_source_rgba(*self.palette(1, alpha=0.6))
+                cr.arc(x, y, rl, hi, hihi)
+                cr.stroke()
+            if end_angle > hihi:
+                cr.set_source_rgba(*self.palette(2, alpha=0.6))
+                cr.arc(x, y, rl, hihi, end_angle)
+                cr.stroke()
+
+        # ticks
+        cr.set_line_width(0.75)
         for tick in set(minor+major):
             is_major = tick in major
             tick_angle = angle_scale*(tick-minimum) + start_angle
@@ -693,6 +736,7 @@ class Gauge(Gtk.Widget):
             tx2 = x + rt2 * cos(tick_angle)
             ty2 = y + rt2 * sin(tick_angle)
 
+            cr.set_source_rgba(*color)
             if is_major:
                 tx3 = x + rt * cos(tick_angle)
                 ty3 = y + rt * sin(tick_angle)
@@ -700,17 +744,32 @@ class Gauge(Gtk.Widget):
                 xb, yb, tw, th = cr.text_extents(label)[:4]
                 cr.move_to(tx3 - xb - tw/2, ty3 - yb - th / 2)
                 cr.show_text(label)
-
             cr.move_to(tx2, ty2)
             cr.line_to(tx1, ty1)
             cr.stroke()
 
-        value_angle = angle_scale*(self.pv.value - minimum) + start_angle
-        vr = 4*r/5
+        # Units
+        if self.units:
+            units_angle = (end_angle + start_angle)/2
+            ur = r/3
+            ux2 = x + ur * cos(units_angle)
+            uy2 = y + ur * sin(units_angle)
+            xb, yb, tw, th = cr.text_extents(self.units_label)[:4]
+            cr.set_source_rgba(*color)
+            cr.move_to(ux2-xb - tw/2, uy2-yb-th/2)
+            cr.show_text(self.units_label)
+
+        # needle
+        cr.set_line_width(0.5)
+        value_angle = angle_scale*(self.value - minimum) + start_angle
+        vr = 5*r/6
         vx2 = x + vr * cos(value_angle)
         vy2 = y + vr * sin(value_angle)
-        cr.move_to(x, y)
+        cr.set_source_rgba(*alpha(color, 0.5))
+        cr.move_to(x - 2, y)
         cr.line_to(vx2, vy2)
+        cr.line_to(x + 2, y)
+        cr.fill_preserve()
         cr.stroke()
 
     def do_realize(self):
@@ -735,27 +794,16 @@ class Gauge(Gtk.Widget):
         if pv_name:
             self.pv = gepics.PV(pv_name)
             self.pv.connect('changed', self.on_change)
-            self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
+        self.value = value
         self.queue_draw()
-
-    def on_alarm(self, pv, alarm):
-        style = self.get_style_context()
-        if alarm == gepics.Alarm.MAJOR:
-            style.remove_class('gtkdm-warning')
-            style.add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.MINOR:
-            style.add_class('gtkdm-warning')
-            style.remove_class('gtkdm-critical')
-        else:
-            style.remove_class('gtkdm-warning')
-            style.remove_class('gtkdm-critical')
 
     def on_active(self, pv, connected):
         if connected:
-            pars = self.pv.get_ctrlvars()
+            self.ctrlvars = self.pv.get_ctrlvars()
+            self.units_label = self.pv.units
             self.set_sensitive(True)
         else:
             self.set_sensitive(False)
