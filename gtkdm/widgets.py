@@ -223,6 +223,7 @@ class Byte(Gtk.Widget):
     labels = GObject.Property(type=str, default='', nick='Labels')
     colors = GObject.Property(type=str, default='AG', nick='Colors')
     columns = GObject.Property(type=int, minimum=1, maximum=8, default=1, nick='Columns')
+    size = GObject.Property(type=int, minimum=5, maximum=50, default=10, nick='LED Size')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Border')
 
     def __init__(self, *args, **kwargs):
@@ -248,8 +249,8 @@ class Byte(Gtk.Widget):
 
         for i in range(8):
             x = pix((i // stride) * col_width + 4)
-            y = pix(4 + (i % stride) * 14)
-            cr.rectangle(x, y, 10, 10)
+            y = pix(4 + (i % stride) * (self.size + 5))
+            cr.rectangle(x, y, self.size, self.size)
             color = self.palette(int(self._view_bits[i]))
             cr.set_source_rgba(*color)
             cr.fill_preserve()
@@ -259,7 +260,7 @@ class Byte(Gtk.Widget):
             cr.set_source_rgba(*self.theme['label'])
             label = self._view_labels[i]
             xb, yb, w, h = cr.text_extents(label)[:4]
-            cr.move_to(x + 14, y + h - 1)
+            cr.move_to(x + self.size + 4.5, y + self.size/2 - yb - h/2)
             cr.show_text(label)
             cr.stroke()
 
@@ -329,6 +330,7 @@ class Indicator(Gtk.Widget):
     label = GObject.Property(type=str, default='', nick='Label')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Border')
     colors = GObject.Property(type=str, default='72', nick='Colors')
+    size = GObject.Property(type=int, minimum=5, maximum=50, default=10, nick='LED Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -348,13 +350,13 @@ class Indicator(Gtk.Widget):
         style = self.get_style_context()
         self.theme['label'] = style.get_color(style.get_state())
         cr.set_source_rgba(*self.theme['fill'])
-        cr.rectangle(x, y, 10, 10)
+        cr.rectangle(x, y, self.size, self.size)
         cr.fill_preserve()
         cr.set_source_rgba(*self.theme['border'])
         cr.stroke()
 
         xb, yb, w, h = cr.text_extents(self.label)[:4]
-        cr.move_to(x + 14, y + h - 1.5)
+        cr.move_to(x + self.size + 4, y + self.size/2 - yb - h/2)
         cr.set_source_rgba(*self.theme['label'])
         cr.show_text(self.label)
 
@@ -656,7 +658,7 @@ class Gauge(Gtk.Widget):
         allocation = self.get_allocation()
         x = allocation.width/2
         y = allocation.height/2
-        r = 4*x/5
+        r = 4*x/6
 
         style = self.get_style_context()
         color = style.get_color(style.get_state())
@@ -671,24 +673,45 @@ class Gauge(Gtk.Widget):
         end_angle = radians(270 + half_angle)
         offset = r*sin(90-radians(half_angle))/2
         angle_scale = (end_angle - start_angle)/(maximum - minimum)
-        tick_width = 10
+        tick_width = 12
         y += offset
-        cr.arc(pix(x), pix(y), r, start_angle, end_angle)
+        cr.arc(x, y, r, start_angle, end_angle)
         cr.stroke()
 
-        rs = r - tick_width/2
-        re = r + tick_width/2
+        rt = r + tick_width
+        r1 = r - tick_width/2
+        r0 = r + tick_width/2
 
-        for tick in ticks(minimum, maximum, self.step):
+        major = ticks(minimum, maximum, self.step)
+        minor = ticks(minimum, maximum, self.step/(self.ticks+1))
+        for tick in set(minor+major):
+            is_major = tick in major
             tick_angle = angle_scale*(tick-minimum) + start_angle
-            tx1 = x + rs * cos(tick_angle)
-            ty1 = y + rs * sin(tick_angle)
-            tx2 = x + re * cos(tick_angle)
-            ty2 = y + re * sin(tick_angle)
+            rt2 = r0 if is_major else r
+            tx1 = x + r1 * cos(tick_angle)
+            ty1 = y + r1 * sin(tick_angle)
+            tx2 = x + rt2 * cos(tick_angle)
+            ty2 = y + rt2 * sin(tick_angle)
 
-            cr.move_to(pix(tx2), pix(ty2))
-            cr.line_to(pix(tx1), pix(ty1))
+            if is_major:
+                tx3 = x + rt * cos(tick_angle)
+                ty3 = y + rt * sin(tick_angle)
+                label = '{:g}'.format(tick)
+                xb, yb, tw, th = cr.text_extents(label)[:4]
+                cr.move_to(tx3 - xb - tw/2, ty3 - yb - th / 2)
+                cr.show_text(label)
+
+            cr.move_to(tx2, ty2)
+            cr.line_to(tx1, ty1)
             cr.stroke()
+
+        value_angle = angle_scale*(self.pv.value - minimum) + start_angle
+        vr = 4*r/5
+        vx2 = x + vr * cos(value_angle)
+        vy2 = y + vr * sin(value_angle)
+        cr.move_to(x, y)
+        cr.line_to(vx2, vy2)
+        cr.stroke()
 
     def do_realize(self):
         allocation = self.get_allocation()
@@ -733,7 +756,6 @@ class Gauge(Gtk.Widget):
     def on_active(self, pv, connected):
         if connected:
             pars = self.pv.get_ctrlvars()
-            print(pars)
             self.set_sensitive(True)
         else:
             self.set_sensitive(False)

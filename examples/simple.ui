@@ -40,8 +40,8 @@
             <property name="xalign">0.5</property>
           </object>
           <packing>
-            <property name="x">119</property>
-            <property name="y">102</property>
+            <property name="x">63</property>
+            <property name="y">121</property>
           </packing>
         </child>
         <child>
@@ -67,11 +67,11 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="arrow">True</property>
-            <property name="direction">south</property>
+            <property name="direction">south-east</property>
           </object>
           <packing>
-            <property name="x">143</property>
-            <property name="y">131</property>
+            <property name="x">116</property>
+            <property name="y">148</property>
           </packing>
         </child>
         <child>
@@ -83,6 +83,7 @@
             <property name="channel">michel:GV1:positionM</property>
             <property name="columns">4</property>
             <property name="labels">Byte 0, Byte 1, Byte 2, Byte 3, Byte 4, Byte 5, Byte 6, Byte 7</property>
+            <property name="size">12</property>
           </object>
           <packing>
             <property name="x">436</property>
@@ -172,6 +173,7 @@
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
             <property name="colors">YGRO</property>
+            <property name="size">12</property>
           </object>
           <packing>
             <property name="x">520</property>
@@ -221,19 +223,20 @@
         </child>
         <child>
           <object class="Gauge">
-            <property name="width_request">98</property>
-            <property name="height_request">92</property>
+            <property name="width_request">149</property>
+            <property name="height_request">126</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="angle">170</property>
+            <property name="angle">200</property>
             <property name="channel">michel:cathodeTempM</property>
             <property name="levels">True</property>
-            <property name="minimum">20</property>
-            <property name="step">15</property>
+            <property name="maximum">200</property>
+            <property name="step">25</property>
+            <property name="ticks">4</property>
           </object>
           <packing>
-            <property name="x">18</property>
-            <property name="y">21</property>
+            <property name="x">63</property>
+            <property name="y">8</property>
           </packing>
         </child>
       </object>
