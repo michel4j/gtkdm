@@ -40,8 +40,8 @@
             <property name="xalign">0.5</property>
           </object>
           <packing>
-            <property name="x">63</property>
-            <property name="y">121</property>
+            <property name="x">11</property>
+            <property name="y">150</property>
           </packing>
         </child>
         <child>
@@ -62,16 +62,16 @@
         </child>
         <child>
           <object class="LineMonitor">
-            <property name="width_request">66</property>
-            <property name="height_request">46</property>
+            <property name="width_request">93</property>
+            <property name="height_request">29</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="arrow">True</property>
             <property name="direction">south-east</property>
           </object>
           <packing>
-            <property name="x">116</property>
-            <property name="y">148</property>
+            <property name="x">89</property>
+            <property name="y">165</property>
           </packing>
         </child>
         <child>
@@ -204,8 +204,8 @@
             <property name="maximum">20</property>
           </object>
           <packing>
-            <property name="x">286</property>
-            <property name="y">112</property>
+            <property name="x">320</property>
+            <property name="y">62</property>
           </packing>
         </child>
         <child>
@@ -223,11 +223,11 @@
         </child>
         <child>
           <object class="Gauge">
-            <property name="width_request">155</property>
-            <property name="height_request">117</property>
+            <property name="width_request">151</property>
+            <property name="height_request">133</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="angle">160</property>
+            <property name="angle">190</property>
             <property name="channel">michel:cathodeTempM</property>
             <property name="levels">True</property>
             <property name="maximum">200</property>
@@ -235,14 +235,14 @@
             <property name="ticks">3</property>
           </object>
           <packing>
-            <property name="x">57</property>
-            <property name="y">7</property>
+            <property name="x">13</property>
+            <property name="y">2</property>
           </packing>
         </child>
         <child>
           <object class="Gauge">
-            <property name="width_request">140</property>
-            <property name="height_request">80</property>
+            <property name="width_request">171</property>
+            <property name="height_request">118</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="angle">100</property>
@@ -253,8 +253,8 @@
             <property name="units">False</property>
           </object>
           <packing>
-            <property name="x">225</property>
-            <property name="y">13</property>
+            <property name="x">178</property>
+            <property name="y">6</property>
           </packing>
         </child>
         <child>
@@ -272,18 +272,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSpinButton">
-            <property name="width_request">118</property>
-            <property name="height_request">34</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-          </object>
-          <packing>
-            <property name="x">543</property>
-            <property name="y">319</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkSwitch">
             <property name="width_request">50</property>
             <property name="height_request">26</property>
@@ -293,18 +281,6 @@
           <packing>
             <property name="x">395</property>
             <property name="y">33</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkComboBoxText">
-            <property name="width_request">100</property>
-            <property name="height_request">34</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="x">71</property>
-            <property name="y">321</property>
           </packing>
         </child>
         <child>
@@ -320,6 +296,46 @@
           <packing>
             <property name="x">547</property>
             <property name="y">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="width_request">100</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="x">40</property>
+            <property name="y">435</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Symbol">
+            <property name="width_request">20</property>
+            <property name="height_request">33</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:GV1:positionM</property>
+            <property name="file">faces.sym</property>
+          </object>
+          <packing>
+            <property name="x">60</property>
+            <property name="y">386</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Symbol">
+            <property name="width_request">20</property>
+            <property name="height_request">28</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:autoC</property>
+            <property name="file">faces.sym</property>
+          </object>
+          <packing>
+            <property name="x">282</property>
+            <property name="y">386</property>
           </packing>
         </child>
       </object>

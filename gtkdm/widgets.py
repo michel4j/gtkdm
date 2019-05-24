@@ -1,11 +1,19 @@
 from math import atan2, pi, cos, sin, ceil
+import textwrap
+import os
+import json
 import gi
-
+import zipfile
+gi.require_version('Pango', '1.0')
+gi.require_version('PangoCairo', '1.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, Pango, GLib, PangoCairo
 import gepics
 
 
+_SYMBOL_REGISTRY = {
+
+}
 
 COLORS = {
     'R': '#ef2929',
@@ -671,6 +679,7 @@ class Gauge(Gtk.Widget):
         r = 4*x/6
 
         style = self.get_style_context()
+        font_desc = style.get_font(style.get_state())
         color = style.get_color(style.get_state())
         cr.set_source_rgba(*color)
         cr.set_line_width(0.75)
@@ -772,6 +781,17 @@ class Gauge(Gtk.Widget):
         cr.fill_preserve()
         cr.stroke()
 
+        #label
+        if self.label:
+            xb, yb, tw, th = cr.text_extents(self.label)[:4]
+            lines = textwrap.wrap(self.label, int(len(self.label)*0.6*allocation.width/tw))
+            cr.set_source_rgba(*color)
+            yl = max(y, y + rt * sin(start_angle))
+            for i, line in enumerate(lines):
+                xb, yb, tw, th = cr.text_extents(line)[:4]
+                cr.move_to(x - xb - tw/2, yl + (i + 1.2)*th)
+                cr.show_text(line)
+
     def do_realize(self):
         allocation = self.get_allocation()
         attr = Gdk.WindowAttr()
@@ -796,6 +816,14 @@ class Gauge(Gtk.Widget):
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
 
+            if not self.label:
+                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv.connect('changed', self.on_label_change)
+
+    def on_label_change(self, pv, value):
+        self.props.label = value
+        self.queue_draw()
+
     def on_change(self, pv, value):
         self.value = value
         self.queue_draw()
@@ -808,6 +836,114 @@ class Gauge(Gtk.Widget):
         else:
             self.set_sensitive(False)
         self.queue_draw()
+
+
+class SymbolFrames(object):
+    registry = {}
+
+    def __init__(self, path):
+        self.frames = []
+        self.width = 0
+        self.height = 0
+        with zipfile.ZipFile(path, 'r') as sym:
+            index = json.loads(sym.read('symbol.json'))
+            for frame in index:
+                data = sym.read(frame)
+                stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(data))
+                pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, None)
+                self.width = max(self.width, pixbuf.get_width())
+                self.height = max(self.height, pixbuf.get_height())
+                self.frames.append(pixbuf)
+
+    @classmethod
+    def new_from_file(cls, path):
+        full_path = os.path.abspath(path)
+        if full_path in cls.registry:
+            return cls.registry[full_path]
+        else:
+            sf = SymbolFrames(full_path)
+            cls.registry[full_path] = sf
+            return sf
+
+    def __call__(self, value):
+        if 0 <= value < len(self.frames):
+            return self.frames[int(value)]
+
+
+class Symbol(Gtk.Widget):
+    __gtype_name__ = 'Symbol'
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    file = GObject.Property(type=str, nick='Symbol File')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.frames = None
+        self.image = None
+
+    def do_draw(self, cr):
+        allocation = self.get_allocation()
+        x = allocation.width/2
+        y = allocation.height/2
+        if self.image:
+            scale = min(allocation.width/self.frames.width, allocation.height/self.frames.height)
+            cr.save()
+            cr.scale(scale, scale)
+            Gdk.cairo_set_source_pixbuf(
+                cr, self.image,
+                x - self.image.get_width()*scale/2,
+                y - self.image.get_height()*scale/2
+            )
+            cr.paint()
+            cr.restore()
+        else:
+            # draw boxes
+            style = self.get_style_context()
+            color = style.get_color(style.get_state())
+            cr.set_source_rgba(*color)
+            xb, yb, w, h = cr.text_extents(')(')[:4]
+            cr.move_to(x - xb - w/2, y - yb - h/2)
+            cr.show_text(')(')
+
+    def do_realize(self):
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.visual = self.get_visual()
+        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
+        WAT = Gdk.WindowAttributesType
+        mask = WAT.X | WAT.Y | WAT.VISUAL
+        window = Gdk.Window(self.get_parent_window(), attr, mask);
+        self.set_window(window)
+        self.register_window(window)
+        self.set_realized(True)
+        window.set_background_pattern(None)
+
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('active', self.on_active)
+
+        if self.file:
+            self.frames = SymbolFrames.new_from_file(self.file)
+            self.image = self.frames(0)
+
+    def on_change(self, pv, value):
+        self.image = self.frames(value)
+        self.queue_draw()
+
+    def on_active(self, pv, connected):
+        if connected:
+            self.pv.get_with_metadata()
+            self.set_sensitive(True)
+        else:
+            self.set_sensitive(False)
+        self.queue_draw()
+
 
 
 #TODO
