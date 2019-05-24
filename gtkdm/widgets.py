@@ -82,9 +82,10 @@ class Display(Gtk.Fixed):
 class TextMonitor(Gtk.EventBox):
     __gtype_name__ = 'TextMonitor'
 
-    channel = channel = GObject.Property(type=str, default='', nick='PV Name')
+    channel =  GObject.Property(type=str, default='', nick='PV Name')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -109,15 +110,16 @@ class TextMonitor(Gtk.EventBox):
         self.label.set_markup(text)
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.MAJOR:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.MINOR:
-            self.get_style_context().add_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
-        else:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
+        if self.alarm:
+            if alarm == gepics.Alarm.MAJOR:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                self.get_style_context().add_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+            else:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
 
     def on_active(self, pv, connected):
         if connected:
@@ -156,6 +158,7 @@ class LineMonitor(Gtk.Widget):
     arrow = GObject.Property(type=bool, default=False, nick='Arrow')
     arrow_size = GObject.Property(type=int, minimum=1, maximum=10, default=2, nick='Arrow Size')
     direction = cheme = GObject.Property(type=Direction, default=Direction.EAST, nick='Direction')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -239,7 +242,7 @@ class Byte(Gtk.Widget):
     colors = GObject.Property(type=str, default='AG', nick='Colors')
     columns = GObject.Property(type=int, minimum=1, maximum=8, default=1, nick='Columns')
     size = GObject.Property(type=int, minimum=5, maximum=50, default=10, nick='LED Size')
-    alarm = GObject.Property(type=bool, default=False, nick='Alarm Border')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -343,7 +346,7 @@ class Indicator(Gtk.Widget):
     __gtype_name__ = 'Indicator'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
-    alarm = GObject.Property(type=bool, default=False, nick='Alarm Border')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     colors = GObject.Property(type=str, default='72', nick='Colors')
     size = GObject.Property(type=int, minimum=5, maximum=50, default=10, nick='LED Size')
 
@@ -445,6 +448,7 @@ class ScaleControl(Gtk.EventBox):
     maximum = GObject.Property(type=float, default=100., nick='Maximum')
     increment = GObject.Property(type=float, default=1., nick='Increment')
     orientation = GObject.Property(type=Gtk.Orientation, default=Gtk.Orientation.HORIZONTAL, nick='Orientation')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     inverted = GObject.Property(type=bool, default=False, nick='Inverted')
 
     def __init__(self, *args, **kwargs):
@@ -483,15 +487,16 @@ class ScaleControl(Gtk.EventBox):
         self.in_progress = False
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.MAJOR:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.MINOR:
-            self.get_style_context().add_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
-        else:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
+        if self.alarm:
+            if alarm == gepics.Alarm.MAJOR:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                self.get_style_context().add_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+            else:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
 
     def on_active(self, pv, connected):
         if connected:
@@ -510,6 +515,7 @@ class TextControl(Gtk.EventBox):
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -535,15 +541,16 @@ class TextControl(Gtk.EventBox):
         self.in_progress = False
 
     def on_alarm(self, pv, alarm):
-        if alarm == gepics.Alarm.MAJOR:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().add_class('gtkdm-critical')
-        elif alarm == gepics.Alarm.MINOR:
-            self.get_style_context().add_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
-        else:
-            self.get_style_context().remove_class('gtkdm-warning')
-            self.get_style_context().remove_class('gtkdm-critical')
+        if self.alarm:
+            if alarm == gepics.Alarm.MAJOR:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                self.get_style_context().add_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+            else:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
 
     def on_active(self, pv, connected):
         if connected:
@@ -945,9 +952,71 @@ class Symbol(Gtk.Widget):
         self.queue_draw()
 
 
+class CheckControl(Gtk.EventBox):
+    __gtype_name__ = 'CheckControl'
+
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    label = GObject.Property(type=str, default='', nick='Label')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.btn = Gtk.CheckButton(label=self.label)
+        self.in_progress = False
+        self.add(self.btn)
+        self.pv = None
+        self.connect('realize', self.on_realize)
+        self.btn.connect('toggled', self.on_toggle)
+        self.bind_property('label', self.btn, 'label', GObject.BindingFlags.DEFAULT)
+
+    def on_toggle(self, obj):
+        if not self.in_progress:
+            self.pv.put(int(obj.get_active()))
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('alarm', self.on_alarm)
+            self.pv.connect('active', self.on_active)
+
+            if not self.label:
+                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv.connect('changed', self.on_label_change)
+
+    def on_label_change(self, pv, value):
+        self.props.label = value
+        self.queue_draw()
+
+    def on_change(self, pv, value):
+        self.in_progress = True
+        self.btn.set_active(bool(value))
+        self.in_progress = False
+
+    def on_alarm(self, pv, alarm):
+        if self.alarm:
+            if alarm == gepics.Alarm.MAJOR:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                self.get_style_context().add_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+            else:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+
+    def on_active(self, pv, connected):
+        if connected:
+            self.pv.get_with_metadata()
+            self.get_style_context().remove_class('gtkdm-inactive')
+            self.set_sensitive(True)
+        else:
+            self.get_style_context().add_class('gtkdm-inactive')
+            self.set_sensitive(False)
 
 #TODO
-# Check Button
 # Toggle Button
 # Spin Button
 # Combo Box

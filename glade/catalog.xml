@@ -14,11 +14,12 @@
     <glade-widget-class name="CommandButton" generic-name="commandbutton" title="CommandButton" icon-name="widget-gtk-button"/>
     <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="ChoiceButton" icon-name="widget-gtk-stackswitcher"/>
     <glade-widget-class name="Gauge" generic-name="gauge" title="Gauge" icon-name="widget-gtk-frame"/>
-    <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-symbol"/>
+    <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
+    <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl" icon-name="widget-gtk-checkbutton"/>
 
   </glade-widget-classes>
   
-  <glade-widget-group name="gtkdm" title="GtkDM">
+  <glade-widget-group name="gtk-control" title="GtkDM Control">
     <glade-widget-class-ref name="Display"/>
     <glade-widget-class-ref name="TextMonitor"/>
     <glade-widget-class-ref name="LineMonitor"/>
@@ -31,6 +32,7 @@
     <glade-widget-class-ref name="ChoiceButton"/>
     <glade-widget-class-ref name="Gauge"/>
     <glade-widget-class-ref name="Symbol"/>
+    <glade-widget-class-ref name="CheckControl"/>
   </glade-widget-group>
 
 </glade-catalog>
