@@ -10,7 +10,7 @@
       <placeholder/>
     </child>
     <child>
-      <object class="Display">
+      <object class="Layout">
         <property name="width_request">750</property>
         <property name="height_request">500</property>
         <property name="visible">True</property>
@@ -335,6 +335,33 @@
           <packing>
             <property name="x">607</property>
             <property name="y">158</property>
+          </packing>
+        </child>
+        <child>
+          <object class="DisplayButton">
+            <property name="width_request">28</property>
+            <property name="height_request">25</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="display">rows.ui</property>
+            <property name="frame">displayframe1</property>
+            <property name="label">Name</property>
+          </object>
+          <packing>
+            <property name="x">49</property>
+            <property name="y">417</property>
+          </packing>
+        </child>
+        <child>
+          <object class="DisplayFrame" id="displayframe1">
+            <property name="width_request">250</property>
+            <property name="height_request">162</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="x">274</property>
+            <property name="y">172</property>
           </packing>
         </child>
       </object>

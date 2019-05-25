@@ -9,6 +9,7 @@ gi.require_version('PangoCairo', '1.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, Pango, GLib, PangoCairo
 import gepics
+import xml.etree.ElementTree as ET
 
 
 _SYMBOL_REGISTRY = {
@@ -72,11 +73,39 @@ def ticks(lo, hi, step):
 Direction = Gdk.WindowEdge
 
 
-class Display(Gtk.Fixed):
-    __gtype_name__ = 'Display'
+class Layout(Gtk.Fixed):
+    __gtype_name__ = 'Layout'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+
+class DisplayFrame(Gtk.EventBox):
+    __gtype_name__ = 'DisplayFrame'
+    xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
+    yalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='Y-Alignment')
+    xscale = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0, nick='X-Scale')
+    yscale = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0, nick='Y-Scale')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.frame = Gtk.Alignment()
+        self.add(self.frame)
+        for prop in ['xalign', 'yalign', 'xscale', 'yscale']:
+            self.bind_property(prop, self.frame, prop, GObject.BindingFlags.DEFAULT)
+
+    def show_display(self, filename):
+        tree = ET.parse(filename)
+        w = tree.find(".//object[@class='GtkWindow']/child/object[0]")
+        w.set('id', 'embedded_display')
+        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='utf-8')
+        builder = Gtk.Builder()
+        builder.add_objects_from_string(data, ['embedded_display'])
+        display = builder.get_object('embedded_display')
+        child = self.frame.get_child()
+        if child:
+            child.destroy()
+        self.frame.add(display)
 
 
 class TextMonitor(Gtk.EventBox):
@@ -1016,13 +1045,32 @@ class CheckControl(Gtk.EventBox):
             self.get_style_context().add_class('gtkdm-inactive')
             self.set_sensitive(False)
 
+
+class DisplayButton(Gtk.EventBox):
+    __gtype_name__ = 'DisplayButton'
+    label = GObject.Property(type=str, default='', nick='Label')
+    display = GObject.Property(type=str, default='', nick='Display File')
+    macros = GObject.Property(type=str, default='', nick='Macro')
+    frame = GObject.Property(type=DisplayFrame, nick='Target Frame')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.button = Gtk.Button(label=self.label)
+        self.button.connect('clicked', self.on_clicked)
+        self.connect('realize', self.on_realize)
+        self.bind_property('label', self.button, 'label', GObject.BindingFlags.DEFAULT)
+        self.add(self.button)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+
+    def on_clicked(self, button):
+        print(self.display, self.macros, self.frame)
+        self.frame.show_display(self.display)
+
+
+
 #TODO
 # Toggle Button
 # Spin Button
 # Combo Box
-
-
-__all__ = [
-    'LineMonitor', 'TextMonitor', 'Display', 'ScaleControl', 'TextControl',
-    'TextLabel', 'CommandButton', 'ChoiceButton'
-]

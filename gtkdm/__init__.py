@@ -13,6 +13,4 @@ style = Gtk.StyleContext()
 style.add_provider_for_screen(Gdk.Screen.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
-from .widgets import LineMonitor, TextMonitor, Display
-
 

@@ -3,24 +3,40 @@
   <init-function>glade_python_init</init-function>
 
   <glade-widget-classes>
-    <glade-widget-class name="Display" generic-name="display" title="Display" icon-name="widget-gtk-window"/>
-    <glade-widget-class name="TextMonitor" generic-name="textmonitor" title="TextMonitor" icon-name="widget-gtk-label"/>
-    <glade-widget-class name="LineMonitor" generic-name="linemonitor" title="LineMonitor" icon-name="widget-gtk-separator"/>
+    <glade-widget-class name="Layout" generic-name="layout" title="Layout" icon-name="widget-gtk-window"/>
+    <glade-widget-class name="DisplayFrame" generic-name="displayframe" title="Display Frame" icon-name="widget-gtk-frame"/>
+    <glade-widget-class name="TextMonitor" generic-name="textmonitor" title="Text Monitor" icon-name="widget-gtk-label"/>
+    <glade-widget-class name="LineMonitor" generic-name="linemonitor" title="Line Monitor" icon-name="widget-gtk-separator"/>
     <glade-widget-class name="Byte" generic-name="byte" title="Byte" icon-name="widget-gtk-stacksidebar"/>
     <glade-widget-class name="Indicator" generic-name="indicator" title="Indicator" icon-name="widget-gtk-eventbox"/>
-    <glade-widget-class name="ScaleControl" generic-name="scalecontrol" title="ScaleControl" icon-name="widget-gtk-scale"/>
-    <glade-widget-class name="TextControl" generic-name="textcontrol" title="TextControl" icon-name="widget-gtk-entry"/>
-    <glade-widget-class name="TextLabel" generic-name="textlabel" title="Textlabel" icon-name="widget-gtk-label"/>
-    <glade-widget-class name="CommandButton" generic-name="commandbutton" title="CommandButton" icon-name="widget-gtk-button"/>
-    <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="ChoiceButton" icon-name="widget-gtk-stackswitcher"/>
+    <glade-widget-class name="ScaleControl" generic-name="scalecontrol" title="Scale Control" icon-name="widget-gtk-scale"/>
+    <glade-widget-class name="TextControl" generic-name="textcontrol" title="Text Control" icon-name="widget-gtk-entry"/>
+    <glade-widget-class name="TextLabel" generic-name="textlabel" title="Text Label" icon-name="widget-gtk-label"/>
+    <glade-widget-class name="CommandButton" generic-name="commandbutton" title="Command Button" icon-name="widget-gtk-button"/>
+    <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="Choice Button" icon-name="widget-gtk-stackswitcher"/>
     <glade-widget-class name="Gauge" generic-name="gauge" title="Gauge" icon-name="widget-gtk-frame"/>
+
     <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
+    <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="Check Control" icon-name="widget-gtk-checkbutton"/>
+
+    <glade-widget-class name="DisplayButton" generic-name="displaybutton" title="Display Button" icon-name="widget-gtk-appchooserbutton">
+      <properties>
+        <property id="frame" custom-layout="false" name="Target Frame">
+          <parameter-spec>
+              <type>GladeParamObjects</type>
+              <value-type>DisplayFrame</value-type>
+            </parameter-spec>
+        </property>
+      </properties>
+    </glade-widget-class>
+
     <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl" icon-name="widget-gtk-checkbutton"/>
 
   </glade-widget-classes>
   
   <glade-widget-group name="gtk-control" title="GtkDM Control">
-    <glade-widget-class-ref name="Display"/>
+    <glade-widget-class-ref name="Layout"/>
+        <glade-widget-class-ref name="DisplayFrame"/>
     <glade-widget-class-ref name="TextMonitor"/>
     <glade-widget-class-ref name="LineMonitor"/>
     <glade-widget-class-ref name="Byte"/>
@@ -33,6 +49,7 @@
     <glade-widget-class-ref name="Gauge"/>
     <glade-widget-class-ref name="Symbol"/>
     <glade-widget-class-ref name="CheckControl"/>
+        <glade-widget-class-ref name="DisplayButton"/>
   </glade-widget-group>
 
 </glade-catalog>
