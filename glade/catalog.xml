@@ -31,6 +31,18 @@
     </glade-widget-class>
 
     <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl" icon-name="widget-gtk-checkbutton"/>
+    <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
+    <glade-widget-class name="MenuList" generic-name="menulist" title="Menu List" icon-name="widget-gtk-liststore">
+        <properties>
+          <property save="False" id="data" custom-layout="True" name="Data">
+            <parameter-spec>
+              <type>GParamBoxed</type>
+              <value-type>GladeModelDataTree</value-type>
+            </parameter-spec>
+            <tooltip>Enter a list of menu items</tooltip>
+          </property>
+        </properties>
+    </glade-widget-class>
 
   </glade-widget-classes>
   
@@ -49,7 +61,9 @@
     <glade-widget-class-ref name="Gauge"/>
     <glade-widget-class-ref name="Symbol"/>
     <glade-widget-class-ref name="CheckControl"/>
-        <glade-widget-class-ref name="DisplayButton"/>
+    <glade-widget-class-ref name="DisplayButton"/>
+    <glade-widget-class-ref name="Shape"/>
+        <glade-widget-class-ref name="MenuList"/>
   </glade-widget-group>
 
 </glade-catalog>

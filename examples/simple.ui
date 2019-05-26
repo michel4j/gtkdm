@@ -3,6 +3,17 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="gtkplugin" version="0.0"/>
+  <object class="MenuList">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes"/>
+      </row>
+    </data>
+  </object>
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
@@ -326,18 +337,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText">
-            <property name="width_request">100</property>
-            <property name="height_request">34</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="x">607</property>
-            <property name="y">158</property>
-          </packing>
-        </child>
-        <child>
           <object class="DisplayButton">
             <property name="width_request">28</property>
             <property name="height_request">25</property>
@@ -362,6 +361,47 @@
           <packing>
             <property name="x">274</property>
             <property name="y">172</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Shape">
+            <property name="width_request">24</property>
+            <property name="height_request">28</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:GV1:positionM</property>
+            <property name="colors">AC</property>
+            <property name="filled">True</property>
+            <property name="label">C35</property>
+            <property name="labelled">True</property>
+            <property name="oval">True</property>
+          </object>
+          <packing>
+            <property name="x">244</property>
+            <property name="y">427</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText">
+            <property name="width_request">164</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="add_tearoffs">True</property>
+            <property name="has_entry">True</property>
+            <items>
+              <item id="&lt;Enter ID&gt;" translatable="yes">Feedback Helper|rows.ui|device=test1, name=beamline1</item>
+              <item translatable="yes">Setpoint Helper|cols.ui|device=test2, name=beamlin2</item>
+            </items>
+            <child internal-child="entry">
+              <object class="GtkEntry">
+                <property name="can_focus">False</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="x">377</property>
+            <property name="y">343</property>
           </packing>
         </child>
       </object>

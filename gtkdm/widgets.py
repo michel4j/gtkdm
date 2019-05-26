@@ -82,6 +82,8 @@ class Layout(Gtk.Fixed):
 
 class DisplayFrame(Gtk.EventBox):
     __gtype_name__ = 'DisplayFrame'
+    label = GObject.Property(type=str, default='', nick='Label')
+    shadow_type = GObject.Property(type=Gtk.ShadowType, default=Gtk.ShadowType.NONE, nick='Shadow Type')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     yalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='Y-Alignment')
     xscale = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0, nick='X-Scale')
@@ -89,16 +91,20 @@ class DisplayFrame(Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.box = Gtk.Frame()
         self.frame = Gtk.Alignment()
-        self.add(self.frame)
+        self.box.add(self.frame)
+        self.add(self.box)
         for prop in ['xalign', 'yalign', 'xscale', 'yscale']:
             self.bind_property(prop, self.frame, prop, GObject.BindingFlags.DEFAULT)
+        self.bind_property('label', self.box, 'label', GObject.BindingFlags.DEFAULT)
+        self.bind_property('shadow-type', self.box, 'shadow-type', GObject.BindingFlags.DEFAULT)
 
-    def show_display(self, filename):
+    def show_display(self, filename, macros=None):
         tree = ET.parse(filename)
-        w = tree.find(".//object[@class='GtkWindow']/child/object[0]")
+        w = tree.find(".//object[@class='GtkWindow']/child/object[1]")
         w.set('id', 'embedded_display')
-        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='utf-8')
+        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode', method='xml')
         builder = Gtk.Builder()
         builder.add_objects_from_string(data, ['embedded_display'])
         display = builder.get_object('embedded_display')
@@ -278,7 +284,6 @@ class Byte(Gtk.Widget):
         self._view_bits = ['0'] * 8
         self._view_labels = [''] * 8
         self.set_size_request(196, 40)
-        self.palette = ColorSequence(self.colors)
         self.theme = {
             'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
         }
@@ -328,6 +333,7 @@ class Byte(Gtk.Widget):
         self.register_window(window)
         self.set_realized(True)
         window.set_background_pattern(None)
+        self.palette = ColorSequence(self.colors)
 
         pv_name = self.channel
         if pv_name:
@@ -384,7 +390,6 @@ class Indicator(Gtk.Widget):
         self.set_size_request(196, 40)
         self.pv = None
         self.label_pv = None
-        self.palette = ColorSequence(self.colors)
         self.theme = {
             'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
             'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
@@ -424,7 +429,6 @@ class Indicator(Gtk.Widget):
         self.register_window(window)
         self.set_realized(True)
         window.set_background_pattern(None)
-
         self.palette = ColorSequence(self.colors)
 
         pv_name = self.channel
@@ -703,7 +707,6 @@ class Gauge(Gtk.Widget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_size_request(120, 100)
-        self.palette = ColorSequence(self.colors)
         self.ctrlvars = None
         self.value = 0
         self.units_label = 'mA'
@@ -845,6 +848,7 @@ class Gauge(Gtk.Widget):
         self.register_window(window)
         self.set_realized(True)
         window.set_background_pattern(None)
+        self.palette = ColorSequence(self.colors)
 
         pv_name = self.channel
         if pv_name:
@@ -1065,9 +1069,124 @@ class DisplayButton(Gtk.EventBox):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, button):
-        print(self.display, self.macros, self.frame)
-        self.frame.show_display(self.display)
+        if self.frame and self.display:
+            self.frame.show_display(self.display, macros=self.macros)
 
+
+class Shape(Gtk.Widget):
+    __gtype_name__ = 'Shape'
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    label = GObject.Property(type=str, default='', nick='Label')
+    labelled = GObject.Property(type=bool, default=False, nick='Show Label')
+    filled = GObject.Property(type=bool, default=False, nick='Fill Shape')
+    colors = GObject.Property(type=str, default='RGB', nick='Fill Colors')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    oval = GObject.Property(type=bool, default=False, nick='Oval')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.theme = {
+            'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+        }
+        self.value = 0
+
+    def do_draw(self, cr):
+        allocation = self.get_allocation()
+
+        # draw boxes
+        style = self.get_style_context()
+        self.theme['border'] = style.get_color(style.get_state())
+
+        cr.set_line_width(0.75)
+
+        width = min(allocation.width-2, allocation.height-2)
+        cr.set_font_size(min(2*width//5, 12))
+        x = pix(allocation.width/2)
+        y = pix(allocation.height/2)
+
+        if self.oval:
+            cr.arc(x, y, width/2, 0, 2*pi)
+        else:
+            cr.rectangle(x-width//2, y-width//2, width, width)
+        if self.filled:
+            color = self.palette(int(self.value))
+            cr.set_source_rgba(*color)
+            cr.fill_preserve()
+        cr.set_source_rgba(*self.theme['border'])
+        cr.stroke()
+        if self.labelled:
+            xb, yb, w, h = cr.text_extents(self.label)[:4]
+            cr.move_to(x - xb - w/2, y - yb -h/2)
+            cr.show_text(self.label)
+            cr.stroke()
+
+    def do_realize(self):
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.visual = self.get_visual()
+        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
+        WAT = Gdk.WindowAttributesType
+        mask = WAT.X | WAT.Y | WAT.VISUAL
+        window = Gdk.Window(self.get_parent_window(), attr, mask);
+        self.set_window(window)
+        self.register_window(window)
+        self.set_realized(True)
+        window.set_background_pattern(None)
+        self.palette = ColorSequence(self.colors)
+
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('alarm', self.on_alarm)
+            self.pv.connect('active', self.on_active)
+
+            if not self.label:
+                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv.connect('changed', self.on_label_change)
+
+    def on_label_change(self, pv, value):
+        self.props.label = value
+        self.queue_draw()
+
+    def on_change(self, pv, value):
+        self.value = value
+        self.queue_draw()
+
+    def on_alarm(self, pv, alarm):
+        if self.alarm:
+            style = self.get_style_context()
+            if alarm == gepics.Alarm.MAJOR:
+                style.remove_class('gtkdm-warning')
+                style.add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                style.add_class('gtkdm-warning')
+                style.remove_class('gtkdm-critical')
+            else:
+                style.remove_class('gtkdm-warning')
+                style.remove_class('gtkdm-critical')
+
+    def on_active(self, pv, connected):
+        if connected:
+            self.pv.get_with_metadata()
+            self.set_sensitive(True)
+            self.theme['border'] = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
+        else:
+            self.set_sensitive(False)
+            self.theme['border'] = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
+        self.queue_draw()
+
+
+class MenuList(Gtk.ListStore):
+    __gtype_name__ = 'MenuList'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(str, str, str)
 
 
 #TODO
