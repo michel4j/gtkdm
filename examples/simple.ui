@@ -3,16 +3,59 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="gtkplugin" version="0.0"/>
-  <object class="MenuList">
-    <columns>
-      <!-- column-name Name -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes"/>
-      </row>
-    </data>
+  <object class="Menu" id="menu1">
+    <property name="can_focus">False</property>
+    <property name="relative_to">menubutton1</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="MenuItem">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">test1.ui</property>
+            <property name="label">Test1</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="MenuItem">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">test2.ui</property>
+            <property name="label">Test2</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="MenuItem">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">test3.ui</property>
+            <property name="label">Test3</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="submenu">submenu0</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
   </object>
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
@@ -22,7 +65,7 @@
     </child>
     <child>
       <object class="Layout">
-        <property name="width_request">750</property>
+        <property name="width_request">850</property>
         <property name="height_request">500</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -35,8 +78,8 @@
             <property name="pixbuf">header.png</property>
           </object>
           <packing>
-            <property name="x">65</property>
-            <property name="y">159</property>
+            <property name="x">11</property>
+            <property name="y">170</property>
           </packing>
         </child>
         <child>
@@ -67,8 +110,8 @@
             <property name="xalign">0.5</property>
           </object>
           <packing>
-            <property name="x">524</property>
-            <property name="y">50</property>
+            <property name="x">509</property>
+            <property name="y">172</property>
           </packing>
         </child>
         <child>
@@ -97,13 +140,13 @@
             <property name="size">12</property>
           </object>
           <packing>
-            <property name="x">436</property>
-            <property name="y">422</property>
+            <property name="x">595</property>
+            <property name="y">412</property>
           </packing>
         </child>
         <child>
           <object class="ScaleControl">
-            <property name="width_request">68</property>
+            <property name="width_request">72</property>
             <property name="height_request">128</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -115,8 +158,8 @@
             <property name="orientation">vertical</property>
           </object>
           <packing>
-            <property name="x">452</property>
-            <property name="y">20</property>
+            <property name="x">656</property>
+            <property name="y">7</property>
           </packing>
         </child>
         <child>
@@ -148,7 +191,7 @@
         </child>
         <child>
           <object class="LineMonitor">
-            <property name="width_request">601</property>
+            <property name="width_request">813</property>
             <property name="height_request">20</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -157,7 +200,7 @@
             <property name="line_width">10</property>
           </object>
           <packing>
-            <property name="x">63</property>
+            <property name="x">11</property>
             <property name="y">389</property>
           </packing>
         </child>
@@ -215,21 +258,21 @@
             <property name="maximum">20</property>
           </object>
           <packing>
-            <property name="x">320</property>
-            <property name="y">62</property>
+            <property name="x">381</property>
+            <property name="y">7</property>
           </packing>
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">56</property>
-            <property name="height_request">47</property>
+            <property name="width_request">110</property>
+            <property name="height_request">49</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:autoC</property>
           </object>
           <packing>
-            <property name="x">319</property>
-            <property name="y">411</property>
+            <property name="x">731</property>
+            <property name="y">8</property>
           </packing>
         </child>
         <child>
@@ -270,16 +313,16 @@
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">152</property>
-            <property name="height_request">24</property>
+            <property name="width_request">165</property>
+            <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:gunOnC</property>
             <property name="orientation">horizontal</property>
           </object>
           <packing>
-            <property name="x">512</property>
-            <property name="y">464</property>
+            <property name="x">659</property>
+            <property name="y">461</property>
           </packing>
         </child>
         <child>
@@ -290,8 +333,8 @@
             <property name="can_focus">True</property>
           </object>
           <packing>
-            <property name="x">395</property>
-            <property name="y">33</property>
+            <property name="x">11</property>
+            <property name="y">463</property>
           </packing>
         </child>
         <child>
@@ -304,8 +347,8 @@
             <property name="file">faces.sym</property>
           </object>
           <packing>
-            <property name="x">60</property>
-            <property name="y">386</property>
+            <property name="x">74</property>
+            <property name="y">383</property>
           </packing>
         </child>
         <child>
@@ -338,29 +381,30 @@
         </child>
         <child>
           <object class="DisplayButton">
-            <property name="width_request">28</property>
+            <property name="width_request">66</property>
             <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="display">rows.ui</property>
+            <property name="display">embed.ui</property>
             <property name="frame">displayframe1</property>
             <property name="label">Name</property>
           </object>
           <packing>
-            <property name="x">49</property>
-            <property name="y">417</property>
+            <property name="x">12</property>
+            <property name="y">427</property>
           </packing>
         </child>
         <child>
           <object class="DisplayFrame" id="displayframe1">
-            <property name="width_request">250</property>
-            <property name="height_request">162</property>
+            <property name="width_request">228</property>
+            <property name="height_request">198</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="shadow_type">out</property>
           </object>
           <packing>
-            <property name="x">274</property>
-            <property name="y">172</property>
+            <property name="x">611</property>
+            <property name="y">171</property>
           </packing>
         </child>
         <child>
@@ -382,26 +426,32 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText">
-            <property name="width_request">164</property>
+          <object class="GtkComboBoxText" id="comboboxtext1">
+            <property name="width_request">110</property>
             <property name="height_request">34</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="add_tearoffs">True</property>
-            <property name="has_entry">True</property>
-            <items>
-              <item id="&lt;Enter ID&gt;" translatable="yes">Feedback Helper|rows.ui|device=test1, name=beamline1</item>
-              <item translatable="yes">Setpoint Helper|cols.ui|device=test2, name=beamlin2</item>
-            </items>
-            <child internal-child="entry">
-              <object class="GtkEntry">
-                <property name="can_focus">False</property>
-              </object>
+          </object>
+          <packing>
+            <property name="x">388</property>
+            <property name="y">118</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkMenuButton" id="menubutton1">
+            <property name="width_request">100</property>
+            <property name="height_request">20</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="popover">menu1</property>
+            <child>
+              <placeholder/>
             </child>
           </object>
           <packing>
-            <property name="x">377</property>
-            <property name="y">343</property>
+            <property name="x">736</property>
+            <property name="y">63</property>
           </packing>
         </child>
       </object>

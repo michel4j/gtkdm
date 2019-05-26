@@ -1,69 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <glade-catalog name="gtkplugin" library="gladepython" depends="gtk+" domain="glade-3">
-  <init-function>glade_python_init</init-function>
+    <init-function>glade_python_init</init-function>
 
-  <glade-widget-classes>
-    <glade-widget-class name="Layout" generic-name="layout" title="Layout" icon-name="widget-gtk-window"/>
-    <glade-widget-class name="DisplayFrame" generic-name="displayframe" title="Display Frame" icon-name="widget-gtk-frame"/>
-    <glade-widget-class name="TextMonitor" generic-name="textmonitor" title="Text Monitor" icon-name="widget-gtk-label"/>
-    <glade-widget-class name="LineMonitor" generic-name="linemonitor" title="Line Monitor" icon-name="widget-gtk-separator"/>
-    <glade-widget-class name="Byte" generic-name="byte" title="Byte" icon-name="widget-gtk-stacksidebar"/>
-    <glade-widget-class name="Indicator" generic-name="indicator" title="Indicator" icon-name="widget-gtk-eventbox"/>
-    <glade-widget-class name="ScaleControl" generic-name="scalecontrol" title="Scale Control" icon-name="widget-gtk-scale"/>
-    <glade-widget-class name="TextControl" generic-name="textcontrol" title="Text Control" icon-name="widget-gtk-entry"/>
-    <glade-widget-class name="TextLabel" generic-name="textlabel" title="Text Label" icon-name="widget-gtk-label"/>
-    <glade-widget-class name="CommandButton" generic-name="commandbutton" title="Command Button" icon-name="widget-gtk-button"/>
-    <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="Choice Button" icon-name="widget-gtk-stackswitcher"/>
-    <glade-widget-class name="Gauge" generic-name="gauge" title="Gauge" icon-name="widget-gtk-frame"/>
+    <glade-widget-classes>
+        <glade-widget-class name="Layout" generic-name="layout" title="Layout" icon-name="widget-gtk-window"/>
+        <glade-widget-class name="DisplayFrame" generic-name="displayframe" title="Display Frame"
+                            icon-name="widget-gtk-frame"/>
+        <glade-widget-class name="TextMonitor" generic-name="textmonitor" title="Text Monitor"
+                            icon-name="widget-gtk-label"/>
+        <glade-widget-class name="LineMonitor" generic-name="linemonitor" title="Line Monitor"
+                            icon-name="widget-gtk-separator"/>
+        <glade-widget-class name="Byte" generic-name="byte" title="Byte" icon-name="widget-gtk-stacksidebar"/>
+        <glade-widget-class name="Indicator" generic-name="indicator" title="Indicator"
+                            icon-name="widget-gtk-eventbox"/>
+        <glade-widget-class name="ScaleControl" generic-name="scalecontrol" title="Scale Control"
+                            icon-name="widget-gtk-scale"/>
+        <glade-widget-class name="TextControl" generic-name="textcontrol" title="Text Control"
+                            icon-name="widget-gtk-entry"/>
+        <glade-widget-class name="TextLabel" generic-name="textlabel" title="Text Label" icon-name="widget-gtk-label"/>
+        <glade-widget-class name="CommandButton" generic-name="commandbutton" title="Command Button"
+                            icon-name="widget-gtk-button"/>
+        <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="Choice Button"
+                            icon-name="widget-gtk-stackswitcher"/>
+        <glade-widget-class name="Gauge" generic-name="gauge" title="Gauge" icon-name="widget-gtk-frame"/>
 
-    <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
-    <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="Check Control" icon-name="widget-gtk-checkbutton"/>
+        <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
+        <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="Check Control"
+                            icon-name="widget-gtk-checkbutton"/>
 
-    <glade-widget-class name="DisplayButton" generic-name="displaybutton" title="Display Button" icon-name="widget-gtk-appchooserbutton">
-      <properties>
-        <property id="frame" custom-layout="false" name="Target Frame">
-          <parameter-spec>
-              <type>GladeParamObjects</type>
-              <value-type>DisplayFrame</value-type>
-            </parameter-spec>
-        </property>
-      </properties>
-    </glade-widget-class>
+        <glade-widget-class name="DisplayButton" generic-name="displaybutton" title="Display Button"
+                            icon-name="widget-gtk-appchooserbutton">
+            <properties>
+                <property id="frame" custom-layout="false" name="Target Frame">
+                    <parameter-spec>
+                        <type>GladeParamObjects</type>
+                        <value-type>DisplayFrame</value-type>
+                    </parameter-spec>
+                </property>
+            </properties>
+        </glade-widget-class>
 
-    <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl" icon-name="widget-gtk-checkbutton"/>
-    <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
-    <glade-widget-class name="MenuList" generic-name="menulist" title="Menu List" icon-name="widget-gtk-liststore">
-        <properties>
-          <property save="False" id="data" custom-layout="True" name="Data">
-            <parameter-spec>
-              <type>GParamBoxed</type>
-              <value-type>GladeModelDataTree</value-type>
-            </parameter-spec>
-            <tooltip>Enter a list of menu items</tooltip>
-          </property>
-        </properties>
-    </glade-widget-class>
+        <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl"
+                            icon-name="widget-gtk-checkbutton"/>
+        <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
+        <glade-widget-class name="MenuItem" generic-name="menuitem" title="Menu Item" icon-name="widget-gtk-menubar"/>
+        <glade-widget-class toplevel="True" name="Menu" generic-name="menu" title="Menu">
+            <create-editable-function>glade_gtk_popover_menu_create_editable</create-editable-function>
+            <post-create-function>glade_gtk_popover_menu_post_create</post-create-function>
+            <add-child-function>glade_gtk_popover_menu_add_child</add-child-function>
+            <remove-child-function>glade_gtk_popover_menu_remove_child</remove-child-function>
+            <replace-child-function>glade_gtk_popover_menu_replace_child</replace-child-function>
+            <get-property-function>glade_gtk_popover_menu_get_property</get-property-function>
+            <set-property-function>glade_gtk_popover_menu_set_property</set-property-function>
+            <verify-function>glade_gtk_popover_menu_verify_property</verify-function>
+            <child-set-property-function>glade_gtk_popover_menu_set_child_property</child-set-property-function>
+            <child-get-property-function>glade_gtk_popover_menu_get_child_property</child-get-property-function>
 
-  </glade-widget-classes>
-  
-  <glade-widget-group name="gtk-control" title="GtkDM Control">
-    <glade-widget-class-ref name="Layout"/>
+            <properties>
+                <property id="visible" default="False"/>
+                <property id="visible-submenu" disabled="True"/>
+                <property id="pointing-to" disabled="True"/>
+                <property save="False" id="submenus" default="1" custom-layout="True" name="Number of submenus">
+                    <parameter-spec>
+                        <type>GParamInt</type>
+                        <min>1</min>
+                    </parameter-spec>
+                    <tooltip>The number of submenus in the popover menu</tooltip>
+                </property>
+                <property save="False" id="current" default="0" custom-layout="True" name="Edit menu">
+                    <parameter-spec>
+                        <type>GParamInt</type>
+                        <min>0</min>
+                    </parameter-spec>
+                    <tooltip>Set the currently active submenu to edit, this property will not be saved</tooltip>
+                </property>
+            </properties>
+        </glade-widget-class>
+
+    </glade-widget-classes>
+
+    <glade-widget-group name="gtk-control" title="GtkDM Control">
+        <glade-widget-class-ref name="Layout"/>
         <glade-widget-class-ref name="DisplayFrame"/>
-    <glade-widget-class-ref name="TextMonitor"/>
-    <glade-widget-class-ref name="LineMonitor"/>
-    <glade-widget-class-ref name="Byte"/>
-    <glade-widget-class-ref name="Indicator"/>
-    <glade-widget-class-ref name="ScaleControl"/>
-    <glade-widget-class-ref name="TextControl"/>
-    <glade-widget-class-ref name="TextLabel"/>
-    <glade-widget-class-ref name="CommandButton"/>
-    <glade-widget-class-ref name="ChoiceButton"/>
-    <glade-widget-class-ref name="Gauge"/>
-    <glade-widget-class-ref name="Symbol"/>
-    <glade-widget-class-ref name="CheckControl"/>
-    <glade-widget-class-ref name="DisplayButton"/>
-    <glade-widget-class-ref name="Shape"/>
-        <glade-widget-class-ref name="MenuList"/>
-  </glade-widget-group>
+        <glade-widget-class-ref name="TextMonitor"/>
+        <glade-widget-class-ref name="LineMonitor"/>
+        <glade-widget-class-ref name="Byte"/>
+        <glade-widget-class-ref name="Indicator"/>
+        <glade-widget-class-ref name="ScaleControl"/>
+        <glade-widget-class-ref name="TextControl"/>
+        <glade-widget-class-ref name="TextLabel"/>
+        <glade-widget-class-ref name="CommandButton"/>
+        <glade-widget-class-ref name="ChoiceButton"/>
+        <glade-widget-class-ref name="Gauge"/>
+        <glade-widget-class-ref name="Symbol"/>
+        <glade-widget-class-ref name="CheckControl"/>
+        <glade-widget-class-ref name="DisplayButton"/>
+        <glade-widget-class-ref name="Shape"/>
+        <glade-widget-class-ref name="MenuItem"/>
+        <glade-widget-class-ref name="Menu"/>
+    </glade-widget-group>
 
 </glade-catalog>

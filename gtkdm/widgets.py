@@ -1182,11 +1182,21 @@ class Shape(Gtk.Widget):
         self.queue_draw()
 
 
-class MenuList(Gtk.ListStore):
-    __gtype_name__ = 'MenuList'
+class Menu(Gtk.PopoverMenu):
+    __gtype_name__ = 'Menu'
+
+
+class MenuItem(Gtk.Bin):
+    __gtype_name__ = 'MenuItem'
+    channel = GObject.Property(type=str, default='', nick='Display')
+    label = GObject.Property(type=str, default='', nick='Label')
+    macros = GObject.Property(type=str, default='', nick='Macros')
 
     def __init__(self, *args, **kwargs):
-        super().__init__(str, str, str)
+        super().__init__(*args, **kwargs)
+        self.entry = Gtk.ModelButton(text=self.label)
+        self.bind_property('label', self.entry, 'text', GObject.BindingFlags.DEFAULT)
+        self.add(self.entry)
 
 
 #TODO
