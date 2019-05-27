@@ -691,6 +691,49 @@ class ChoiceButton(Gtk.EventBox):
         self.in_progress = False
 
 
+class ChoiceMenu(Gtk.Bin):
+    __gtype_name__ = 'ChoiceMenu'
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.pv = None
+        self.box = Gtk.ComboBoxText()
+        self.connect('realize', self.on_realize)
+        self.box.connect('changed', self.on_toggled)
+        self.in_progress = False
+        self.add(self.box)
+
+    def on_toggled(self, box):
+        if not self.in_progress:
+            active = self.box.get_active()
+            if active >= 0:
+                self.pv.put(active)
+
+    def on_realize(self, obj):
+        self.box.get_style_context().add_class('linked')
+        self.get_style_context().add_class('gtkdm')
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('active', self.on_active)
+            self.pv.connect('changed', self.on_change)
+
+    def on_active(self, pv, connected):
+        if connected:
+            self.box.remove_all()
+            for i, label in enumerate(pv.enum_strs):
+                self.box.append_text(label)
+            self.set_sensitive(True)
+        else:
+            self.set_sensitive(False)
+
+    def on_change(self, pv, value):
+        self.in_progress = True
+        self.box.set_active(value)
+        self.in_progress = False
+
+
 class Gauge(Gtk.Widget):
     __gtype_name__ = 'Gauge'
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -1182,21 +1225,73 @@ class Shape(Gtk.Widget):
         self.queue_draw()
 
 
-class Menu(Gtk.PopoverMenu):
-    __gtype_name__ = 'Menu'
+class MenuButton(Gtk.Bin):
+    __gtype_name__ = 'MenuButton'
+    label = GObject.Property(type=str, default='', nick='Label')
+    menu = GObject.Property(type=Gtk.Popover, nick='Display Menu')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.btn = Gtk.MenuButton(use_popover=True)
+        self.icon = Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.MENU)
+        self.text = Gtk.Label(label=self.label)
+        child = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        child.pack_start(self.icon, False, False, 0)
+        child.pack_start(self.text, True, True, 0)
+        self.btn.add(child)
+        self.add(self.btn)
+        self.bind_property('label', self.text, 'label', GObject.BindingFlags.DEFAULT)
+        self.bind_property('menu', self.btn, 'popover', GObject.BindingFlags.DEFAULT)
+        self.connect('realize', self.on_realize)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
 
 
-class MenuItem(Gtk.Bin):
-    __gtype_name__ = 'MenuItem'
-    channel = GObject.Property(type=str, default='', nick='Display')
+class DisplayMenu(Gtk.Popover):
+    __gtype_name__ = 'DisplayMenu'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_border_width(3)
+        self.connect('realize', self.on_realize)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+
+
+class DisplayMenuItem(Gtk.Bin):
+    __gtype_name__ = 'DisplayMenuItem'
+    file = GObject.Property(type=str, default='', nick='Display')
     label = GObject.Property(type=str, default='', nick='Label')
     macros = GObject.Property(type=str, default='', nick='Macros')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.entry = Gtk.ModelButton(text=self.label)
+        self.entry.set_size_request(100, -1)
         self.bind_property('label', self.entry, 'text', GObject.BindingFlags.DEFAULT)
         self.add(self.entry)
+        self.entry.connect('clicked', self.on_clicked)
+        self.show_all()
+        self.connect('realize', self.on_realize)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+
+    def on_clicked(self, obj):
+        self.show_display(self.file, self.macros)
+
+    def show_display(self, filename, macros=None):
+        tree = ET.parse(filename)
+        w = tree.find(".//object[@class='GtkWindow']")
+        w.set('id', 'related_display')
+        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode', method='xml')
+        builder = Gtk.Builder()
+        builder.add_from_string(data)
+        window = builder.get_object('related_display')
+        window.show_all()
+
 
 
 #TODO

@@ -1,5 +1,8 @@
 .gtkdm * {
-    font-size: 95%;
+}
+
+popover.gtkdm {
+    border-radius: 3px;
 }
 
 .gtkdm entry, .gtkdm button {
@@ -7,32 +10,39 @@
     border-radius: 3px;
 }
 
-.gtkdm .linked button:not(:first-child):not(:last-child) {
+.gtkdm entry {
+    font-size: 90%;
+}
+
+
+.gtkdm .linked button:not(:first-child):not(:last-child):not(.combo) {
     border-radius: 0px;
 }
-.gtkdm .linked.horizontal button:first-child {
+.gtkdm .linked.horizontal button:first-child:not(.combo) {
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
 }
 
-.gtkdm .linked.horizontal button:last-child {
+.gtkdm .linked.horizontal button:last-child:not(.combo) {
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
 }
-.gtkdm .linked.vertical button:last-child {
+.gtkdm .linked.vertical button:last-child:not(.combo) {
     border-top-right-radius: 0px;
     border-top-left-radius: 0px;
 }
 
-.gtkdm .linked.vertical button:first-child {
+.gtkdm .linked.vertical button:first-child:not(.combo) {
     border-bottom-right-radius: 0px;
     border-bottom-left-radius: 0px;
 }
-
 .gtkdm-inactive, .gtkdm-inactive * {
     opacity: 0.5;
 }
 
+.gtkdm ChoiceMenu button {
+    border-radius: 3px;
+}
 .gtkdm-warning {
     color: #CA9900;
 }

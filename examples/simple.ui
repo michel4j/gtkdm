@@ -3,20 +3,20 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="gtkplugin" version="0.0"/>
-  <object class="Menu" id="menu1">
+  <object class="DisplayMenu" id="displaymenu1">
     <property name="can_focus">False</property>
-    <property name="relative_to">menubutton1</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="MenuItem">
+          <object class="DisplayMenuItem">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="channel">test1.ui</property>
-            <property name="label">Test1</property>
+            <property name="file">simple.ui</property>
+            <property name="label">Test 1</property>
+            <property name="macros">device=test1</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -25,11 +25,12 @@
           </packing>
         </child>
         <child>
-          <object class="MenuItem">
+          <object class="DisplayMenuItem">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="channel">test2.ui</property>
-            <property name="label">Test2</property>
+            <property name="file">test2.ui</property>
+            <property name="label">Test 2</property>
+            <property name="macros">device=test2</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -38,11 +39,12 @@
           </packing>
         </child>
         <child>
-          <object class="MenuItem">
+          <object class="DisplayMenuItem">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="channel">test3.ui</property>
-            <property name="label">Test3</property>
+            <property name="file">test3.ui</property>
+            <property name="label">Test 3</property>
+            <property name="macros">device=test3</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -50,11 +52,32 @@
             <property name="position">2</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="DisplayMenuItem">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="file">test4.ui</property>
+            <property name="label">Test 4</property>
+            <property name="macros">device=test4</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
       </object>
-      <packing>
-        <property name="submenu">submenu0</property>
-        <property name="position">1</property>
-      </packing>
     </child>
   </object>
   <object class="GtkWindow" id="window1">
@@ -426,32 +449,30 @@
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText" id="comboboxtext1">
-            <property name="width_request">110</property>
-            <property name="height_request">34</property>
+          <object class="MenuButton">
+            <property name="width_request">80</property>
+            <property name="height_request">22</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="label">Extras</property>
+            <property name="menu">displaymenu1</property>
           </object>
           <packing>
-            <property name="x">388</property>
-            <property name="y">118</property>
+            <property name="x">380</property>
+            <property name="y">108</property>
           </packing>
         </child>
         <child>
-          <object class="GtkMenuButton" id="menubutton1">
-            <property name="width_request">100</property>
-            <property name="height_request">20</property>
+          <object class="ChoiceMenu">
+            <property name="width_request">121</property>
+            <property name="height_request">26</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="popover">menu1</property>
-            <child>
-              <placeholder/>
-            </child>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:GV1:positionM</property>
           </object>
           <packing>
-            <property name="x">736</property>
-            <property name="y">63</property>
+            <property name="x">382</property>
+            <property name="y">137</property>
           </packing>
         </child>
       </object>

@@ -22,6 +22,8 @@
                             icon-name="widget-gtk-button"/>
         <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="Choice Button"
                             icon-name="widget-gtk-stackswitcher"/>
+        <glade-widget-class name="ChoiceMenu" generic-name="choicemenu" title="Choice Menu"
+                            icon-name="widget-gtk-combobox"/>
         <glade-widget-class name="Gauge" generic-name="gauge" title="Gauge" icon-name="widget-gtk-frame"/>
 
         <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
@@ -43,40 +45,18 @@
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl"
                             icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
-        <glade-widget-class name="MenuItem" generic-name="menuitem" title="Menu Item" icon-name="widget-gtk-menubar"/>
-        <glade-widget-class toplevel="True" name="Menu" generic-name="menu" title="Menu">
-            <create-editable-function>glade_gtk_popover_menu_create_editable</create-editable-function>
-            <post-create-function>glade_gtk_popover_menu_post_create</post-create-function>
-            <add-child-function>glade_gtk_popover_menu_add_child</add-child-function>
-            <remove-child-function>glade_gtk_popover_menu_remove_child</remove-child-function>
-            <replace-child-function>glade_gtk_popover_menu_replace_child</replace-child-function>
-            <get-property-function>glade_gtk_popover_menu_get_property</get-property-function>
-            <set-property-function>glade_gtk_popover_menu_set_property</set-property-function>
-            <verify-function>glade_gtk_popover_menu_verify_property</verify-function>
-            <child-set-property-function>glade_gtk_popover_menu_set_child_property</child-set-property-function>
-            <child-get-property-function>glade_gtk_popover_menu_get_child_property</child-get-property-function>
-
+        <glade-widget-class name="DisplayMenuItem" generic-name="displaymenuitem" title="Display Menu Item" icon-name="widget-gtk-menuitem"/>
+        <glade-widget-class name="DisplayMenu" generic-name="displaymenu" title="Display Menu" icon-name="widget-gtk-popover"/>
+        <glade-widget-class name="MenuButton" generic-name="menubutton" title="Menu Button" icon-name="widget-gtk-menubutton">
             <properties>
-                <property id="visible" default="False"/>
-                <property id="visible-submenu" disabled="True"/>
-                <property id="pointing-to" disabled="True"/>
-                <property save="False" id="submenus" default="1" custom-layout="True" name="Number of submenus">
+                <property id="menu" custom-layout="True" name="Menu">
                     <parameter-spec>
-                        <type>GParamInt</type>
-                        <min>1</min>
+                        <type>GladeParamObjects</type>
+                        <value-type>DisplayMenu</value-type>
                     </parameter-spec>
-                    <tooltip>The number of submenus in the popover menu</tooltip>
-                </property>
-                <property save="False" id="current" default="0" custom-layout="True" name="Edit menu">
-                    <parameter-spec>
-                        <type>GParamInt</type>
-                        <min>0</min>
-                    </parameter-spec>
-                    <tooltip>Set the currently active submenu to edit, this property will not be saved</tooltip>
                 </property>
             </properties>
         </glade-widget-class>
-
     </glade-widget-classes>
 
     <glade-widget-group name="gtk-control" title="GtkDM Control">
@@ -91,13 +71,15 @@
         <glade-widget-class-ref name="TextLabel"/>
         <glade-widget-class-ref name="CommandButton"/>
         <glade-widget-class-ref name="ChoiceButton"/>
+        <glade-widget-class-ref name="ChoiceMenu"/>
         <glade-widget-class-ref name="Gauge"/>
         <glade-widget-class-ref name="Symbol"/>
         <glade-widget-class-ref name="CheckControl"/>
         <glade-widget-class-ref name="DisplayButton"/>
         <glade-widget-class-ref name="Shape"/>
-        <glade-widget-class-ref name="MenuItem"/>
-        <glade-widget-class-ref name="Menu"/>
+        <glade-widget-class-ref name="MenuButton"/>
+        <glade-widget-class-ref name="DisplayMenuItem"/>
+        <glade-widget-class-ref name="DisplayMenu"/>
     </glade-widget-group>
 
 </glade-catalog>
