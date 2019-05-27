@@ -16,7 +16,7 @@
             <property name="can_focus">False</property>
             <property name="file">simple.ui</property>
             <property name="label">Test 1</property>
-            <property name="macros">device=test1</property>
+            <property name="macros">device=michel</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -89,13 +89,13 @@
     <child>
       <object class="Layout">
         <property name="width_request">850</property>
-        <property name="height_request">500</property>
+        <property name="height_request">600</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
           <object class="GtkImage">
-            <property name="width_request">600</property>
-            <property name="height_request">200</property>
+            <property name="width_request">542</property>
+            <property name="height_request">179</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="pixbuf">header.png</property>
@@ -153,18 +153,18 @@
         </child>
         <child>
           <object class="Byte">
-            <property name="width_request">230</property>
-            <property name="height_request">36</property>
+            <property name="width_request">221</property>
+            <property name="height_request">62</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
-            <property name="columns">4</property>
+            <property name="columns">3</property>
             <property name="labels">Byte 0, Byte 1, Byte 2, Byte 3, Byte 4, Byte 5, Byte 6, Byte 7</property>
             <property name="size">12</property>
           </object>
           <packing>
-            <property name="x">595</property>
-            <property name="y">412</property>
+            <property name="x">424</property>
+            <property name="y">424</property>
           </packing>
         </child>
         <child>
@@ -277,7 +277,7 @@
             <property name="height_request">61</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="channel">michel:cathodeCurrentC</property>
+            <property name="channel">{device}:cathodeCurrentC</property>
             <property name="maximum">20</property>
           </object>
           <packing>
@@ -287,15 +287,15 @@
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">110</property>
+            <property name="width_request">118</property>
             <property name="height_request">49</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:autoC</property>
           </object>
           <packing>
-            <property name="x">731</property>
-            <property name="y">8</property>
+            <property name="x">713</property>
+            <property name="y">9</property>
           </packing>
         </child>
         <child>
@@ -408,7 +408,7 @@
             <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="display">embed.ui</property>
+            <property name="display">rows.ui</property>
             <property name="frame">displayframe1</property>
             <property name="label">Name</property>
           </object>
@@ -426,8 +426,8 @@
             <property name="shadow_type">out</property>
           </object>
           <packing>
-            <property name="x">611</property>
-            <property name="y">171</property>
+            <property name="x">614</property>
+            <property name="y">170</property>
           </packing>
         </child>
         <child>
@@ -473,6 +473,36 @@
           <packing>
             <property name="x">382</property>
             <property name="y">137</property>
+          </packing>
+        </child>
+        <child>
+          <object class="TweakControl">
+            <property name="width_request">122</property>
+            <property name="height_request">29</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:cathodeCurrentC</property>
+          </object>
+          <packing>
+            <property name="x">219</property>
+            <property name="y">119</property>
+          </packing>
+        </child>
+        <child>
+          <object class="MessageLog">
+            <property name="width_request">813</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="alarm">True</property>
+            <property name="channel">michel:OP:autoMsg</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="x">16</property>
+            <property name="y">507</property>
           </packing>
         </child>
       </object>

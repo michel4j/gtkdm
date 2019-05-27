@@ -1,17 +1,23 @@
 .gtkdm * {
+    /*font-size: 11.5px;*/
 }
 
 popover.gtkdm {
     border-radius: 3px;
 }
 
+
 .gtkdm entry, .gtkdm button {
     min-height: 14px;
     border-radius: 3px;
 }
-
-.gtkdm entry {
-    font-size: 90%;
+.gtkdm spinbutton {
+    min-height: 14px;
+    border-radius: 3px;
+}
+.gtkdm treeview {
+    font-size: 10px;
+    margin: 2px;
 }
 
 

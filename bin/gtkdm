@@ -18,12 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--macros', type=str, help='Macros', required=False)
     args = parser.parse_args()
 
-    builder = Gtk.Builder()
-    builder.add_from_file(args.display)
-
-    #print(builder.get_objects())
-    window = builder.get_object("window1")
-    window.connect('destroy', lambda x: Gtk.main_quit())
-    window.show_all()
+    widgets.Manager.reset(args.macros)
+    widgets.Manager.show_display(args.display, main=True)
 
     Gtk.main()

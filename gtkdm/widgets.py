@@ -1,16 +1,21 @@
-from math import atan2, pi, cos, sin, ceil
-import textwrap
-import os
 import json
-import gi
+import os
+import textwrap
 import zipfile
+import hashlib
+from datetime import datetime
+from math import atan2, pi, cos, sin, ceil
+
+import gi
+
 gi.require_version('Pango', '1.0')
 gi.require_version('PangoCairo', '1.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, Pango, GLib, PangoCairo
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, Pango
 import gepics
 import xml.etree.ElementTree as ET
 
+from . import utils
 
 _SYMBOL_REGISTRY = {
 
@@ -29,6 +34,70 @@ COLORS = {
     'W': '#ffffff',
     'M': '#88419d'
 }
+
+
+class DisplayManager(object):
+    """Manages all displays"""
+
+    def __init__(self):
+        self.macros = {}
+        self.registry = {}
+
+    def reset(self, macro_spec):
+        self.macros = utils.parse_macro_spec(macro_spec)
+
+    def show_display(self, filename, macros_spec="", main=False, multiple=False):
+        tree = ET.parse(filename)
+        w = tree.find(".//object[@class='GtkWindow']")
+        w.set('id', 'related_display')
+        new_macros = {}
+        new_macros.update(self.macros)
+        new_macros.update(utils.parse_macro_spec(macros_spec))
+        unique_text = ('{}{}'.format(filename, utils.compress_macro(new_macros))).encode('utf-8')
+        key = hashlib.sha256(unique_text).hexdigest()
+        if multiple or key not in self.registry:
+            try:
+                utils.update_properties(tree, new_macros)
+            except KeyError as e:
+                print('Macro "{}" not specified for display "{}"'.format(e, filename))
+            data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode',
+                                                                            method='xml')
+            builder = Gtk.Builder()
+            builder.add_from_string(data)
+            window = builder.get_object('related_display')
+            if main:
+                window.connect('destroy', lambda x: Gtk.main_quit())
+            elif not multiple:
+                self.registry[key] = window
+                window.connect('destroy', lambda x: self.registry.pop(key))
+            window.show_all()
+        else:
+            window = self.registry[key]
+            window.present()
+
+    def embed_display(self, frame, filename, macros_spec=""):
+        tree = ET.parse(filename)
+        w = tree.find(".//object[@class='GtkWindow']/child/object[1]")
+        w.set('id', 'embedded_display')
+        new_macros = {}
+        new_macros.update(self.macros)
+        new_macros.update(utils.parse_macro_spec(macros_spec))
+        try:
+            utils.update_properties(tree, new_macros)
+        except KeyError as e:
+            print('Display "{}" Missing Macro: {}'.format(filename, e))
+        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode',
+                                                                        method='xml')
+        builder = Gtk.Builder()
+        builder.add_objects_from_string(data, ['embedded_display'])
+        display = builder.get_object('embedded_display')
+        child = frame.get_child()
+        if child:
+            child.destroy()
+        frame.add(display)
+
+
+Manager = DisplayManager()
 
 
 class ColorSequence(object):
@@ -50,10 +119,12 @@ class ColorSequence(object):
         col.parse(spec)
         return col
 
+
 def alpha(rgba, a):
     col = rgba.copy()
     col.alpha = a
     return col
+
 
 def pix(v):
     """Round to neareast 0.5 for cairo drawing"""
@@ -62,12 +133,11 @@ def pix(v):
 
 
 def radians(a):
-    return (a*pi/180)
+    return (a * pi / 180)
 
 
 def ticks(lo, hi, step):
-    return [i*step+ceil(float(lo)/step)*step for i in range(1+int(ceil((float(hi)-lo)/step)))]
-
+    return [i * step + ceil(float(lo) / step) * step for i in range(1 + int(ceil((float(hi) - lo) / step)))]
 
 
 Direction = Gdk.WindowEdge
@@ -100,24 +170,11 @@ class DisplayFrame(Gtk.EventBox):
         self.bind_property('label', self.box, 'label', GObject.BindingFlags.DEFAULT)
         self.bind_property('shadow-type', self.box, 'shadow-type', GObject.BindingFlags.DEFAULT)
 
-    def show_display(self, filename, macros=None):
-        tree = ET.parse(filename)
-        w = tree.find(".//object[@class='GtkWindow']/child/object[1]")
-        w.set('id', 'embedded_display')
-        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode', method='xml')
-        builder = Gtk.Builder()
-        builder.add_objects_from_string(data, ['embedded_display'])
-        display = builder.get_object('embedded_display')
-        child = self.frame.get_child()
-        if child:
-            child.destroy()
-        self.frame.add(display)
-
 
 class TextMonitor(Gtk.EventBox):
     __gtype_name__ = 'TextMonitor'
 
-    channel =  GObject.Property(type=str, default='', nick='PV Name')
+    channel = GObject.Property(type=str, default='', nick='PV Name')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
@@ -272,6 +329,7 @@ class Byte(Gtk.Widget):
     __gtype_name__ = 'Byte'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     offset = GObject.Property(type=int, minimum=0, maximum=4, default=0, nick='Byte Offset')
+    count = GObject.Property(type=int, minimum=1, maximum=8, default=8, nick='Byte Count')
     big_endian = GObject.Property(type=bool, default=False, nick='Big-Endian')
     labels = GObject.Property(type=str, default='', nick='Labels')
     colors = GObject.Property(type=str, default='AG', nick='Colors')
@@ -281,8 +339,8 @@ class Byte(Gtk.Widget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._view_bits = ['0'] * 8
-        self._view_labels = [''] * 8
+        self._view_bits = ['0'] * self.count
+        self._view_labels = [''] * self.count
         self.set_size_request(196, 40)
         self.theme = {
             'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
@@ -290,7 +348,7 @@ class Byte(Gtk.Widget):
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
-        stride = ceil(8 / self.columns)
+        stride = ceil(self.count / self.columns)
         col_width = allocation.width / self.columns
 
         # draw boxes
@@ -299,7 +357,7 @@ class Byte(Gtk.Widget):
 
         cr.set_line_width(0.75)
 
-        for i in range(8):
+        for i in range(self.count):
             x = pix((i // stride) * col_width + 4)
             y = pix(4 + (i % stride) * (self.size + 5))
             cr.rectangle(x, y, self.size, self.size)
@@ -312,7 +370,7 @@ class Byte(Gtk.Widget):
             cr.set_source_rgba(*self.theme['label'])
             label = self._view_labels[i]
             xb, yb, w, h = cr.text_extents(label)[:4]
-            cr.move_to(x + self.size + 4.5, y + self.size/2 - yb - h/2)
+            cr.move_to(x + self.size + 4.5, y + self.size / 2 - yb - h / 2)
             cr.show_text(label)
             cr.stroke()
 
@@ -343,14 +401,14 @@ class Byte(Gtk.Widget):
             self.pv.connect('active', self.on_active)
 
         labels = [v.strip() for v in self.labels.split(',')]
-        self._view_labels = labels + (8 - len(labels)) * ['']
+        self._view_labels = labels + (self.count - len(labels)) * ['']
 
     def on_change(self, pv, value):
-        bits = list(bin(value)[2:].zfill(8))
+        bits = list(bin(value)[2:].zfill(64))
         if self.big_endian:
-            self._view_bits = bits
+            self._view_bits = bits[self.offset:][:self.count]
         else:
-            self._view_bits = bits[::-1]
+            self._view_bits = bits[::-1][self.offset:][:self.count]
         self.queue_draw()
 
     def on_alarm(self, pv, alarm):
@@ -408,7 +466,7 @@ class Indicator(Gtk.Widget):
         cr.stroke()
 
         xb, yb, w, h = cr.text_extents(self.label)[:4]
-        cr.move_to(x + self.size + 4, y + self.size/2 - yb - h/2)
+        cr.move_to(x + self.size + 4, y + self.size / 2 - yb - h / 2)
         cr.set_source_rgba(*self.theme['label'])
         cr.show_text(self.label)
 
@@ -474,7 +532,7 @@ class Indicator(Gtk.Widget):
         self.queue_draw()
 
 
-class ScaleControl(Gtk.EventBox):
+class ScaleControl(Gtk.Bin):
     __gtype_name__ = 'ScaleControl'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     minimum = GObject.Property(type=float, default=0., nick='Minimum')
@@ -495,10 +553,12 @@ class ScaleControl(Gtk.EventBox):
         self.add(self.scale)
         self.bind_property('orientation', self.scale, 'orientation', GObject.BindingFlags.DEFAULT)
         self.bind_property('inverted', self.scale, 'inverted', GObject.BindingFlags.DEFAULT)
+        self.bind_property('maximum', self.adjustment, 'upper', GObject.BindingFlags.DEFAULT)
+        self.bind_property('minimum', self.adjustment, 'lower', GObject.BindingFlags.DEFAULT)
+        self.bind_property('increment', self.adjustment, 'step-increment', GObject.BindingFlags.DEFAULT)
 
     def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
-        self.adjustment.configure(0.0, self.minimum, self.maximum, self.increment, 0, 0)
         position = Gtk.PositionType.TOP if self.orientation == Gtk.Orientation.HORIZONTAL else Gtk.PositionType.LEFT
         value_pos = Gtk.PositionType.BOTTOM if self.orientation == Gtk.Orientation.HORIZONTAL else Gtk.PositionType.RIGHT
         self.scale.props.value_pos = value_pos
@@ -534,6 +594,70 @@ class ScaleControl(Gtk.EventBox):
     def on_active(self, pv, connected):
         if connected:
             self.pv.get_with_metadata()
+            self.set_sensitive(True)
+        else:
+            self.set_sensitive(False)
+
+    def on_value_set(self, obj):
+        if not self.in_progress:
+            self.pv.put(self.adjustment.props.value)
+
+
+class TweakControl(Gtk.Bin):
+    __gtype_name__ = 'TweakControl'
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    minimum = GObject.Property(type=float, default=0., nick='Minimum')
+    maximum = GObject.Property(type=float, default=100., nick='Maximum')
+    increment = GObject.Property(type=float, default=1., nick='Increment')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    use_limits = GObject.Property(type=bool, default=False, nick='Use PV Limits')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.pv = None
+        self.in_progress = False
+        self.adjustment = Gtk.Adjustment(50., 0.0, 100.0, 1.0, .0, 0)
+        self.tweak = Gtk.SpinButton()
+        self.tweak.set_adjustment(self.adjustment)
+        self.connect('realize', self.on_realize)
+        self.add(self.tweak)
+        self.bind_property('maximum', self.adjustment, 'upper', GObject.BindingFlags.DEFAULT)
+        self.bind_property('minimum', self.adjustment, 'lower', GObject.BindingFlags.DEFAULT)
+        self.bind_property('increment', self.adjustment, 'step-increment', GObject.BindingFlags.DEFAULT)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('alarm', self.on_alarm)
+            self.pv.connect('active', self.on_active)
+            self.adjustment.connect('value-changed', self.on_value_set)
+
+    def on_change(self, pv, value):
+        self.in_progress = True
+        self.adjustment.set_value(value)
+        self.in_progress = False
+
+    def on_alarm(self, pv, alarm):
+        if self.alarm:
+            if alarm == gepics.Alarm.MAJOR:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                self.get_style_context().add_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+            else:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+
+    def on_active(self, pv, connected):
+        if connected:
+            if self.use_limits:
+                meta = self.pv.get_ctrlvars()
+                self.props.minimum = meta['lower_ctrl_limit']
+                self.props.maximum = meta['upper_ctrl_limit']
             self.set_sensitive(True)
         else:
             self.set_sensitive(False)
@@ -647,7 +771,8 @@ class ChoiceButton(Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.in_progress = False
         self.bind_property('orientation', self.box, 'orientation', GObject.BindingFlags.DEFAULT)
-        self.buttons = [Gtk.ToggleButton(label='Choice 1'), Gtk.ToggleButton(label='Choice 2'), Gtk.ToggleButton(label='Choice 3')]
+        self.buttons = [Gtk.ToggleButton(label='Choice 1'), Gtk.ToggleButton(label='Choice 2'),
+                        Gtk.ToggleButton(label='Choice 3')]
         for i, btn in enumerate(self.buttons):
             self.box.pack_start(btn, False, False, 0)
             btn.connect('toggled', self.on_toggled, i)
@@ -677,7 +802,7 @@ class ChoiceButton(Gtk.EventBox):
                     self.buttons.append(btn)
                     self.box.pack_start(btn, False, False, 0)
 
-            for btn in self.buttons[i+1:]:
+            for btn in self.buttons[i + 1:]:
                 btn.destroy()
 
             self.set_sensitive(True)
@@ -687,7 +812,7 @@ class ChoiceButton(Gtk.EventBox):
     def on_change(self, pv, value):
         self.in_progress = True
         for i, btn in enumerate(self.buttons):
-            btn.set_active(i==value)
+            btn.set_active(i == value)
         self.in_progress = False
 
 
@@ -756,9 +881,9 @@ class Gauge(Gtk.Widget):
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
-        x = allocation.width/2
-        y = allocation.height/2
-        r = 4*x/6
+        x = allocation.width / 2
+        y = allocation.height / 2
+        r = 4 * x / 6
 
         style = self.get_style_context()
         font_desc = style.get_font(style.get_state())
@@ -766,34 +891,34 @@ class Gauge(Gtk.Widget):
         cr.set_source_rgba(*color)
         cr.set_line_width(0.75)
 
-        minimum = (self.minimum//self.step)*self.step
-        maximum = ceil(self.maximum//self.step)*self.step
+        minimum = (self.minimum // self.step) * self.step
+        maximum = ceil(self.maximum // self.step) * self.step
 
-        half_angle = self.angle/2
+        half_angle = self.angle / 2
         start_angle = radians(270 - half_angle)
         end_angle = radians(270 + half_angle)
-        offset = r*sin(90-radians(half_angle))/2
-        angle_scale = (end_angle - start_angle)/(maximum - minimum)
+        offset = r * sin(90 - radians(half_angle)) / 2
+        angle_scale = (end_angle - start_angle) / (maximum - minimum)
         tick_width = 12
         y += offset
         cr.arc(x, y, r, start_angle, end_angle)
         cr.stroke()
 
         rt = r + tick_width
-        r1 = r - tick_width/2
-        r0 = r + tick_width/2
+        r1 = r - tick_width / 2
+        r0 = r + tick_width / 2
 
         major = ticks(minimum, maximum, self.step)
-        minor = ticks(minimum, maximum, self.step/(self.ticks+1))
+        minor = ticks(minimum, maximum, self.step / (self.ticks + 1))
 
         # levels
         cr.set_line_width(2)
-        rl = 2*r/3
+        rl = 2 * r / 3
         if self.levels and self.ctrlvars:
-            lolo = self.ctrlvars['lower_alarm_limit']*angle_scale + start_angle
-            lo = self.ctrlvars['lower_warning_limit']*angle_scale + start_angle
-            hi = self.ctrlvars['upper_warning_limit']*angle_scale + start_angle
-            hihi = self.ctrlvars['upper_alarm_limit']*angle_scale + start_angle
+            lolo = self.ctrlvars['lower_alarm_limit'] * angle_scale + start_angle
+            lo = self.ctrlvars['lower_warning_limit'] * angle_scale + start_angle
+            hi = self.ctrlvars['upper_warning_limit'] * angle_scale + start_angle
+            hihi = self.ctrlvars['upper_alarm_limit'] * angle_scale + start_angle
 
             if lolo > start_angle:
                 cr.set_source_rgba(*self.palette(2, alpha=0.6))
@@ -818,9 +943,9 @@ class Gauge(Gtk.Widget):
 
         # ticks
         cr.set_line_width(0.75)
-        for tick in set(minor+major):
+        for tick in set(minor + major):
             is_major = tick in major
-            tick_angle = angle_scale*(tick-minimum) + start_angle
+            tick_angle = angle_scale * (tick - minimum) + start_angle
             rt2 = r0 if is_major else r
             tx1 = x + r1 * cos(tick_angle)
             ty1 = y + r1 * sin(tick_angle)
@@ -833,7 +958,7 @@ class Gauge(Gtk.Widget):
                 ty3 = y + rt * sin(tick_angle)
                 label = '{:g}'.format(tick)
                 xb, yb, tw, th = cr.text_extents(label)[:4]
-                cr.move_to(tx3 - xb - tw/2, ty3 - yb - th / 2)
+                cr.move_to(tx3 - xb - tw / 2, ty3 - yb - th / 2)
                 cr.show_text(label)
             cr.move_to(tx2, ty2)
             cr.line_to(tx1, ty1)
@@ -841,19 +966,19 @@ class Gauge(Gtk.Widget):
 
         # Units
         if self.units:
-            units_angle = (end_angle + start_angle)/2
-            ur = r/3
+            units_angle = (end_angle + start_angle) / 2
+            ur = r / 3
             ux2 = x + ur * cos(units_angle)
             uy2 = y + ur * sin(units_angle)
             xb, yb, tw, th = cr.text_extents(self.units_label)[:4]
             cr.set_source_rgba(*color)
-            cr.move_to(ux2-xb - tw/2, uy2-yb-th/2)
+            cr.move_to(ux2 - xb - tw / 2, uy2 - yb - th / 2)
             cr.show_text(self.units_label)
 
         # needle
         cr.set_line_width(0.5)
-        value_angle = angle_scale*(self.value - minimum) + start_angle
-        vr = 5*r/6
+        value_angle = angle_scale * (self.value - minimum) + start_angle
+        vr = 5 * r / 6
         vx2 = x + vr * cos(value_angle)
         vy2 = y + vr * sin(value_angle)
         cr.set_source_rgba(*alpha(color, 0.5))
@@ -863,15 +988,15 @@ class Gauge(Gtk.Widget):
         cr.fill_preserve()
         cr.stroke()
 
-        #label
+        # label
         if self.label:
             xb, yb, tw, th = cr.text_extents(self.label)[:4]
-            lines = textwrap.wrap(self.label, int(len(self.label)*0.6*allocation.width/tw))
+            lines = textwrap.wrap(self.label, int(len(self.label) * 0.6 * allocation.width / tw))
             cr.set_source_rgba(*color)
             yl = max(y, y + rt * sin(start_angle))
             for i, line in enumerate(lines):
                 xb, yb, tw, th = cr.text_extents(line)[:4]
-                cr.move_to(x - xb - tw/2, yl + (i + 1.2)*th)
+                cr.move_to(x - xb - tw / 2, yl + (i + 1.2) * th)
                 cr.show_text(line)
 
     def do_realize(self):
@@ -965,16 +1090,16 @@ class Symbol(Gtk.Widget):
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
-        x = allocation.width/2
-        y = allocation.height/2
+        x = allocation.width / 2
+        y = allocation.height / 2
         if self.image:
-            scale = min(allocation.width/self.frames.width, allocation.height/self.frames.height)
+            scale = min(allocation.width / self.frames.width, allocation.height / self.frames.height)
             cr.save()
             cr.scale(scale, scale)
             Gdk.cairo_set_source_pixbuf(
                 cr, self.image,
-                x - self.image.get_width()*scale/2,
-                y - self.image.get_height()*scale/2
+                x - self.image.get_width() * scale / 2,
+                y - self.image.get_height() * scale / 2
             )
             cr.paint()
             cr.restore()
@@ -984,7 +1109,7 @@ class Symbol(Gtk.Widget):
             color = style.get_color(style.get_state())
             cr.set_source_rgba(*color)
             xb, yb, w, h = cr.text_extents(')(')[:4]
-            cr.move_to(x - xb - w/2, y - yb - h/2)
+            cr.move_to(x - xb - w / 2, y - yb - h / 2)
             cr.show_text(')(')
 
     def do_realize(self):
@@ -1099,6 +1224,7 @@ class DisplayButton(Gtk.EventBox):
     display = GObject.Property(type=str, default='', nick='Display File')
     macros = GObject.Property(type=str, default='', nick='Macro')
     frame = GObject.Property(type=DisplayFrame, nick='Target Frame')
+    multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1112,8 +1238,10 @@ class DisplayButton(Gtk.EventBox):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, button):
-        if self.frame and self.display:
-            self.frame.show_display(self.display, macros=self.macros)
+        if self.frame:
+            Manager.embed_display(self.frame, self.display, macros_spec=self.macros)
+        else:
+            Manager.show_display(self.display, macros_spec=self.macros, multiple=self.multiple)
 
 
 class Shape(Gtk.Widget):
@@ -1142,15 +1270,15 @@ class Shape(Gtk.Widget):
 
         cr.set_line_width(0.75)
 
-        width = min(allocation.width-2, allocation.height-2)
-        cr.set_font_size(min(2*width//5, 12))
-        x = pix(allocation.width/2)
-        y = pix(allocation.height/2)
+        width = min(allocation.width - 2, allocation.height - 2)
+        cr.set_font_size(min(2 * width // 5, 12))
+        x = pix(allocation.width / 2)
+        y = pix(allocation.height / 2)
 
         if self.oval:
-            cr.arc(x, y, width/2, 0, 2*pi)
+            cr.arc(x, y, width / 2, 0, 2 * pi)
         else:
-            cr.rectangle(x-width//2, y-width//2, width, width)
+            cr.rectangle(x - width // 2, y - width // 2, width, width)
         if self.filled:
             color = self.palette(int(self.value))
             cr.set_source_rgba(*color)
@@ -1159,7 +1287,7 @@ class Shape(Gtk.Widget):
         cr.stroke()
         if self.labelled:
             xb, yb, w, h = cr.text_extents(self.label)[:4]
-            cr.move_to(x - xb - w/2, y - yb -h/2)
+            cr.move_to(x - xb - w / 2, y - yb - h / 2)
             cr.show_text(self.label)
             cr.stroke()
 
@@ -1265,6 +1393,7 @@ class DisplayMenuItem(Gtk.Bin):
     file = GObject.Property(type=str, default='', nick='Display')
     label = GObject.Property(type=str, default='', nick='Label')
     macros = GObject.Property(type=str, default='', nick='Macros')
+    multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1280,21 +1409,80 @@ class DisplayMenuItem(Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, obj):
-        self.show_display(self.file, self.macros)
-
-    def show_display(self, filename, macros=None):
-        tree = ET.parse(filename)
-        w = tree.find(".//object[@class='GtkWindow']")
-        w.set('id', 'related_display')
-        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode', method='xml')
-        builder = Gtk.Builder()
-        builder.add_from_string(data)
-        window = builder.get_object('related_display')
-        window.show_all()
+        Manager.show_display(self.file, macros_spec=self.macros, multiple=self.multiple)
 
 
+class MessageLog(Gtk.Bin):
+    __gtype_name__ = 'MessageLog'
 
-#TODO
-# Toggle Button
-# Spin Button
-# Combo Box
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    buffer_size = GObject.Property(type=int, default=5000, nick='Buffer Size')
+    font_size = GObject.Property(type=float, minimum=5.0, default=9.0, maximum=20.0, nick='Font Size')
+    show_time = GObject.Property(type=bool, default=True, nick='Show Time')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.view = Gtk.TextView()
+        self.buffer = Gtk.TextBuffer()
+        self.sw = Gtk.ScrolledWindow()
+        self.sw.set_shadow_type(Gtk.ShadowType.IN)
+        self.sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.ALWAYS)
+        self.view.set_buffer(self.buffer)
+        self.view.set_editable = False
+        self.view.set_border_width(3)
+        font = Pango.FontDescription('monospace {}'.format(self.font_size))
+        self.view.modify_font(font)
+        self.wrap_mode = Gtk.WrapMode.WORD
+        self.sw.add(self.view)
+        self.add(self.sw)
+        self.tags = {
+            gepics.Alarm.MAJOR : self.buffer.create_tag(foreground='Red', wrap_mode=Gtk.WrapMode.WORD),
+            gepics.Alarm.MINOR: self.buffer.create_tag(foreground='Orange', wrap_mode=Gtk.WrapMode.WORD),
+            gepics.Alarm.NORMAL: self.buffer.create_tag(foreground='Black', wrap_mode=Gtk.WrapMode.WORD),
+            gepics.Alarm.INVALID: self.buffer.create_tag(foreground='Gray', wrap_mode=Gtk.WrapMode.WORD),
+        }
+        self.active_tag = self.tags[gepics.Alarm.NORMAL]
+        self.connect('realize', self.on_realize)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+
+        pv_name = self.channel
+        if pv_name:
+            self.pv = gepics.PV(pv_name)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('alarm', self.on_alarm)
+            self.pv.connect('active', self.on_active)
+
+    def on_change(self, pv, value):
+        lines = self.buffer.get_line_count()
+        if lines > self.buffer_size:
+            start_iter = self.buffer.get_start_iter()
+            end_iter = self.buffer.get_start_iter()
+            end_iter.forward_lines(10)
+            self.buffer.delete(start_iter, end_iter)
+
+        _iter = self.buffer.get_end_iter()
+        if self.show_time:
+            text = "{} - {}\n".format(datetime.now().strftime("%m/%d %H:%M:%S"), value)
+        else:
+            text = "{}\n".format(value)
+        self.buffer.insert_with_tags(_iter, text, self.active_tag)
+        _iter = self.buffer.get_end_iter()
+
+        adj = self.sw.get_vadjustment()
+        adj.set_value(adj.get_upper() - adj.get_page_size())
+
+    def on_alarm(self, pv, alarm):
+        if self.alarm:
+            self.active_tag = self.tags[alarm]
+
+    def on_active(self, pv, connected):
+        if connected:
+            self.pv.get_with_metadata()
+            self.get_style_context().remove_class('gtkdm-inactive')
+            self.set_sensitive(True)
+        else:
+            self.get_style_context().add_class('gtkdm-inactive')
+            self.set_sensitive(False)
