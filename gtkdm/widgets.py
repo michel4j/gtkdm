@@ -46,8 +46,9 @@ class DisplayManager(object):
     def reset(self, macro_spec):
         self.macros = utils.parse_macro_spec(macro_spec)
 
-    def show_display(self, filename, macros_spec="", main=False, multiple=False):
-        tree = ET.parse(filename)
+    def show_display(self, path, macros_spec="", main=False, multiple=False):
+        directory, filename = os.path.split(os.path.abspath(path))
+        tree = ET.parse(path)
         w = tree.find(".//object[@class='GtkWindow']")
         w.set('id', 'related_display')
         new_macros = {}
@@ -60,23 +61,27 @@ class DisplayManager(object):
                 utils.update_properties(tree, new_macros)
             except KeyError as e:
                 print('Macro "{}" not specified for display "{}"'.format(e, filename))
-            data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode',
-                                                                            method='xml')
-            builder = Gtk.Builder()
-            builder.add_from_string(data)
-            window = builder.get_object('related_display')
-            if main:
-                window.connect('destroy', lambda x: Gtk.main_quit())
-            elif not multiple:
-                self.registry[key] = window
-                window.connect('destroy', lambda x: self.registry.pop(key))
-            window.show_all()
+            data = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                ET.tostring(tree.getroot(), encoding='unicode',method='xml')
+            )
+            with utils.working_dir(directory):
+                builder = Gtk.Builder()
+                builder.add_from_string(data)
+                window = builder.get_object('related_display')
+                if main:
+                    window.connect('destroy', lambda x: Gtk.main_quit())
+                elif not multiple:
+                    self.registry[key] = window
+                    window.connect('destroy', lambda x: self.registry.pop(key))
+                window.show_all()
         else:
             window = self.registry[key]
             window.present()
 
-    def embed_display(self, frame, filename, macros_spec=""):
-        tree = ET.parse(filename)
+    def embed_display(self, frame, path, macros_spec=""):
+        directory, filename = os.path.split(os.path.abspath(path))
+        tree = ET.parse(path)
         w = tree.find(".//object[@class='GtkWindow']/child/object[1]")
         w.set('id', 'embedded_display')
         new_macros = {}
@@ -86,15 +91,18 @@ class DisplayManager(object):
             utils.update_properties(tree, new_macros)
         except KeyError as e:
             print('Display "{}" Missing Macro: {}'.format(filename, e))
-        data = '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(tree.getroot(), encoding='unicode',
-                                                                        method='xml')
-        builder = Gtk.Builder()
-        builder.add_objects_from_string(data, ['embedded_display'])
-        display = builder.get_object('embedded_display')
-        child = frame.get_child()
-        if child:
-            child.destroy()
-        frame.add(display)
+        data = (
+                '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                ET.tostring(tree.getroot(), encoding='unicode', method='xml')
+        )
+        with utils.working_dir(directory):
+            builder = Gtk.Builder()
+            builder.add_objects_from_string(data, ['embedded_display'])
+            display = builder.get_object('embedded_display')
+            child = frame.get_child()
+            if child:
+                child.destroy()
+            frame.add(display)
 
 
 Manager = DisplayManager()

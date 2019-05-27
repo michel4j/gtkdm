@@ -1,5 +1,6 @@
 import re
-
+import contextlib
+import os
 
 def parse_macro_spec(macro_spec):
     """
@@ -30,3 +31,17 @@ def compress_macro(macros):
     """
 
     return ",".join(["{}={}".format(key, value) for key, value in sorted(macros.items())])
+
+
+@contextlib.contextmanager
+def working_dir(newdir):
+    """
+    Context Manager for Temporarily switch current working directory
+    :param newdir:  New Working directory
+    """
+    curdir = os.getcwd()
+    try:
+        os.chdir(newdir)
+        yield
+    finally:
+        os.chdir(curdir)

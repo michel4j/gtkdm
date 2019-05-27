@@ -94,14 +94,15 @@
         <property name="can_focus">False</property>
         <child>
           <object class="GtkImage">
-            <property name="width_request">800</property>
+            <property name="width_request">589</property>
+            <property name="height_request">95</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="pixbuf">drawing.svg</property>
           </object>
           <packing>
-            <property name="x">14</property>
-            <property name="y">252</property>
+            <property name="x">39</property>
+            <property name="y">259</property>
           </packing>
         </child>
         <child>
@@ -404,16 +405,16 @@
         <child>
           <object class="DisplayButton">
             <property name="width_request">66</property>
-            <property name="height_request">25</property>
+            <property name="height_request">27</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="display">rows.ui</property>
             <property name="frame">displayframe1</property>
-            <property name="label">Name</property>
+            <property name="label">VFM</property>
           </object>
           <packing>
-            <property name="x">12</property>
-            <property name="y">427</property>
+            <property name="x">56</property>
+            <property name="y">323</property>
           </packing>
         </child>
         <child>
@@ -499,6 +500,21 @@
           <packing>
             <property name="x">16</property>
             <property name="y">507</property>
+          </packing>
+        </child>
+        <child>
+          <object class="DisplayButton">
+            <property name="width_request">65</property>
+            <property name="height_request">27</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="display">embed.ui</property>
+            <property name="frame">displayframe1</property>
+            <property name="label">DCM</property>
+          </object>
+          <packing>
+            <property name="x">333</property>
+            <property name="y">263</property>
           </packing>
         </child>
       </object>
