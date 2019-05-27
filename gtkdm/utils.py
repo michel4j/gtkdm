@@ -1,6 +1,7 @@
-import re
 import contextlib
 import os
+import re
+
 
 def parse_macro_spec(macro_spec):
     """

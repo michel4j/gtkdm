@@ -17,10 +17,6 @@ import xml.etree.ElementTree as ET
 
 from . import utils
 
-_SYMBOL_REGISTRY = {
-
-}
-
 COLORS = {
     'R': '#ef2929',
     'G': '#73d216',
@@ -48,7 +44,12 @@ class DisplayManager(object):
 
     def show_display(self, path, macros_spec="", main=False, multiple=False):
         directory, filename = os.path.split(os.path.abspath(path))
-        tree = ET.parse(path)
+        try:
+            tree = ET.parse(path)
+        except FileNotFoundError as e:
+            print('Display File {} not found'.format(path))
+            return
+
         w = tree.find(".//object[@class='GtkWindow']")
         w.set('id', 'related_display')
         new_macros = {}
@@ -60,7 +61,7 @@ class DisplayManager(object):
             try:
                 utils.update_properties(tree, new_macros)
             except KeyError as e:
-                print('Macro "{}" not specified for display "{}"'.format(e, filename))
+                print('Macro {} not specified for display "{}"'.format(e, filename))
             data = (
                 '<?xml version="1.0" encoding="UTF-8"?>\n' +
                 ET.tostring(tree.getroot(), encoding='unicode',method='xml')
@@ -81,7 +82,12 @@ class DisplayManager(object):
 
     def embed_display(self, frame, path, macros_spec=""):
         directory, filename = os.path.split(os.path.abspath(path))
-        tree = ET.parse(path)
+        try:
+            tree = ET.parse(path)
+        except FileNotFoundError as e:
+            print('Display File {} not found'.format(path))
+            return
+
         w = tree.find(".//object[@class='GtkWindow']/child/object[1]")
         w.set('id', 'embedded_display')
         new_macros = {}
@@ -90,7 +96,7 @@ class DisplayManager(object):
         try:
             utils.update_properties(tree, new_macros)
         except KeyError as e:
-            print('Display "{}" Missing Macro: {}'.format(filename, e))
+            print('Macro {} not specified for display "{}"'.format(e, filename))
         data = (
                 '<?xml version="1.0" encoding="UTF-8"?>\n' +
                 ET.tostring(tree.getroot(), encoding='unicode', method='xml')
@@ -353,6 +359,7 @@ class Byte(Gtk.Widget):
         self.theme = {
             'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
         }
+        self.set_sensitive(False)
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -460,6 +467,7 @@ class Indicator(Gtk.Widget):
             'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
             'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
         }
+        self.set_sensitive(False)
 
     def do_draw(self, cr):
         cr.set_line_width(0.75)
@@ -564,6 +572,7 @@ class ScaleControl(Gtk.Bin):
         self.bind_property('maximum', self.adjustment, 'upper', GObject.BindingFlags.DEFAULT)
         self.bind_property('minimum', self.adjustment, 'lower', GObject.BindingFlags.DEFAULT)
         self.bind_property('increment', self.adjustment, 'step-increment', GObject.BindingFlags.DEFAULT)
+        self.set_sensitive(False)
 
     def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
@@ -1116,9 +1125,8 @@ class Symbol(Gtk.Widget):
             style = self.get_style_context()
             color = style.get_color(style.get_state())
             cr.set_source_rgba(*color)
-            xb, yb, w, h = cr.text_extents(')(')[:4]
-            cr.move_to(x - xb - w / 2, y - yb - h / 2)
-            cr.show_text(')(')
+            cr.rectangle(1.5, 1.5, allocation.width - 3, allocation.height - 3)
+            cr.stroke()
 
     def do_realize(self):
         allocation = self.get_allocation()
@@ -1159,6 +1167,56 @@ class Symbol(Gtk.Widget):
         else:
             self.set_sensitive(False)
         self.queue_draw()
+
+
+class Diagram(Gtk.Widget):
+    __gtype_name__ = 'Diagram'
+
+    pixbuf = GObject.Property(type=GdkPixbuf.Pixbuf, nick='Image File')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def do_draw(self, cr):
+        allocation = self.get_allocation()
+        x = allocation.width / 2
+        y = allocation.height / 2
+        if self.pixbuf:
+            scale = min(allocation.width / self.pixbuf.get_width(), allocation.height / self.pixbuf.get_height())
+            cr.save()
+            cr.scale(scale, scale)
+            Gdk.cairo_set_source_pixbuf(
+                cr, self.pixbuf,
+                x - self.pixbuf.get_width() * scale/2,
+                y - self.pixbuf.get_height() * scale/2
+            )
+            cr.paint()
+            cr.restore()
+        else:
+            # draw boxes
+            style = self.get_style_context()
+            color = style.get_color(style.get_state())
+            cr.set_source_rgba(*color)
+            cr.rectangle(1.5, 1.5, allocation.width-3, allocation.height-3)
+            cr.stroke()
+
+    def do_realize(self):
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.visual = self.get_visual()
+        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
+        WAT = Gdk.WindowAttributesType
+        mask = WAT.X | WAT.Y | WAT.VISUAL
+        window = Gdk.Window(self.get_parent_window(), attr, mask);
+        self.set_window(window)
+        self.register_window(window)
+        self.set_realized(True)
+        window.set_background_pattern(None)
 
 
 class CheckControl(Gtk.EventBox):
@@ -1246,6 +1304,7 @@ class DisplayButton(Gtk.EventBox):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, button):
+        print(self.get_toplevel().xid)
         if self.frame:
             Manager.embed_display(self.frame, self.display, macros_spec=self.macros)
         else:

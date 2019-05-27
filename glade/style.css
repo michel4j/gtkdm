@@ -8,11 +8,11 @@ popover.gtkdm {
 
 
 .gtkdm entry, .gtkdm button {
-    min-height: 14px;
+    min-height: 12px;
     border-radius: 3px;
 }
 .gtkdm spinbutton {
-    min-height: 14px;
+    min-height: 12px;
     border-radius: 3px;
 }
 .gtkdm treeview {

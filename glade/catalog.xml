@@ -31,7 +31,7 @@
         <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="Check Control"
                             icon-name="widget-gtk-checkbutton"/>
-
+        <glade-widget-class name="Diagram" generic-name="diagram" title="Diagram" icon-name="widget-gtk-image"/>
         <glade-widget-class name="DisplayButton" generic-name="displaybutton" title="Display Button"
                             icon-name="widget-gtk-appchooserbutton">
             <properties>
@@ -76,6 +76,7 @@
         <glade-widget-class-ref name="TextLabel"/>
         <glade-widget-class-ref name="Gauge"/>
         <glade-widget-class-ref name="Symbol"/>
+        <glade-widget-class-ref name="Diagram"/>
         <glade-widget-class-ref name="Shape"/>
         <glade-widget-class-ref name="MessageLog"/>
     </glade-widget-group>

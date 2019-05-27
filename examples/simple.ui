@@ -93,16 +93,16 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkImage">
-            <property name="width_request">589</property>
-            <property name="height_request">95</property>
+          <object class="Diagram">
+            <property name="width_request">420</property>
+            <property name="height_request">272</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">drawing.svg</property>
+            <property name="pixbuf">cmcfid.svg</property>
           </object>
           <packing>
-            <property name="x">39</property>
-            <property name="y">259</property>
+            <property name="x">13</property>
+            <property name="y">112</property>
           </packing>
         </child>
         <child>
@@ -515,6 +515,22 @@
           <packing>
             <property name="x">333</property>
             <property name="y">263</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Gauge">
+            <property name="width_request">121</property>
+            <property name="height_request">85</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="angle">134</property>
+            <property name="channel">michel:FC1:intensityM</property>
+            <property name="step">25</property>
+            <property name="ticks">3</property>
+          </object>
+          <packing>
+            <property name="x">470</property>
+            <property name="y">205</property>
           </packing>
         </child>
       </object>
