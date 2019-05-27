@@ -94,15 +94,14 @@
         <property name="can_focus">False</property>
         <child>
           <object class="GtkImage">
-            <property name="width_request">542</property>
-            <property name="height_request">179</property>
+            <property name="width_request">800</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">header.png</property>
+            <property name="pixbuf">drawing.svg</property>
           </object>
           <packing>
-            <property name="x">11</property>
-            <property name="y">170</property>
+            <property name="x">14</property>
+            <property name="y">252</property>
           </packing>
         </child>
         <child>
@@ -381,7 +380,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:autoC</property>
-            <property name="file">faces.sym</property>
+            <property name="file">valve.sym</property>
           </object>
           <packing>
             <property name="x">282</property>
@@ -496,9 +495,6 @@
             <property name="can_focus">False</property>
             <property name="alarm">True</property>
             <property name="channel">michel:OP:autoMsg</property>
-            <child>
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="x">16</property>
