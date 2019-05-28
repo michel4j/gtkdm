@@ -6,7 +6,6 @@ popover.gtkdm {
     border-radius: 3px;
 }
 
-
 .gtkdm entry, .gtkdm button {
     min-height: 12px;
     border-radius: 3px;
@@ -56,3 +55,35 @@ popover.gtkdm {
 .gtkdm-critical {
     color: #FC0000;
 }
+
+.tiny button, .tiny entry {
+    min-height: 8px;
+    min-width: 8px;
+    padding: 0px;
+    border-radius: 2px;
+    font-size: 90%;
+}
+
+.tiny .linked *:not(:first-child):not(:last-child):not(.combo) {
+    border-radius: 0px;
+}
+.tiny .linked.horizontal *:first-child:not(.combo) {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+.tiny .linked.horizontal *:last-child:not(.combo) {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+.tiny .linked.vertical *:last-child:not(.combo) {
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+}
+
+.tiny .linked.vertical *:first-child:not(.combo) {
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+

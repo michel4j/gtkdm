@@ -3,6 +3,8 @@ import os
 import textwrap
 import zipfile
 import hashlib
+import subprocess
+
 from datetime import datetime
 from math import atan2, pi, cos, sin, ceil
 
@@ -31,7 +33,6 @@ COLORS = {
     'M': '#88419d'
 }
 
-
 class DisplayManager(object):
     """Manages all displays"""
 
@@ -43,7 +44,8 @@ class DisplayManager(object):
         self.macros = utils.parse_macro_spec(macro_spec)
 
     def show_display(self, path, macros_spec="", main=False, multiple=False):
-        directory, filename = os.path.split(os.path.abspath(path))
+        full_path = os.path.abspath(path)
+        directory, filename = os.path.split(full_path)
         try:
             tree = ET.parse(path)
         except FileNotFoundError as e:
@@ -51,6 +53,7 @@ class DisplayManager(object):
             return
 
         w = tree.find(".//object[@class='GtkWindow']")
+        w.set('class', 'DisplayWindow')  # Switch to full Window
         w.set('id', 'related_display')
         new_macros = {}
         new_macros.update(self.macros)
@@ -70,6 +73,8 @@ class DisplayManager(object):
                 builder = Gtk.Builder()
                 builder.add_from_string(data)
                 window = builder.get_object('related_display')
+                window.header.set_subtitle(filename)
+                window.props.path = full_path
                 if main:
                     window.connect('destroy', lambda x: Gtk.main_quit())
                 elif not multiple:
@@ -90,6 +95,14 @@ class DisplayManager(object):
 
         w = tree.find(".//object[@class='GtkWindow']/child/object[1]")
         w.set('id', 'embedded_display')
+
+        # get list of non GtkWindow Top levels. These should be loaded.
+        top_levels = list({
+                element.get('id') for element in tree.findall("./object")
+            } - {
+                element.get('id') for element in tree.findall("./object[@class='GtkWindow']")
+        }) + ['embedded_display']
+
         new_macros = {}
         new_macros.update(self.macros)
         new_macros.update(utils.parse_macro_spec(macros_spec))
@@ -103,12 +116,13 @@ class DisplayManager(object):
         )
         with utils.working_dir(directory):
             builder = Gtk.Builder()
-            builder.add_objects_from_string(data, ['embedded_display'])
+            builder.add_objects_from_string(data, top_levels)
             display = builder.get_object('embedded_display')
             child = frame.get_child()
             if child:
                 child.destroy()
             frame.add(display)
+            display.show_all()
 
 
 Manager = DisplayManager()
@@ -163,6 +177,85 @@ class Layout(Gtk.Fixed):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
+class DisplayWindow(Gtk.Window):
+    __gtype_name__ = 'DisplayWindow'
+    path = GObject.Property(type=str, default='', nick='Path')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.header = Gtk.HeaderBar()
+        self.header.set_show_close_button(True)
+        self.set_titlebar(self.header)
+        self.header.props.title = "GtkDM"
+        self.set_icon_name('applications-engineering')
+        button = Gtk.MenuButton()
+        icon = Gio.ThemedIcon(name="open-menu-symbolic")
+        image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.BUTTON)
+        button.add(image)
+        self.header.pack_end(button)
+
+        icon = Gio.ThemedIcon(name="applications-engineering")
+        image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.LARGE_TOOLBAR)
+        self.header.pack_start(image)
+        self.connect('realize', self.on_realize)
+
+        # prepare application menu
+        popover = Gtk.Popover()
+        popover.set_border_width(3)
+        button.set_popover(popover)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        popover.add(box)
+
+        # register menu items
+        btn = Gtk.ModelButton(text='  Edit ...')
+        btn.connect("clicked", self.on_edit)
+        btn.set_size_request(100, -1)
+        box.pack_start(btn, False, False, 0)
+
+        # btn = Gtk.ModelButton(text='  Reload')
+        # btn.connect("clicked", self.on_reload)
+        # btn.set_size_request(100, -1)
+        # box.pack_start(btn, False, False, 0)
+        # box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
+
+        btn = Gtk.ModelButton(text='  About GtkDM')
+        btn.connect("clicked", self.on_about)
+        btn.set_size_request(100, -1)
+        box.pack_start(btn, False, False, 0)
+        box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
+
+        btn = Gtk.ModelButton(text='  Close')
+        btn.connect("clicked", self.on_close)
+        btn.set_size_request(100, -1)
+        box.pack_start(btn, False, False, 0)
+        popover.show_all()
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm-window')
+
+    def on_edit(self, btn):
+        try:
+            cmd = subprocess.Popen(['gtkdm-editor', self.path])
+        except FileNotFoundError as e:
+            print("GtkDM not properly installed")
+
+    def on_reload(self, btn):
+        Manager.embed_display(self, self.path)
+
+    def on_about(self, btn):
+        about_dialog = Gtk.AboutDialog(transient_for=self, modal=True)
+        about_dialog.set_program_name("GtkDM")
+        about_dialog.set_logo_icon_name('applications-engineering')
+        about_dialog.set_comments("Python-based Gtk Display Manager for \nEPICS Operator Screens")
+        about_dialog.set_version("2019.6.1")
+        about_dialog.set_copyright("(c) 2019 Michel Fodje")
+        about_dialog.set_license_type(Gtk.License.MIT_X11)
+        about_dialog.set_authors(["Michel Fodje <michel.fodje@lightsource.ca>"])
+        about_dialog.present()
+
+    def on_close(self, btn):
+        self.destroy()
 
 class DisplayFrame(Gtk.EventBox):
     __gtype_name__ = 'DisplayFrame'
@@ -455,7 +548,7 @@ class Indicator(Gtk.Widget):
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
-    colors = GObject.Property(type=str, default='72', nick='Colors')
+    colors = GObject.Property(type=str, default='AG', nick='Colors')
     size = GObject.Property(type=int, minimum=5, maximum=50, default=10, nick='LED Size')
 
     def __init__(self, *args, **kwargs):
@@ -1304,11 +1397,12 @@ class DisplayButton(Gtk.EventBox):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, button):
-        print(self.get_toplevel().xid)
+        top_level = self.get_toplevel()
+        display_path = os.path.join(os.path.dirname(top_level.path), self.display)
         if self.frame:
-            Manager.embed_display(self.frame, self.display, macros_spec=self.macros)
+            Manager.embed_display(self.frame, display_path, macros_spec=self.macros)
         else:
-            Manager.show_display(self.display, macros_spec=self.macros, multiple=self.multiple)
+            Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
 class Shape(Gtk.Widget):
@@ -1428,7 +1522,7 @@ class MenuButton(Gtk.Bin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.btn = Gtk.MenuButton(use_popover=True)
-        self.icon = Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.MENU)
+        self.icon = Gtk.Image.new_from_icon_name('view-paged-symbolic', Gtk.IconSize.MENU)
         self.text = Gtk.Label(label=self.label)
         child = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         child.pack_start(self.icon, False, False, 0)
@@ -1476,7 +1570,9 @@ class DisplayMenuItem(Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, obj):
-        Manager.show_display(self.file, macros_spec=self.macros, multiple=self.multiple)
+        top_level = self.get_toplevel()
+        display_path = os.path.join(os.path.dirname(top_level.path), self.file)
+        Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
 class MessageLog(Gtk.Bin):

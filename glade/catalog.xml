@@ -27,7 +27,6 @@
         <glade-widget-class name="ChoiceMenu" generic-name="choicemenu" title="Choice Menu"
                             icon-name="widget-gtk-combobox"/>
         <glade-widget-class name="Gauge" generic-name="gauge" title="Gauge" icon-name="widget-gtk-frame"/>
-
         <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="Check Control"
                             icon-name="widget-gtk-checkbutton"/>
