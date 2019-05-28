@@ -57,10 +57,10 @@ popover.gtkdm {
 }
 
 .tiny button, .tiny entry {
-    min-height: 8px;
+    min-height: 10px;
     min-width: 8px;
     padding: 0px;
-    border-radius: 2px;
+    border-radius: 3px;
     font-size: 90%;
 }
 
@@ -86,4 +86,28 @@ popover.gtkdm {
     border-bottom-left-radius: 0px;
 }
 
+.gtkdm.xs label {
+    font-size: 8px;
+}
 
+.gtkdm.sm label {
+    font-size: 10px;
+}
+
+.gtkdm.md label {
+    font-size: 12px;
+}
+
+.gtkdm.lg label {
+    font-size: 14px;
+}
+
+.gtkdm.xl label {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.dark entry, .dark label {
+    background: dimgray;
+    color: lawngreen;
+}

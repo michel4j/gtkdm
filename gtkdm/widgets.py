@@ -1,10 +1,9 @@
+import hashlib
 import json
 import os
+import subprocess
 import textwrap
 import zipfile
-import hashlib
-import subprocess
-
 from datetime import datetime
 from math import atan2, pi, cos, sin, ceil
 
@@ -32,6 +31,33 @@ COLORS = {
     'W': '#ffffff',
     'M': '#88419d'
 }
+
+ENTRY_CONVERTERS = {
+    'string': str,
+    'int': int,
+    'short': int,
+    'float': float,
+    'enum': int,
+    'long': int,
+    'double': float,
+    'time_string': str,
+    'time_int': int,
+    'time_short': int,
+    'time_float': float,
+    'time_enum': int,
+    'time_char': str,
+    'time_long': int,
+    'time_double': float,
+    'ctrl_string': str,
+    'ctrl_int': int,
+    'ctrl_short': int,
+    'ctrl_float': float,
+    'ctrl_enum': int,
+    'ctrl_char': str,
+    'ctrl_long': int,
+    'ctrl_double': float
+}
+
 
 class DisplayManager(object):
     """Manages all displays"""
@@ -238,7 +264,7 @@ class DisplayWindow(Gtk.Window):
         try:
             cmd = subprocess.Popen(['gtkdm-editor', self.path])
         except FileNotFoundError as e:
-            print("GtkDM not properly installed")
+            print("GtkDM Editor not available")
 
     def on_reload(self, btn):
         Manager.embed_display(self, self.path)
@@ -257,6 +283,7 @@ class DisplayWindow(Gtk.Window):
     def on_close(self, btn):
         self.destroy()
 
+
 class DisplayFrame(Gtk.EventBox):
     __gtype_name__ = 'DisplayFrame'
     label = GObject.Property(type=str, default='', nick='Label')
@@ -265,6 +292,8 @@ class DisplayFrame(Gtk.EventBox):
     yalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='Y-Alignment')
     xscale = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0, nick='X-Scale')
     yscale = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0, nick='Y-Scale')
+    display = GObject.Property(type=str, default='', nick='Default Display')
+    macros = GObject.Property(type=str, default='', nick='Default Macros')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -276,6 +305,13 @@ class DisplayFrame(Gtk.EventBox):
             self.bind_property(prop, self.frame, prop, GObject.BindingFlags.DEFAULT)
         self.bind_property('label', self.box, 'label', GObject.BindingFlags.DEFAULT)
         self.bind_property('shadow-type', self.box, 'shadow-type', GObject.BindingFlags.DEFAULT)
+        self.connect('realize', self.on_realize)
+
+    def on_realize(self, obj):
+        if self.display:
+            top_level = self.get_toplevel()
+            display_path = os.path.join(os.path.dirname(top_level.path), self.display)
+            Manager.embed_display(self, display_path, macros_spec=self.macros)
 
 
 class TextMonitor(Gtk.EventBox):
@@ -285,17 +321,34 @@ class TextMonitor(Gtk.EventBox):
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    show_units = GObject.Property(type=bool, default=True, nick='Show Units')
+    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.label = Gtk.Label('<N/A>')
+        self.label = Gtk.Label('..text..')
         self.add(self.label)
         self.pv = None
         self.connect('realize', self.on_realize)
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
+        self.font_styles = {
+            1: 'xs',
+            2: 'sm',
+            3: 'md',
+            4: 'lg',
+            5: 'xl'
+        }
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
+        style = self.get_style_context()
+        style.add_class('gtkdm')
+
+        # adjust style classes
+        for k, v in self.font_styles.items():
+            if k == self.font_size:
+                style.add_class(v)
+            else:
+                style.remove_class(v)
 
         pv_name = self.channel
         if pv_name:
@@ -305,7 +358,15 @@ class TextMonitor(Gtk.EventBox):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        text = '{} {}'.format(pv.char_value, pv.units) if pv.units else pv.char_value
+        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
+            text = pv.enum_strs[value]
+        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+            text = ('{{:0.{}f}}'.format(pv.precision)).format(value)
+        else:
+            text = pv.char_value
+
+        if self.pv.units and self.show_units:
+            text = '{} {}'.format(text, pv.units)
         self.label.set_markup(text)
 
     def on_alarm(self, pv, alarm):
@@ -323,6 +384,7 @@ class TextMonitor(Gtk.EventBox):
     def on_active(self, pv, connected):
         if connected:
             self.pv.get_with_metadata()
+
             self.get_style_context().remove_class('gtkdm-inactive')
             self.set_sensitive(True)
         else:
@@ -336,6 +398,7 @@ class TextLabel(Gtk.EventBox):
     text = GObject.Property(type=str, default='Label', nick='Label')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -344,9 +407,23 @@ class TextLabel(Gtk.EventBox):
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.add(self.label)
         self.connect('realize', self.on_realize)
+        self.font_styles = {
+            1: 'xs',
+            2: 'sm',
+            3: 'md',
+            4: 'lg',
+            5: 'xl'
+        }
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
+        style = self.get_style_context()
+        style.add_class('gtkdm')
+        # adjust style classes
+        for k, v in self.font_styles.items():
+            if k == self.font_size:
+                style.add_class(v)
+            else:
+                style.remove_class(v)
 
 
 class LineMonitor(Gtk.Widget):
@@ -553,7 +630,7 @@ class Indicator(Gtk.Widget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.set_size_request(196, 40)
+        self.set_size_request(-1, 20)
         self.pv = None
         self.label_pv = None
         self.theme = {
@@ -564,6 +641,7 @@ class Indicator(Gtk.Widget):
 
     def do_draw(self, cr):
         cr.set_line_width(0.75)
+        cr.set_font_size(self.size*5/6)
         x = 4.5
         y = 4.5
         style = self.get_style_context()
@@ -782,6 +860,7 @@ class TextControl(Gtk.EventBox):
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
+    editable = GObject.Property(type=bool, default=True, nick='Editable')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
@@ -789,6 +868,9 @@ class TextControl(Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.entry = Gtk.Entry(width_chars=5)
         self.bind_property('xalign', self.entry, 'xalign', GObject.BindingFlags.DEFAULT)
+        self.bind_property('editable', self.entry, 'editable', GObject.BindingFlags.DEFAULT)
+        self.bind_property('editable', self.entry, 'can-focus', GObject.BindingFlags.DEFAULT)
+        self.entry.connect('activate', self.on_activate)
         self.in_progress = False
         self.pv = None
         self.add(self.entry)
@@ -804,8 +886,27 @@ class TextControl(Gtk.EventBox):
 
     def on_change(self, pv, value):
         self.in_progress = True
-        self.entry.set_text(pv.char_value)
+        if pv.precision and pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+            text = ('{{:0.{}f}}'.format(pv.precision)).format(value)
+        else:
+            text = pv.char_value
+        self.entry.set_text(text)
         self.in_progress = False
+
+    def on_activate(self, entry):
+        text = self.entry.get_text()
+        if self.pv.type in ['char', 'time_char', 'ctrl_char'] and self.pv.count > 1:
+            conv = str
+        else:
+            conv = ENTRY_CONVERTERS[self.pv.type]
+        try:
+            value = conv(text)
+            self.pv.put(value)
+        except ValueError as e:
+            print("Invalid Value: {}".format(e))
+
+
+
 
     def on_alarm(self, pv, alarm):
         if self.alarm:
@@ -831,19 +932,20 @@ class CommandButton(Gtk.EventBox):
     __gtype_name__ = 'CommandButton'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
+    icon_name = GObject.Property(type=str, default='', nick='Icon Name')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.button = Gtk.Button(label=self.label)
+        self.button = Gtk.Button()
         self.pv = None
         self.label_pv = None
-        self.bind_property('label', self.button, 'label', GObject.BindingFlags.DEFAULT)
         self.connect('realize', self.on_realize)
         self.button.connect('clicked', self.on_clicked)
         self.add(self.button)
 
     def on_clicked(self, button):
-        self.pv.put(1)
+        if self.pv:
+            self.pv.put(1)
 
     def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
@@ -852,9 +954,16 @@ class CommandButton(Gtk.EventBox):
             self.pv = gepics.PV(pv_name)
             self.pv.connect('active', self.on_active)
 
-            if not self.label:
+            if not (self.label or self.icon_name):
                 self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
                 self.label_pv.connect('changed', self.on_label_change)
+            else:
+                if self.icon_name:
+                    self.button.set_always_show_image(True)
+                    self.button.set_image(Gtk.Image.new_from_icon_name(self.icon_name, Gtk.IconSize.MENU))
+                elif self.label:
+                    self.button.set_label(self.label)
+
 
     def on_label_change(self, pv, value):
         self.props.label = value
@@ -1381,7 +1490,7 @@ class DisplayButton(Gtk.EventBox):
     __gtype_name__ = 'DisplayButton'
     label = GObject.Property(type=str, default='', nick='Label')
     display = GObject.Property(type=str, default='', nick='Display File')
-    macros = GObject.Property(type=str, default='', nick='Macro')
+    macros = GObject.Property(type=str, default='', nick='Macros')
     frame = GObject.Property(type=DisplayFrame, nick='Target Frame')
     multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
 
@@ -1397,12 +1506,13 @@ class DisplayButton(Gtk.EventBox):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, button):
-        top_level = self.get_toplevel()
-        display_path = os.path.join(os.path.dirname(top_level.path), self.display)
-        if self.frame:
-            Manager.embed_display(self.frame, display_path, macros_spec=self.macros)
-        else:
-            Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
+        if self.display:
+            top_level = self.get_toplevel()
+            display_path = os.path.join(os.path.dirname(top_level.path), self.display)
+            if self.frame:
+                Manager.embed_display(self.frame, display_path, macros_spec=self.macros)
+            else:
+                Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
 class Shape(Gtk.Widget):
@@ -1570,9 +1680,10 @@ class DisplayMenuItem(Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, obj):
-        top_level = self.get_toplevel()
-        display_path = os.path.join(os.path.dirname(top_level.path), self.file)
-        Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
+        if self.file:
+            top_level = self.get_toplevel()
+            display_path = os.path.join(os.path.dirname(top_level.path), self.file)
+            Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
 class MessageLog(Gtk.Bin):

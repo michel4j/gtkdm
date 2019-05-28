@@ -130,7 +130,11 @@
             <property name="visible_window">False</property>
             <property name="channel">michel:PM2:X:positionM</property>
             <property name="color">rgb(115,210,22)</property>
+            <property name="font_size">3</property>
             <property name="xalign">0.5</property>
+            <style>
+              <class name="dark"/>
+            </style>
           </object>
           <packing>
             <property name="x">509</property>
@@ -408,9 +412,10 @@
             <property name="height_request">27</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="display">rows.ui</property>
+            <property name="display">clsmtr.ui</property>
             <property name="frame">displayframe1</property>
             <property name="label">VFM</property>
+            <property name="macros">motor=SMTR1608-4-B10-20,units=mm</property>
           </object>
           <packing>
             <property name="x">56</property>
@@ -423,7 +428,8 @@
             <property name="height_request">198</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="shadow_type">in</property>
+            <property name="display">embed.ui</property>
+            <property name="macros">device=michel</property>
           </object>
           <packing>
             <property name="x">614</property>

@@ -14,22 +14,20 @@
         <property name="can_focus">False</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
-        <property name="label_xalign">0.5</property>
+        <property name="label_xalign">0.070000000298023224</property>
+        <property name="label_yalign">0.30000001192092896</property>
         <property name="shadow_type">in</property>
         <child>
           <object class="GtkAlignment">
-            <property name="width_request">100</property>
-            <property name="height_request">80</property>
+            <property name="width_request">196</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <property name="border_width">6</property>
+            <property name="yalign">0</property>
             <property name="xscale">0</property>
             <property name="yscale">0</property>
-            <property name="top_padding">3</property>
-            <property name="bottom_padding">3</property>
-            <property name="left_padding">3</property>
-            <property name="right_padding">3</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -42,12 +40,12 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkEntry">
-                        <property name="width_request">70</property>
+                      <object class="TextControl">
+                        <property name="width_request">80</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="width_chars">1</property>
-                        <property name="xalign">1</property>
+                        <property name="channel">{motor}:{units}</property>
+                        <property name="xalign">0.90000000000000002</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -56,17 +54,16 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry">
-                        <property name="width_request">70</property>
+                      <object class="TextControl">
+                        <property name="width_request">80</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="channel">{motor}:{units}:fbk</property>
                         <property name="editable">False</property>
-                        <property name="width_chars">1</property>
-                        <property name="xalign">0.5</property>
-                        <property name="primary_icon_activatable">False</property>
-                        <property name="secondary_icon_activatable">False</property>
-                        <property name="primary_icon_sensitive">False</property>
-                        <property name="secondary_icon_sensitive">False</property>
+                        <property name="xalign">0.90000000000000002</property>
+                        <style>
+                          <class name="dark"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -75,17 +72,16 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton">
+                      <object class="CommandButton">
+                        <property name="width_request">24</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="icon_name">media-playback-stop-symbolic</property>
-                          </object>
-                        </child>
+                        <property name="channel">{motor}:stop</property>
+                        <property name="icon_name">media-playback-stop-symbolic</property>
+                        <style>
+                          <class name="warning"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -105,39 +101,66 @@
                 </child>
                 <child>
                   <object class="GtkBox">
-                    <property name="height_request">19</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
                     <child>
                       <object class="Indicator">
+                        <property name="width_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="channel">michel:gunOnC</property>
-                        <property name="size">6</property>
+                        <property name="channel">{motor}:ccw</property>
+                        <property name="label">CCW</property>
                       </object>
                       <packing>
-                        <property name="expand">True</property>
+                        <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <object class="Indicator">
+                        <property name="width_request">35</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="channel">michel:GV1:positionC</property>
-                        <property name="size">6</property>
+                        <property name="channel">{motor}:cw</property>
+                        <property name="label">CW</property>
                       </object>
                       <packing>
-                        <property name="expand">True</property>
+                        <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="Indicator">
+                        <property name="width_request">40</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="channel">{motor}:moving</property>
+                        <property name="label">MOV</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="TextMonitor">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="channel">{motor}:status</property>
+                        <property name="font_size">1</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
@@ -152,13 +175,15 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkButton">
-                <property name="label" translatable="yes">...</property>
-                <property name="width_request">16</property>
+              <object class="DisplayButton">
+                <property name="width_request">18</property>
                 <property name="height_request">16</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="display">clsmtr-details.ui</property>
+                <property name="label">...</property>
+                <property name="macros">motor={motor},units={units}</property>
                 <style>
                   <class name="tiny"/>
                 </style>
@@ -170,23 +195,32 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="width_request">-1</property>
-                <property name="height_request">8</property>
+              <object class="TextMonitor">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Motor Name</property>
-                <attributes>
-                  <attribute name="font-desc" value="Sans 9"/>
-                </attributes>
-                <style>
-                  <class name="tiny"/>
-                </style>
+                <property name="margin_left">3</property>
+                <property name="margin_right">3</property>
+                <property name="channel">{motor}:desc</property>
+                <property name="font_size">2</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="font_size">2</property>
+                <property name="text">({units})</property>
+                <property name="xalign">1</property>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
