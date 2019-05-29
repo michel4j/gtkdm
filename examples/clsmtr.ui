@@ -41,7 +41,7 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="TextControl">
-                        <property name="width_request">80</property>
+                        <property name="width_request">75</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="channel">{motor}:{units}</property>
@@ -55,7 +55,7 @@
                     </child>
                     <child>
                       <object class="TextControl">
-                        <property name="width_request">80</property>
+                        <property name="width_request">75</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="channel">{motor}:{units}:fbk</property>

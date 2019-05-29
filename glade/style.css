@@ -111,3 +111,7 @@ popover.gtkdm {
     background: dimgray;
     color: lawngreen;
 }
+
+.warning button {
+    background: rgba(255, 0.0, 0.0, 0.15);
+}

@@ -361,7 +361,9 @@ class TextMonitor(Gtk.EventBox):
         if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            text = ('{{:0.{}f}}'.format(pv.precision)).format(value)
+            value = round(value, pv.precision)
+            fmt = 'f' if (value == 0 or value > 1e-4 or value < 1e4) else 'e'
+            text = ('{{:0.{}{}}}'.format(pv.precision, fmt)).format(value)
         else:
             text = pv.char_value
 
@@ -887,7 +889,9 @@ class TextControl(Gtk.EventBox):
     def on_change(self, pv, value):
         self.in_progress = True
         if pv.precision and pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            text = ('{{:0.{}f}}'.format(pv.precision)).format(value)
+            value = round(value, pv.precision)
+            fmt = 'f' if (value == 0 or value > 1e-4 or value < 1e4) else 'e'
+            text = ('{{:0.{}{}}}'.format(pv.precision, fmt)).format(value)
         else:
             text = pv.char_value
         self.entry.set_text(text)
@@ -990,12 +994,12 @@ class ChoiceButton(Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.in_progress = False
         self.bind_property('orientation', self.box, 'orientation', GObject.BindingFlags.DEFAULT)
-        self.buttons = [Gtk.ToggleButton(label='Choice 1'), Gtk.ToggleButton(label='Choice 2'),
-                        Gtk.ToggleButton(label='Choice 3')]
+        self.buttons = [Gtk.ToggleButton(label='One'), Gtk.ToggleButton(label='Two'),]
         for i, btn in enumerate(self.buttons):
             self.box.pack_start(btn, False, False, 0)
             btn.connect('toggled', self.on_toggled, i)
         self.add(self.box)
+        self.set_sensitive(False)
 
     def on_toggled(self, button, i):
         if not self.in_progress:
