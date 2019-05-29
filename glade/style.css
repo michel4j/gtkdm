@@ -1,24 +1,35 @@
 .gtkdm * {
-    /*font-size: 11.5px;*/
+
 }
 
 popover.gtkdm {
     border-radius: 3px;
 }
 
+.gtkdm entry {
+    font-family: "TheSansMonoCd Office", "Monaco", monospace;
+}
+
 .gtkdm entry, .gtkdm button {
-    min-height: 12px;
+    min-height: 10px;
     border-radius: 3px;
+    font-size: 8.5pt;
 }
 .gtkdm spinbutton {
     min-height: 12px;
     border-radius: 3px;
+    font-size: 8.5pt;
 }
 .gtkdm treeview {
-    font-size: 10px;
+    font-size: 9pt;
     margin: 2px;
 }
 
+.gtkdm textview {
+    font-size: 9pt;
+    margin: 2px;
+    font-family: "TheSansMonoCd Office", "Monaco", monospace;
+}
 
 .gtkdm .linked button:not(:first-child):not(:last-child):not(.combo) {
     border-radius: 0px;
@@ -87,23 +98,23 @@ popover.gtkdm {
 }
 
 .gtkdm.xs label {
-    font-size: 8px;
+    font-size: 7pt;
 }
 
 .gtkdm.sm label {
-    font-size: 10px;
+    font-size: 8pt;
 }
 
 .gtkdm.md label {
-    font-size: 12px;
+    font-size: 9pt;
 }
 
 .gtkdm.lg label {
-    font-size: 14px;
+    font-size: 10pt;
 }
 
 .gtkdm.xl label {
-    font-size: 18px;
+    font-size: 12pt;
     font-weight: bold;
 }
 
@@ -115,3 +126,11 @@ popover.gtkdm {
 .warning button {
     background: rgba(255, 0.0, 0.0, 0.15);
 }
+
+.gtkdm-table entry {
+    border-radius: 0px;
+}
+.gtkdm-table *:not(.dark) > entry{
+    background: rgba(0.0, 255, 255, 0.05);
+}
+

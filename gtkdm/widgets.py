@@ -92,8 +92,8 @@ class DisplayManager(object):
             except KeyError as e:
                 print('Macro {} not specified for display "{}"'.format(e, filename))
             data = (
-                '<?xml version="1.0" encoding="UTF-8"?>\n' +
-                ET.tostring(tree.getroot(), encoding='unicode',method='xml')
+                    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                    ET.tostring(tree.getroot(), encoding='unicode', method='xml')
             )
             with utils.working_dir(directory):
                 builder = Gtk.Builder()
@@ -124,10 +124,10 @@ class DisplayManager(object):
 
         # get list of non GtkWindow Top levels. These should be loaded.
         top_levels = list({
-                element.get('id') for element in tree.findall("./object")
-            } - {
-                element.get('id') for element in tree.findall("./object[@class='GtkWindow']")
-        }) + ['embedded_display']
+                              element.get('id') for element in tree.findall("./object")
+                          } - {
+                              element.get('id') for element in tree.findall("./object[@class='GtkWindow']")
+                          }) + ['embedded_display']
 
         new_macros = {}
         new_macros.update(self.macros)
@@ -643,7 +643,7 @@ class Indicator(Gtk.Widget):
 
     def do_draw(self, cr):
         cr.set_line_width(0.75)
-        cr.set_font_size(self.size*5/6)
+        cr.set_font_size(self.size * 5 / 6)
         x = 4.5
         y = 4.5
         style = self.get_style_context()
@@ -888,7 +888,7 @@ class TextControl(Gtk.EventBox):
 
     def on_change(self, pv, value):
         self.in_progress = True
-        if pv.precision and pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+        if pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             value = round(value, pv.precision)
             fmt = 'f' if (value == 0 or value > 1e-4 or value < 1e4) else 'e'
             text = ('{{:0.{}{}}}'.format(pv.precision, fmt)).format(value)
@@ -908,9 +908,6 @@ class TextControl(Gtk.EventBox):
             self.pv.put(value)
         except ValueError as e:
             print("Invalid Value: {}".format(e))
-
-
-
 
     def on_alarm(self, pv, alarm):
         if self.alarm:
@@ -965,9 +962,8 @@ class CommandButton(Gtk.EventBox):
                 if self.icon_name:
                     self.button.set_always_show_image(True)
                     self.button.set_image(Gtk.Image.new_from_icon_name(self.icon_name, Gtk.IconSize.MENU))
-                elif self.label:
+                if self.label:
                     self.button.set_label(self.label)
-
 
     def on_label_change(self, pv, value):
         self.props.label = value
@@ -994,7 +990,7 @@ class ChoiceButton(Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.in_progress = False
         self.bind_property('orientation', self.box, 'orientation', GObject.BindingFlags.DEFAULT)
-        self.buttons = [Gtk.ToggleButton(label='One'), Gtk.ToggleButton(label='Two'),]
+        self.buttons = [Gtk.ToggleButton(label='One'), Gtk.ToggleButton(label='Two'), ]
         for i, btn in enumerate(self.buttons):
             self.box.pack_start(btn, False, False, 0)
             btn.connect('toggled', self.on_toggled, i)
@@ -1007,7 +1003,7 @@ class ChoiceButton(Gtk.EventBox):
 
     def on_realize(self, obj):
         self.box.get_style_context().add_class('linked')
-        self.get_style_context().add_class('gtkdm')
+        self.get_style_context().add_class('gtkdm tiny')
         pv_name = self.channel
         if pv_name:
             self.pv = gepics.PV(pv_name)
@@ -1024,6 +1020,7 @@ class ChoiceButton(Gtk.EventBox):
                     btn.connect('toggled', self.on_toggled, i)
                     self.buttons.append(btn)
                     self.box.pack_start(btn, False, False, 0)
+                    btn.show()
 
             for btn in self.buttons[i + 1:]:
                 btn.destroy()
@@ -1393,8 +1390,8 @@ class Diagram(Gtk.Widget):
             cr.scale(scale, scale)
             Gdk.cairo_set_source_pixbuf(
                 cr, self.pixbuf,
-                x - self.pixbuf.get_width() * scale/2,
-                y - self.pixbuf.get_height() * scale/2
+                x - self.pixbuf.get_width() * scale / 2,
+                y - self.pixbuf.get_height() * scale / 2
             )
             cr.paint()
             cr.restore()
@@ -1403,7 +1400,7 @@ class Diagram(Gtk.Widget):
             style = self.get_style_context()
             color = style.get_color(style.get_state())
             cr.set_source_rgba(*color)
-            cr.rectangle(1.5, 1.5, allocation.width-3, allocation.height-3)
+            cr.rectangle(1.5, 1.5, allocation.width - 3, allocation.height - 3)
             cr.stroke()
 
     def do_realize(self):
@@ -1709,13 +1706,11 @@ class MessageLog(Gtk.Bin):
         self.view.set_buffer(self.buffer)
         self.view.set_editable = False
         self.view.set_border_width(3)
-        font = Pango.FontDescription('monospace {}'.format(self.font_size))
-        self.view.modify_font(font)
         self.wrap_mode = Gtk.WrapMode.WORD
         self.sw.add(self.view)
         self.add(self.sw)
         self.tags = {
-            gepics.Alarm.MAJOR : self.buffer.create_tag(foreground='Red', wrap_mode=Gtk.WrapMode.WORD),
+            gepics.Alarm.MAJOR: self.buffer.create_tag(foreground='Red', wrap_mode=Gtk.WrapMode.WORD),
             gepics.Alarm.MINOR: self.buffer.create_tag(foreground='Orange', wrap_mode=Gtk.WrapMode.WORD),
             gepics.Alarm.NORMAL: self.buffer.create_tag(foreground='Black', wrap_mode=Gtk.WrapMode.WORD),
             gepics.Alarm.INVALID: self.buffer.create_tag(foreground='Gray', wrap_mode=Gtk.WrapMode.WORD),

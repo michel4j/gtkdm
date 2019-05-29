@@ -1,0 +1,1431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtkplugin" version="0.0"/>
+  <object class="GtkWindow">
+    <property name="can_focus">False</property>
+    <property name="resizable">False</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">start</property>
+        <property name="border_width">12</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">6</property>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="column_spacing">6</property>
+            <property name="column_homogeneous">True</property>
+            <child>
+              <object class="TextMonitor">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.DESC</property>
+                <property name="font_size">4</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">0</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="CommandButton">
+                <property name="height_request">30</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">end</property>
+                <property name="channel">{P}{T}.PROC</property>
+                <property name="label">Process</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="font_size">4</property>
+                <property name="text">{P}{T}</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="row_homogeneous">True</property>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">Comment</property>
+                <property name="xalign">0.050000000000000003</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">Input PV</property>
+                <property name="xalign">0.050000000000000003</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">Expression</property>
+                <property name="xalign">0.050000000000000003</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">Value</property>
+                <property name="xalign">0.050000000000000003</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">Output PV</property>
+                <property name="xalign">0.050000000000000003</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="width_request">30</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">A</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">B</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">C</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">D</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">E</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">F</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">G</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">H</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">I</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">J</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">K</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">L</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">13</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">M</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">14</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">N</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">O</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">16</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">P</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">17</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="width_request">125</property>
+                <property name="height_request">24</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTA</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTB</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTC</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTD</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTE</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTF</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTG</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTH</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTI</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTJ</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTK</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTL</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">13</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTM</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">14</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTN</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTO</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">16</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CMTP</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">17</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="width_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPA</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPB</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPC</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPD</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPE</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPF</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPG</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPH</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPI</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPJ</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPK</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPL</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">13</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPM</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">14</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPN</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPO</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">16</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.INPP</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">17</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="width_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCA</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCB</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCC</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCD</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCE</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCF</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCG</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCH</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCI</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCJ</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCK</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCL</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">13</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCM</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">14</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCN</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCO</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">16</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.CLCP</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">17</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="width_request">75</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.A</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.B</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.C</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.D</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.E</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.F</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.G</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.H</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.I</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.J</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.K</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.L</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">13</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.M</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">14</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.N</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.O</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">16</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.P</property>
+                <property name="editable">False</property>
+                <property name="xalign">0.90000000000000002</property>
+              </object>
+              <packing>
+                <property name="left_attach">4</property>
+                <property name="top_attach">17</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="width_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTA</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTB</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTC</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTD</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTE</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTF</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTG</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTH</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTI</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTJ</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">11</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTK</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">12</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTL</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">13</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTM</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">14</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTN</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTO</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">16</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.OUTP</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">17</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <style>
+              <class name="gtkdm-table"/>
+            </style>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="spacing">6</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="ChoiceMenu">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.SCAN</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">Calc. Option</property>
+                <property name="xalign">1</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="ChoiceMenu">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.COPT</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="text">Fwd Link</property>
+                <property name="xalign">1</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{T}.FLINK</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
