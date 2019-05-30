@@ -9,10 +9,8 @@ from math import atan2, pi, cos, sin, ceil
 
 import gi
 
-gi.require_version('Pango', '1.0')
-gi.require_version('PangoCairo', '1.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, Pango
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
 import gepics
 import xml.etree.ElementTree as ET
 
@@ -99,8 +97,9 @@ class DisplayManager(object):
                 builder = Gtk.Builder()
                 builder.add_from_string(data)
                 window = builder.get_object('related_display')
+                window.builder = builder
                 window.header.set_subtitle(filename)
-                window.props.path = full_path
+                window.props.directory = full_path
                 if main:
                     window.connect('destroy', lambda x: Gtk.main_quit())
                 elif not multiple:
@@ -206,7 +205,8 @@ class Layout(Gtk.Fixed):
 
 class DisplayWindow(Gtk.Window):
     __gtype_name__ = 'DisplayWindow'
-    path = GObject.Property(type=str, default='', nick='Path')
+    directory = GObject.Property(type=str, default='', nick='Path')
+    builder = GObject.Property(type=Gtk.Builder)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -239,11 +239,11 @@ class DisplayWindow(Gtk.Window):
         btn.set_size_request(100, -1)
         box.pack_start(btn, False, False, 0)
 
-        # btn = Gtk.ModelButton(text='  Reload')
-        # btn.connect("clicked", self.on_reload)
-        # btn.set_size_request(100, -1)
-        # box.pack_start(btn, False, False, 0)
-        # box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
+        btn = Gtk.ModelButton(text='  Reload')
+        btn.connect("clicked", self.on_reload)
+        btn.set_size_request(100, -1)
+        box.pack_start(btn, False, False, 0)
+        box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
 
         btn = Gtk.ModelButton(text='  About GtkDM')
         btn.connect("clicked", self.on_about)
@@ -262,12 +262,12 @@ class DisplayWindow(Gtk.Window):
 
     def on_edit(self, btn):
         try:
-            cmd = subprocess.Popen(['gtkdm-editor', self.path])
+            cmd = subprocess.Popen(['gtkdm-editor', self.directory])
         except FileNotFoundError as e:
             print("GtkDM Editor not available")
 
     def on_reload(self, btn):
-        Manager.embed_display(self, self.path)
+        Manager.embed_display(self, self.directory)
 
     def on_about(self, btn):
         about_dialog = Gtk.AboutDialog(transient_for=self, modal=True)
@@ -308,9 +308,9 @@ class DisplayFrame(Gtk.EventBox):
         self.connect('realize', self.on_realize)
 
     def on_realize(self, obj):
-        if self.display:
-            top_level = self.get_toplevel()
-            display_path = os.path.join(os.path.dirname(top_level.path), self.display)
+        top_level = self.get_toplevel()
+        if self.display and isinstance(top_level, DisplayWindow):
+            display_path = os.path.join(os.path.dirname(top_level.directory), self.display)
             Manager.embed_display(self, display_path, macros_spec=self.macros)
 
 
@@ -636,14 +636,14 @@ class Indicator(Gtk.Widget):
         self.pv = None
         self.label_pv = None
         self.theme = {
-            'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+            'border': Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=.25),
             'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
         }
         self.set_sensitive(False)
 
     def do_draw(self, cr):
         cr.set_line_width(0.75)
-        cr.set_font_size(self.size * 5 / 6)
+        cr.set_font_size(self.size*0.85)
         x = 4.5
         y = 4.5
         style = self.get_style_context()
@@ -655,7 +655,7 @@ class Indicator(Gtk.Widget):
         cr.stroke()
 
         xb, yb, w, h = cr.text_extents(self.label)[:4]
-        cr.move_to(x + self.size + 4, y + self.size / 2 - yb - h / 2)
+        cr.move_to(x + self.size + 4, y + self.size / 2 - yb - h / 2 + .5)
         cr.set_source_rgba(*self.theme['label'])
         cr.show_text(self.label)
 
@@ -1003,7 +1003,7 @@ class ChoiceButton(Gtk.EventBox):
 
     def on_realize(self, obj):
         self.box.get_style_context().add_class('linked')
-        self.get_style_context().add_class('gtkdm tiny')
+        self.get_style_context().add_class('gtkdm')
         pv_name = self.channel
         if pv_name:
             self.pv = gepics.PV(pv_name)
@@ -1196,17 +1196,20 @@ class Gauge(Gtk.Widget):
             cr.show_text(self.units_label)
 
         # needle
-        cr.set_line_width(0.5)
+        cr.set_line_width(0.75)
         value_angle = angle_scale * (self.value - minimum) + start_angle
         vr = 5 * r / 6
         vx2 = x + vr * cos(value_angle)
         vy2 = y + vr * sin(value_angle)
+        nx = 2*sin(value_angle)
+        ny = -2*cos(value_angle)
         cr.set_source_rgba(*alpha(color, 0.5))
-        cr.move_to(x - 2, y)
+        cr.move_to(x - nx, y - ny)
         cr.line_to(vx2, vy2)
-        cr.line_to(x + 2, y)
+        cr.line_to(x + nx, y + ny)
         cr.fill_preserve()
         cr.stroke()
+
 
         # label
         if self.label:
@@ -1509,7 +1512,7 @@ class DisplayButton(Gtk.EventBox):
     def on_clicked(self, button):
         if self.display:
             top_level = self.get_toplevel()
-            display_path = os.path.join(os.path.dirname(top_level.path), self.display)
+            display_path = os.path.join(os.path.dirname(top_level.directory), self.display)
             if self.frame:
                 Manager.embed_display(self.frame, display_path, macros_spec=self.macros)
             else:
@@ -1681,9 +1684,9 @@ class DisplayMenuItem(Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, obj):
-        if self.file:
-            top_level = self.get_toplevel()
-            display_path = os.path.join(os.path.dirname(top_level.path), self.file)
+        top_level = self.get_toplevel()
+        if self.file and isinstance(top_level, DisplayWindow):
+            display_path = os.path.join(os.path.dirname(top_level.directory), self.file)
             Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
@@ -1709,6 +1712,7 @@ class MessageLog(Gtk.Bin):
         self.wrap_mode = Gtk.WrapMode.WORD
         self.sw.add(self.view)
         self.add(self.sw)
+        self.adj = self.sw.get_vadjustment()
         self.tags = {
             gepics.Alarm.MAJOR: self.buffer.create_tag(foreground='Red', wrap_mode=Gtk.WrapMode.WORD),
             gepics.Alarm.MINOR: self.buffer.create_tag(foreground='Orange', wrap_mode=Gtk.WrapMode.WORD),
@@ -1744,8 +1748,7 @@ class MessageLog(Gtk.Bin):
         self.buffer.insert_with_tags(_iter, text, self.active_tag)
         _iter = self.buffer.get_end_iter()
 
-        adj = self.sw.get_vadjustment()
-        adj.set_value(adj.get_upper() - adj.get_page_size())
+        self.adj.set_value(self.adj.get_upper() - self.adj.get_page_size())
 
     def on_alarm(self, pv, alarm):
         if self.alarm:
@@ -1759,3 +1762,25 @@ class MessageLog(Gtk.Bin):
         else:
             self.get_style_context().add_class('gtkdm-inactive')
             self.set_sensitive(False)
+
+
+class VisToggle(Gtk.Bin):
+    __gtype_name__ = 'VisToggle'
+    widgets = GObject.Property(type=str, nick='Widgets')
+
+    def __init__(self):
+        super().__init__()
+        self.btn = Gtk.Switch(active=True)
+        self.add(self.btn)
+        self.btn.connect('realize', self.on_realize)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+        top_level = self.get_toplevel()
+        if isinstance(top_level, DisplayWindow):
+            for name in self.widgets.split(','):
+                w = top_level.builder.get_object(name.strip())
+                if w:
+                    self.btn.bind_property('active', w, 'visible', GObject.BindingFlags.DEFAULT)
+
+        self.btn.set_active(False)

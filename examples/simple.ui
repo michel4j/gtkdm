@@ -93,7 +93,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="Diagram">
+          <object class="Diagram" id="diagram1">
             <property name="width_request">304</property>
             <property name="height_request">208</property>
             <property name="visible">True</property>
@@ -106,7 +106,7 @@
           </packing>
         </child>
         <child>
-          <object class="TextMonitor">
+          <object class="TextMonitor" id="textmonitor1">
             <property name="width_request">100</property>
             <property name="height_request">28</property>
             <property name="visible">True</property>
@@ -122,7 +122,7 @@
           </packing>
         </child>
         <child>
-          <object class="TextMonitor">
+          <object class="TextMonitor" id="textmonitor2">
             <property name="width_request">100</property>
             <property name="height_request">25</property>
             <property name="visible">True</property>
@@ -142,7 +142,7 @@
           </packing>
         </child>
         <child>
-          <object class="LineMonitor">
+          <object class="LineMonitor" id="linemonitor2">
             <property name="width_request">124</property>
             <property name="height_request">90</property>
             <property name="visible">True</property>
@@ -156,7 +156,7 @@
           </packing>
         </child>
         <child>
-          <object class="Byte">
+          <object class="Byte" id="byte1">
             <property name="width_request">221</property>
             <property name="height_request">62</property>
             <property name="visible">True</property>
@@ -172,8 +172,8 @@
           </packing>
         </child>
         <child>
-          <object class="ScaleControl">
-            <property name="width_request">72</property>
+          <object class="ScaleControl" id="scalecontrol1">
+            <property name="width_request">80</property>
             <property name="height_request">128</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -185,12 +185,12 @@
             <property name="orientation">vertical</property>
           </object>
           <packing>
-            <property name="x">656</property>
+            <property name="x">761</property>
             <property name="y">7</property>
           </packing>
         </child>
         <child>
-          <object class="TextControl">
+          <object class="TextControl" id="textcontrol1">
             <property name="width_request">67</property>
             <property name="height_request">28</property>
             <property name="visible">True</property>
@@ -204,7 +204,7 @@
           </packing>
         </child>
         <child>
-          <object class="TextLabel">
+          <object class="TextLabel" id="textlabel1">
             <property name="width_request">100</property>
             <property name="height_request">20</property>
             <property name="visible">True</property>
@@ -217,7 +217,7 @@
           </packing>
         </child>
         <child>
-          <object class="LineMonitor">
+          <object class="LineMonitor" id="linemonitor3">
             <property name="width_request">813</property>
             <property name="height_request">20</property>
             <property name="visible">True</property>
@@ -232,7 +232,7 @@
           </packing>
         </child>
         <child>
-          <object class="LineMonitor">
+          <object class="LineMonitor" id="linemonitor1">
             <property name="width_request">31</property>
             <property name="height_request">36</property>
             <property name="visible">True</property>
@@ -247,14 +247,14 @@
           </packing>
         </child>
         <child>
-          <object class="Indicator">
-            <property name="width_request">117</property>
+          <object class="Indicator" id="indicator1">
+            <property name="width_request">162</property>
             <property name="height_request">21</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
             <property name="colors">YGRO</property>
-            <property name="size">12</property>
+            <property name="size">13</property>
           </object>
           <packing>
             <property name="x">548</property>
@@ -262,7 +262,7 @@
           </packing>
         </child>
         <child>
-          <object class="CommandButton">
+          <object class="CommandButton" id="commandbutton1">
             <property name="width_request">62</property>
             <property name="height_request">28</property>
             <property name="visible">True</property>
@@ -291,15 +291,15 @@
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">118</property>
-            <property name="height_request">49</property>
+            <property name="width_request">129</property>
+            <property name="height_request">20</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:autoC</property>
           </object>
           <packing>
-            <property name="x">713</property>
-            <property name="y">9</property>
+            <property name="x">318</property>
+            <property name="y">304</property>
           </packing>
         </child>
         <child>
@@ -340,28 +340,16 @@
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">165</property>
-            <property name="height_request">25</property>
+            <property name="width_request">131</property>
+            <property name="height_request">29</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:gunOnC</property>
             <property name="orientation">horizontal</property>
           </object>
           <packing>
-            <property name="x">659</property>
-            <property name="y">461</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSwitch">
-            <property name="width_request">50</property>
-            <property name="height_request">26</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-          </object>
-          <packing>
-            <property name="x">11</property>
-            <property name="y">463</property>
+            <property name="x">647</property>
+            <property name="y">462</property>
           </packing>
         </child>
         <child>
@@ -412,7 +400,7 @@
             <property name="height_request">27</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="display">clsmtr.ui</property>
+            <property name="display">clsmtr-vme.ui</property>
             <property name="frame">displayframe1</property>
             <property name="label">VFM</property>
             <property name="macros">motor=SMTR1608-4-B10-20,units=mm</property>
@@ -456,29 +444,29 @@
         </child>
         <child>
           <object class="MenuButton">
-            <property name="width_request">93</property>
-            <property name="height_request">31</property>
+            <property name="width_request">122</property>
+            <property name="height_request">26</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label">Extras</property>
             <property name="menu">displaymenu1</property>
           </object>
           <packing>
-            <property name="x">380</property>
+            <property name="x">374</property>
             <property name="y">103</property>
           </packing>
         </child>
         <child>
           <object class="ChoiceMenu">
-            <property name="width_request">121</property>
-            <property name="height_request">26</property>
+            <property name="width_request">122</property>
+            <property name="height_request">29</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
           </object>
           <packing>
-            <property name="x">382</property>
-            <property name="y">137</property>
+            <property name="x">374</property>
+            <property name="y">70</property>
           </packing>
         </child>
         <child>
@@ -537,6 +525,19 @@
           <packing>
             <property name="x">470</property>
             <property name="y">205</property>
+          </packing>
+        </child>
+        <child>
+          <object class="VisToggle">
+            <property name="width_request">50</property>
+            <property name="height_request">26</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="widgets">scalecontrol1, textcontrol1</property>
+          </object>
+          <packing>
+            <property name="x">13</property>
+            <property name="y">357</property>
           </packing>
         </child>
       </object>

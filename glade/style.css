@@ -1,32 +1,26 @@
-.gtkdm * {
-
+.gtkdm-window * {
+    font-size: 9pt;
 }
 
-popover.gtkdm {
+.gtkdm-window popover, .gtkdm-window menu {
     border-radius: 3px;
 }
 
 .gtkdm entry {
     font-family: "TheSansMonoCd Office", "Monaco", monospace;
 }
-
-.gtkdm entry, .gtkdm button {
+.gtkdm entry, .gtkdm button, .gtkdm button.combo, .gtkdm button.toggle {
     min-height: 10px;
     border-radius: 3px;
-    font-size: 8.5pt;
 }
 .gtkdm spinbutton {
     min-height: 12px;
     border-radius: 3px;
-    font-size: 8.5pt;
-}
-.gtkdm treeview {
-    font-size: 9pt;
-    margin: 2px;
+    font-size: 95%;
 }
 
 .gtkdm textview {
-    font-size: 9pt;
+    font-size: 95%;
     margin: 2px;
     font-family: "TheSansMonoCd Office", "Monaco", monospace;
 }

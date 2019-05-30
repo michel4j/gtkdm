@@ -146,6 +146,7 @@
                     <child>
                       <object class="Indicator">
                         <property name="width_request">40</property>
+                        <property name="height_request">20</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="channel">{motor}:moving</property>
@@ -168,6 +169,7 @@
                   <object class="TextMonitor">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="channel">{motor}:status</property>
                     <property name="font_size">2</property>
                   </object>
@@ -188,8 +190,8 @@
             <property name="can_focus">False</property>
             <child>
               <object class="DisplayButton">
-                <property name="width_request">18</property>
-                <property name="height_request">16</property>
+                <property name="width_request">24</property>
+                <property name="height_request">18</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

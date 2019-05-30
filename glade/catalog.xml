@@ -43,6 +43,18 @@
             </properties>
         </glade-widget-class>
 
+        <glade-widget-class name="VisToggle" generic-name="vistoggle" title="Visibility Toggle"
+                            icon-name="widget-gtk-switch">
+            <properties>
+                <property id="widgets" name="Widgets">
+                    <parameter-spec>
+                        <type>GladeParamObjects</type>
+                        <value-type>GtkWidget</value-type>
+                    </parameter-spec>
+                </property>
+            </properties>
+        </glade-widget-class>
+
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl"
                             icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
@@ -78,6 +90,7 @@
         <glade-widget-class-ref name="Diagram"/>
         <glade-widget-class-ref name="Shape"/>
         <glade-widget-class-ref name="MessageLog"/>
+        <glade-widget-class-ref name="VisToggle"/>
     </glade-widget-group>
     <glade-widget-group name="gtkdm-control" title="GtkDM Control Widgets">
         <glade-widget-class-ref name="ScaleControl"/>
