@@ -368,16 +368,16 @@
         </child>
         <child>
           <object class="Symbol">
-            <property name="width_request">20</property>
-            <property name="height_request">28</property>
+            <property name="width_request">23</property>
+            <property name="height_request">39</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="channel">michel:autoC</property>
-            <property name="file">valve.sym</property>
+            <property name="channel">michel:GV1:positionM</property>
+            <property name="file">valves.sym</property>
           </object>
           <packing>
-            <property name="x">141</property>
-            <property name="y">301</property>
+            <property name="x">166</property>
+            <property name="y">354</property>
           </packing>
         </child>
         <child>
@@ -528,7 +528,7 @@
           </packing>
         </child>
         <child>
-          <object class="VisToggle">
+          <object class="HideSwitch">
             <property name="width_request">50</property>
             <property name="height_request">26</property>
             <property name="visible">True</property>

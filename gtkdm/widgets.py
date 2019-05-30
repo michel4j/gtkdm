@@ -1317,15 +1317,17 @@ class Symbol(Gtk.Widget):
         y = allocation.height / 2
         if self.image:
             scale = min(allocation.width / self.frames.width, allocation.height / self.frames.height)
-            cr.save()
-            cr.scale(scale, scale)
+            w = self.image.get_width()*scale
+            h = self.image.get_height() * scale
+            pixbuf = self.image.scale_simple(w, h, GdkPixbuf.InterpType.BILINEAR)
+
             Gdk.cairo_set_source_pixbuf(
-                cr, self.image,
-                x - self.image.get_width() * scale / 2,
-                y - self.image.get_height() * scale / 2
+                cr, pixbuf,
+                x - w / 2,
+                y - h / 2
             )
             cr.paint()
-            cr.restore()
+
         else:
             # draw boxes
             style = self.get_style_context()
@@ -1764,8 +1766,8 @@ class MessageLog(Gtk.Bin):
             self.set_sensitive(False)
 
 
-class VisToggle(Gtk.Bin):
-    __gtype_name__ = 'VisToggle'
+class HideSwitch(Gtk.Bin):
+    __gtype_name__ = 'HideSwitch'
     widgets = GObject.Property(type=str, nick='Widgets')
 
     def __init__(self):

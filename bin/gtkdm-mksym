@@ -13,11 +13,16 @@ if __name__ == '__main__':
 
     sym_file = '{}.sym'.format(args.name)
     with zipfile.ZipFile(sym_file, 'w', zipfile.ZIP_DEFLATED) as sym:
-        sym.writestr('symbol.json', json.dumps(args.images))
+        names = []
         for image in args.images:
-            if os.path.exists(image):
-                print('Adding {} to {} ...'.format(image, sym_file))
-                sym.write(image)
+            directory, file_name = os.path.split(image)
+            if directory:
+                os.chdir(directory)
+            if os.path.exists(file_name):
+                print('Adding {} to {} ...'.format(file_name, sym_file))
+                sym.write(file_name)
+                names.append(file_name)
             else:
                 print('{} not found! Skipping ...'.format(image))
+        sym.writestr('symbol.json', json.dumps(names))
     print('{} ready.'.format(sym_file))

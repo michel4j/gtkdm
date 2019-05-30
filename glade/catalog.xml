@@ -7,7 +7,8 @@
         <glade-widget-class name="DisplayFrame" generic-name="displayframe" title="Display Frame"
                             icon-name="widget-gtk-frame"/>
         <glade-widget-class name="TextMonitor" generic-name="textmonitor" title="Text Monitor"
-                            icon-name="widget-gtk-label"/>
+                            icon-name="widget-gtk-label">
+        </glade-widget-class>
         <glade-widget-class name="LineMonitor" generic-name="linemonitor" title="Line Monitor"
                             icon-name="widget-gtk-separator"/>
         <glade-widget-class name="Byte" generic-name="byte" title="Byte" icon-name="widget-gtk-stacksidebar"/>
@@ -43,7 +44,7 @@
             </properties>
         </glade-widget-class>
 
-        <glade-widget-class name="VisToggle" generic-name="vistoggle" title="Visibility Toggle"
+        <glade-widget-class name="HideSwitch" generic-name="hideswitch" title="HideSwitch"
                             icon-name="widget-gtk-switch">
             <properties>
                 <property id="widgets" name="Widgets">
@@ -90,7 +91,7 @@
         <glade-widget-class-ref name="Diagram"/>
         <glade-widget-class-ref name="Shape"/>
         <glade-widget-class-ref name="MessageLog"/>
-        <glade-widget-class-ref name="VisToggle"/>
+        <glade-widget-class-ref name="HideSwitch"/>
     </glade-widget-group>
     <glade-widget-group name="gtkdm-control" title="GtkDM Control Widgets">
         <glade-widget-class-ref name="ScaleControl"/>
