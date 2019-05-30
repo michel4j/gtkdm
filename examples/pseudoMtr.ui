@@ -116,37 +116,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="Indicator">
-                        <property name="width_request">40</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="channel">{motor}:ccw</property>
-                        <property name="label">CCW</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
-                      <object class="Indicator">
-                        <property name="width_request">35</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="channel">{motor}:cw</property>
-                        <property name="label">CW</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
                       <object class="Indicator">
                         <property name="width_request">40</property>
-                        <property name="height_request">20</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="channel">{motor}:moving</property>
@@ -155,6 +132,7 @@
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
+                        <property name="pack_type">end</property>
                         <property name="position">3</property>
                       </packing>
                     </child>
@@ -169,7 +147,6 @@
                   <object class="TextMonitor">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="hexpand">True</property>
                     <property name="channel">{motor}:status</property>
                     <property name="font_size">2</property>
                   </object>
@@ -190,12 +167,12 @@
             <property name="can_focus">False</property>
             <child>
               <object class="DisplayButton">
-                <property name="width_request">24</property>
-                <property name="height_request">18</property>
+                <property name="width_request">18</property>
+                <property name="height_request">16</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="display">clsmtr-details.ui</property>
+                <property name="display">pseudoMtr-details.ui</property>
                 <property name="label">...</property>
                 <property name="macros">motor={motor},units={units}</property>
                 <style>

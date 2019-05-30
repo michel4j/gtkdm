@@ -82,7 +82,8 @@ class DisplayManager(object):
         new_macros = {}
         new_macros.update(self.macros)
         new_macros.update(utils.parse_macro_spec(macros_spec))
-        unique_text = ('{}{}'.format(filename, utils.compress_macro(new_macros))).encode('utf-8')
+        new_macro_spec = utils.compress_macro(new_macros)
+        unique_text = ('{}{}'.format(filename, new_macro_spec)).encode('utf-8')
         key = hashlib.sha256(unique_text).hexdigest()
         if multiple or key not in self.registry:
             try:
@@ -98,6 +99,7 @@ class DisplayManager(object):
                 builder.add_from_string(data)
                 window = builder.get_object('related_display')
                 window.builder = builder
+                window.macros = new_macro_spec
                 window.header.set_subtitle(filename)
                 window.props.directory = full_path
                 if main:
@@ -122,11 +124,13 @@ class DisplayManager(object):
         w.set('id', 'embedded_display')
 
         # get list of non GtkWindow Top levels. These should be loaded.
-        top_levels = list({
-                              element.get('id') for element in tree.findall("./object")
-                          } - {
-                              element.get('id') for element in tree.findall("./object[@class='GtkWindow']")
-                          }) + ['embedded_display']
+        top_levels = list(
+            {
+                element.get('id') for element in tree.findall("./object")
+            } - {
+                element.get('id') for element in tree.findall("./object[@class='GtkWindow']")
+            }
+        ) + ['embedded_display']
 
         new_macros = {}
         new_macros.update(self.macros)
@@ -196,6 +200,56 @@ def ticks(lo, hi, step):
 Direction = Gdk.WindowEdge
 
 
+class BlankWidget(Gtk.Widget):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def do_realize(self):
+        allocation = self.get_allocation()
+        attr = Gdk.WindowAttr()
+        attr.window_type = Gdk.WindowType.CHILD
+        attr.x = allocation.x
+        attr.y = allocation.y
+        attr.width = allocation.width
+        attr.height = allocation.height
+        attr.visual = self.get_visual()
+        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
+        mask = Gdk.WindowAttributesType.X |Gdk.WindowAttributesType.Y | Gdk.WindowAttributesType.VISUAL
+        window = Gdk.Window(self.get_parent_window(), attr, mask);
+        self.set_window(window)
+        self.register_window(window)
+        self.set_realized(True)
+        window.set_background_pattern(None)
+
+
+class AlarmMixin(object):
+    def on_alarm(self, pv, alarm):
+        if self.alarm:
+            if alarm == gepics.Alarm.MAJOR:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                self.get_style_context().add_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+            else:
+                self.get_style_context().remove_class('gtkdm-warning')
+                self.get_style_context().remove_class('gtkdm-critical')
+            self.queue_draw()
+
+
+class ActiveMixin(object):
+    def on_active(self, pv, connected):
+        if connected:
+            self.pv.get_with_metadata()
+            self.get_style_context().remove_class('gtkdm-inactive')
+            self.set_sensitive(True)
+        else:
+            self.get_style_context().add_class('gtkdm-inactive')
+            self.set_sensitive(False)
+        self.queue_draw()
+
+
 class Layout(Gtk.Fixed):
     __gtype_name__ = 'Layout'
 
@@ -205,8 +259,9 @@ class Layout(Gtk.Fixed):
 
 class DisplayWindow(Gtk.Window):
     __gtype_name__ = 'DisplayWindow'
-    directory = GObject.Property(type=str, default='', nick='Path')
+    directory = GObject.Property(type=str, default='')
     builder = GObject.Property(type=Gtk.Builder)
+    macros = GObject.Property(type=str, default='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -224,7 +279,7 @@ class DisplayWindow(Gtk.Window):
         icon = Gio.ThemedIcon(name="applications-engineering")
         image = Gtk.Image.new_from_gicon(icon, Gtk.IconSize.LARGE_TOOLBAR)
         self.header.pack_start(image)
-        self.connect('realize', self.on_realize)
+        self.get_style_context().add_class('gtkdm-window')
 
         # prepare application menu
         popover = Gtk.Popover()
@@ -257,9 +312,6 @@ class DisplayWindow(Gtk.Window):
         box.pack_start(btn, False, False, 0)
         popover.show_all()
 
-    def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm-window')
-
     def on_edit(self, btn):
         try:
             cmd = subprocess.Popen(['gtkdm-editor', self.directory])
@@ -267,7 +319,7 @@ class DisplayWindow(Gtk.Window):
             print("GtkDM Editor not available")
 
     def on_reload(self, btn):
-        Manager.embed_display(self, self.directory)
+        Manager.embed_display(self, self.directory, self.macros)
 
     def on_about(self, btn):
         about_dialog = Gtk.AboutDialog(transient_for=self, modal=True)
@@ -284,7 +336,7 @@ class DisplayWindow(Gtk.Window):
         self.destroy()
 
 
-class DisplayFrame(Gtk.EventBox):
+class DisplayFrame(Gtk.Bin):
     __gtype_name__ = 'DisplayFrame'
     label = GObject.Property(type=str, default='', nick='Label')
     shadow_type = GObject.Property(type=Gtk.ShadowType, default=Gtk.ShadowType.NONE, nick='Shadow Type')
@@ -314,11 +366,12 @@ class DisplayFrame(Gtk.EventBox):
             Manager.embed_display(self, display_path, macros_spec=self.macros)
 
 
-class TextMonitor(Gtk.EventBox):
+class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'TextMonitor'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    colors = GObject.Property(type=str, default="", nick='Value Colors')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
@@ -326,23 +379,16 @@ class TextMonitor(Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.label = Gtk.Label('..text..')
+        self.label = Gtk.Label('')
         self.add(self.label)
         self.pv = None
         self.connect('realize', self.on_realize)
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
-        self.font_styles = {
-            1: 'xs',
-            2: 'sm',
-            3: 'md',
-            4: 'lg',
-            5: 'xl'
-        }
+        self.get_style_context().add_class('gtkdm')
+        self.font_styles = {1: 'xs', 2: 'sm',  3: 'md', 4: 'lg', 5: 'xl'}
 
     def on_realize(self, obj):
         style = self.get_style_context()
-        style.add_class('gtkdm')
-
         # adjust style classes
         for k, v in self.font_styles.items():
             if k == self.font_size:
@@ -371,28 +417,6 @@ class TextMonitor(Gtk.EventBox):
             text = '{} {}'.format(text, pv.units)
         self.label.set_markup(text)
 
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            if alarm == gepics.Alarm.MAJOR:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                self.get_style_context().add_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-            else:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-
-            self.get_style_context().remove_class('gtkdm-inactive')
-            self.set_sensitive(True)
-        else:
-            self.get_style_context().add_class('gtkdm-inactive')
-            self.set_sensitive(False)
-
 
 class TextLabel(Gtk.EventBox):
     __gtype_name__ = 'TextLabel'
@@ -409,6 +433,7 @@ class TextLabel(Gtk.EventBox):
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.add(self.label)
         self.connect('realize', self.on_realize)
+        self.get_style_context().add_class('gtkdm')
         self.font_styles = {
             1: 'xs',
             2: 'sm',
@@ -419,7 +444,6 @@ class TextLabel(Gtk.EventBox):
 
     def on_realize(self, obj):
         style = self.get_style_context()
-        style.add_class('gtkdm')
         # adjust style classes
         for k, v in self.font_styles.items():
             if k == self.font_size:
@@ -428,11 +452,12 @@ class TextLabel(Gtk.EventBox):
                 style.remove_class(v)
 
 
-class LineMonitor(Gtk.Widget):
+class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
     __gtype_name__ = 'LineMonitor'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     line_width = GObject.Property(type=float, minimum=0.1, maximum=10.0, default=1.0, nick='Width')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    colors = GObject.Property(type=str, default="K", nick='Value Colors')
     arrow = GObject.Property(type=bool, default=False, nick='Arrow')
     arrow_size = GObject.Property(type=int, minimum=1, maximum=10, default=2, nick='Arrow Size')
     direction = cheme = GObject.Property(type=Direction, default=Direction.EAST, nick='Direction')
@@ -441,6 +466,9 @@ class LineMonitor(Gtk.Widget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_size_request(40, 40)
+        self.pv = None
+        self.palette = ColorSequence(self.colors)
+        self.connect('realize', self.on_realize)
 
     def get_coords(self):
         allocation = self.get_allocation()
@@ -463,9 +491,7 @@ class LineMonitor(Gtk.Widget):
 
     def do_draw(self, cr):
         # draw line
-
         x1, y1, x2, y2 = self.get_coords()
-
         if not self.color:
             self.props.color = self.get_style_context().get_color(Gtk.StateFlags.NORMAL)
         cr.set_source_rgba(*self.color)
@@ -492,33 +518,26 @@ class LineMonitor(Gtk.Widget):
             cr.line_to(ax2, ay2)
             cr.stroke()
 
-    def do_realize(self):
-        allocation = self.get_allocation()
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.x = allocation.x
-        attr.y = allocation.y
-        attr.width = allocation.width
-        attr.height = allocation.height
-        attr.visual = self.get_visual()
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        WAT = Gdk.WindowAttributesType
-        mask = WAT.X | WAT.Y | WAT.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
-        self.set_window(window)
-        self.register_window(window)
-        self.set_realized(True)
-        window.set_background_pattern(None)
+    def on_realize(self, widget):
+        self.palette = ColorSequence(self.colors)
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('alarm', self.on_alarm)
+            self.pv.connect('active', self.on_active)
+
+    def on_change(self, pv, value):
+        pass
 
 
-class Byte(Gtk.Widget):
+class Byte(ActiveMixin, AlarmMixin, BlankWidget):
     __gtype_name__ = 'Byte'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     offset = GObject.Property(type=int, minimum=0, maximum=4, default=0, nick='Byte Offset')
     count = GObject.Property(type=int, minimum=1, maximum=8, default=8, nick='Byte Count')
     big_endian = GObject.Property(type=bool, default=False, nick='Big-Endian')
     labels = GObject.Property(type=str, default='', nick='Labels')
-    colors = GObject.Property(type=str, default='AG', nick='Colors')
+    colors = GObject.Property(type=str, default="AG", nick='Value Colors')
     columns = GObject.Property(type=int, minimum=1, maximum=8, default=1, nick='Columns')
     size = GObject.Property(type=int, minimum=5, maximum=50, default=10, nick='LED Size')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
@@ -529,9 +548,12 @@ class Byte(Gtk.Widget):
         self._view_labels = [''] * self.count
         self.set_size_request(196, 40)
         self.theme = {
-            'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+            'border': Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=1.0),
+            'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
         }
         self.set_sensitive(False)
+        self.connect('realize', self.on_realize)
+        self.palette = ColorSequence(self.colors)
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -561,28 +583,10 @@ class Byte(Gtk.Widget):
             cr.show_text(label)
             cr.stroke()
 
-    def do_realize(self):
-        allocation = self.get_allocation()
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.x = allocation.x
-        attr.y = allocation.y
-        attr.width = allocation.width
-        attr.height = allocation.height
-        attr.visual = self.get_visual()
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        WAT = Gdk.WindowAttributesType
-        mask = WAT.X | WAT.Y | WAT.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
-        self.set_window(window)
-        self.register_window(window)
-        self.set_realized(True)
-        window.set_background_pattern(None)
+    def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -598,36 +602,13 @@ class Byte(Gtk.Widget):
             self._view_bits = bits[::-1][self.offset:][:self.count]
         self.queue_draw()
 
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            style = self.get_style_context()
-            if alarm == gepics.Alarm.MAJOR:
-                style.remove_class('gtkdm-warning')
-                style.add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                style.add_class('gtkdm-warning')
-                style.remove_class('gtkdm-critical')
-            else:
-                style.remove_class('gtkdm-warning')
-                style.remove_class('gtkdm-critical')
 
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.set_sensitive(True)
-            self.theme['border'] = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
-        else:
-            self.set_sensitive(False)
-            self.theme['border'] = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
-        self.queue_draw()
-
-
-class Indicator(Gtk.Widget):
+class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
     __gtype_name__ = 'Indicator'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
-    colors = GObject.Property(type=str, default='AG', nick='Colors')
+    colors = GObject.Property(type=str, default="AG", nick='Value Colors')
     size = GObject.Property(type=int, minimum=5, maximum=50, default=10, nick='LED Size')
 
     def __init__(self, *args, **kwargs):
@@ -636,14 +617,16 @@ class Indicator(Gtk.Widget):
         self.pv = None
         self.label_pv = None
         self.theme = {
-            'border': Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=.25),
+            'border': Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=1.0),
             'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
         }
         self.set_sensitive(False)
+        self.connect('realize', self.on_realize)
+        self.palette = ColorSequence(self.colors)
 
     def do_draw(self, cr):
         cr.set_line_width(0.75)
-        cr.set_font_size(self.size*0.85)
+        cr.set_font_size(self.size * 0.85)
         x = 4.5
         y = 4.5
         style = self.get_style_context()
@@ -659,34 +642,16 @@ class Indicator(Gtk.Widget):
         cr.set_source_rgba(*self.theme['label'])
         cr.show_text(self.label)
 
-    def do_realize(self):
-        allocation = self.get_allocation()
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.x = allocation.x
-        attr.y = allocation.y
-        attr.width = allocation.width
-        attr.height = allocation.height
-        attr.visual = self.get_visual()
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        WAT = Gdk.WindowAttributesType
-        mask = WAT.X | WAT.Y | WAT.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
-        self.set_window(window)
-        self.register_window(window)
-        self.set_realized(True)
-        window.set_background_pattern(None)
+    def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -697,31 +662,8 @@ class Indicator(Gtk.Widget):
         self.theme['fill'] = self.palette(value)
         self.queue_draw()
 
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            style = self.get_style_context()
-            if alarm == gepics.Alarm.MAJOR:
-                style.remove_class('gtkdm-warning')
-                style.add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                style.add_class('gtkdm-warning')
-                style.remove_class('gtkdm-critical')
-            else:
-                style.remove_class('gtkdm-warning')
-                style.remove_class('gtkdm-critical')
 
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.set_sensitive(True)
-            self.theme['border'] = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
-        else:
-            self.set_sensitive(False)
-            self.theme['border'] = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
-        self.queue_draw()
-
-
-class ScaleControl(Gtk.Bin):
+class ScaleControl(ActiveMixin, AlarmMixin, Gtk.Bin):
     __gtype_name__ = 'ScaleControl'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     minimum = GObject.Property(type=float, default=0., nick='Minimum')
@@ -745,10 +687,10 @@ class ScaleControl(Gtk.Bin):
         self.bind_property('maximum', self.adjustment, 'upper', GObject.BindingFlags.DEFAULT)
         self.bind_property('minimum', self.adjustment, 'lower', GObject.BindingFlags.DEFAULT)
         self.bind_property('increment', self.adjustment, 'step-increment', GObject.BindingFlags.DEFAULT)
+        self.get_style_context().add_class('gtkdm')
         self.set_sensitive(False)
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
         position = Gtk.PositionType.TOP if self.orientation == Gtk.Orientation.HORIZONTAL else Gtk.PositionType.LEFT
         value_pos = Gtk.PositionType.BOTTOM if self.orientation == Gtk.Orientation.HORIZONTAL else Gtk.PositionType.RIGHT
         self.scale.props.value_pos = value_pos
@@ -769,31 +711,12 @@ class ScaleControl(Gtk.Bin):
         self.adjustment.set_value(value)
         self.in_progress = False
 
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            if alarm == gepics.Alarm.MAJOR:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                self.get_style_context().add_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-            else:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.set_sensitive(True)
-        else:
-            self.set_sensitive(False)
-
     def on_value_set(self, obj):
         if not self.in_progress:
             self.pv.put(self.adjustment.props.value)
 
 
-class TweakControl(Gtk.Bin):
+class TweakControl(ActiveMixin, AlarmMixin, Gtk.Bin):
     __gtype_name__ = 'TweakControl'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     minimum = GObject.Property(type=float, default=0., nick='Minimum')
@@ -814,9 +737,9 @@ class TweakControl(Gtk.Bin):
         self.bind_property('maximum', self.adjustment, 'upper', GObject.BindingFlags.DEFAULT)
         self.bind_property('minimum', self.adjustment, 'lower', GObject.BindingFlags.DEFAULT)
         self.bind_property('increment', self.adjustment, 'step-increment', GObject.BindingFlags.DEFAULT)
+        self.get_style_context().add_class('gtkdm')
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
         pv_name = self.channel
         if pv_name:
             self.pv = gepics.PV(pv_name)
@@ -830,34 +753,12 @@ class TweakControl(Gtk.Bin):
         self.adjustment.set_value(value)
         self.in_progress = False
 
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            if alarm == gepics.Alarm.MAJOR:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                self.get_style_context().add_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-            else:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-
-    def on_active(self, pv, connected):
-        if connected:
-            if self.use_limits:
-                meta = self.pv.get_ctrlvars()
-                self.props.minimum = meta['lower_ctrl_limit']
-                self.props.maximum = meta['upper_ctrl_limit']
-            self.set_sensitive(True)
-        else:
-            self.set_sensitive(False)
-
     def on_value_set(self, obj):
         if not self.in_progress:
             self.pv.put(self.adjustment.props.value)
 
 
-class TextControl(Gtk.EventBox):
+class TextControl(ActiveMixin, AlarmMixin, Gtk.Bin):
     __gtype_name__ = 'TextControl'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -876,12 +777,11 @@ class TextControl(Gtk.EventBox):
         self.in_progress = False
         self.pv = None
         self.add(self.entry)
+        self.get_style_context().add_class('gtkdm')
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -900,40 +800,22 @@ class TextControl(Gtk.EventBox):
     def on_activate(self, entry):
         text = self.entry.get_text()
         if self.pv.type in ['char', 'time_char', 'ctrl_char'] and self.pv.count > 1:
-            conv = str
+            converter = str
         else:
-            conv = ENTRY_CONVERTERS[self.pv.type]
+            converter = ENTRY_CONVERTERS[self.pv.type]
         try:
-            value = conv(text)
+            value = converter(text)
             self.pv.put(value)
         except ValueError as e:
             print("Invalid Value: {}".format(e))
 
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            if alarm == gepics.Alarm.MAJOR:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                self.get_style_context().add_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-            else:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
 
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.set_sensitive(True)
-        else:
-            self.set_sensitive(False)
-
-
-class CommandButton(Gtk.EventBox):
+class CommandButton(ActiveMixin, AlarmMixin, Gtk.Bin):
     __gtype_name__ = 'CommandButton'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
     icon_name = GObject.Property(type=str, default='', nick='Icon Name')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -969,18 +851,12 @@ class CommandButton(Gtk.EventBox):
         self.props.label = value
         self.queue_draw()
 
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.set_sensitive(True)
-        else:
-            self.set_sensitive(False)
 
-
-class ChoiceButton(Gtk.EventBox):
+class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.Bin):
     __gtype_name__ = 'ChoiceButton'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     orientation = GObject.Property(type=Gtk.Orientation, default=Gtk.Orientation.VERTICAL, nick='Orientation')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -996,21 +872,23 @@ class ChoiceButton(Gtk.EventBox):
             btn.connect('toggled', self.on_toggled, i)
         self.add(self.box)
         self.set_sensitive(False)
+        self.box.get_style_context().add_class('linked')
+        self.get_style_context().add_class('gtkdm')
 
     def on_toggled(self, button, i):
         if not self.in_progress:
             self.pv.put(i)
 
     def on_realize(self, obj):
-        self.box.get_style_context().add_class('linked')
-        self.get_style_context().add_class('gtkdm')
         pv_name = self.channel
         if pv_name:
             self.pv = gepics.PV(pv_name)
             self.pv.connect('active', self.on_active)
+            self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('changed', self.on_change)
 
     def on_active(self, pv, connected):
+        ActiveMixin.on_active(self, pv, connected)
         if connected:
             for i, label in enumerate(pv.enum_strs):
                 if i < len(self.buttons):
@@ -1024,10 +902,6 @@ class ChoiceButton(Gtk.EventBox):
 
             for btn in self.buttons[i + 1:]:
                 btn.destroy()
-
-            self.set_sensitive(True)
-        else:
-            self.set_sensitive(False)
 
     def on_change(self, pv, value):
         self.in_progress = True
@@ -1048,6 +922,8 @@ class ChoiceMenu(Gtk.Bin):
         self.box.connect('changed', self.on_toggled)
         self.in_progress = False
         self.add(self.box)
+        self.box.get_style_context().add_class('linked')
+        self.get_style_context().add_class('gtkdm')
 
     def on_toggled(self, box):
         if not self.in_progress:
@@ -1056,8 +932,6 @@ class ChoiceMenu(Gtk.Bin):
                 self.pv.put(active)
 
     def on_realize(self, obj):
-        self.box.get_style_context().add_class('linked')
-        self.get_style_context().add_class('gtkdm')
         pv_name = self.channel
         if pv_name:
             self.pv = gepics.PV(pv_name)
@@ -1066,12 +940,16 @@ class ChoiceMenu(Gtk.Bin):
 
     def on_active(self, pv, connected):
         if connected:
+            self.pv.get_with_metadata()
             self.box.remove_all()
             for i, label in enumerate(pv.enum_strs):
                 self.box.append_text(label)
+            self.get_style_context().remove_class('gtkdm-inactive')
             self.set_sensitive(True)
         else:
+            self.get_style_context().add_class('gtkdm-inactive')
             self.set_sensitive(False)
+        self.queue_draw()
 
     def on_change(self, pv, value):
         self.in_progress = True
@@ -1079,7 +957,7 @@ class ChoiceMenu(Gtk.Bin):
         self.in_progress = False
 
 
-class Gauge(Gtk.Widget):
+class Gauge(BlankWidget):
     __gtype_name__ = 'Gauge'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     angle = GObject.Property(type=int, minimum=90, maximum=335, default=270, nick='Angle')
@@ -1095,9 +973,13 @@ class Gauge(Gtk.Widget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_size_request(120, 100)
+        self.pv = None
+        self.label_pv = None
         self.ctrlvars = None
         self.value = 0
         self.units_label = 'mA'
+        self.connect('realize', self.on_realize)
+        self.palette = ColorSequence(self.colors)
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -1201,15 +1083,14 @@ class Gauge(Gtk.Widget):
         vr = 5 * r / 6
         vx2 = x + vr * cos(value_angle)
         vy2 = y + vr * sin(value_angle)
-        nx = 2*sin(value_angle)
-        ny = -2*cos(value_angle)
+        nx = 2 * sin(value_angle)
+        ny = -2 * cos(value_angle)
         cr.set_source_rgba(*alpha(color, 0.5))
         cr.move_to(x - nx, y - ny)
         cr.line_to(vx2, vy2)
         cr.line_to(x + nx, y + ny)
         cr.fill_preserve()
         cr.stroke()
-
 
         # label
         if self.label:
@@ -1222,33 +1103,15 @@ class Gauge(Gtk.Widget):
                 cr.move_to(x - xb - tw / 2, yl + (i + 1.2) * th)
                 cr.show_text(line)
 
-    def do_realize(self):
-        allocation = self.get_allocation()
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.x = allocation.x
-        attr.y = allocation.y
-        attr.width = allocation.width
-        attr.height = allocation.height
-        attr.visual = self.get_visual()
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        WAT = Gdk.WindowAttributesType
-        mask = WAT.X | WAT.Y | WAT.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
-        self.set_window(window)
-        self.register_window(window)
-        self.set_realized(True)
-        window.set_background_pattern(None)
+    def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -1301,7 +1164,7 @@ class SymbolFrames(object):
             return self.frames[int(value)]
 
 
-class Symbol(Gtk.Widget):
+class Symbol(ActiveMixin, BlankWidget):
     __gtype_name__ = 'Symbol'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     file = GObject.Property(type=str, nick='Symbol File')
@@ -1310,6 +1173,7 @@ class Symbol(Gtk.Widget):
         super().__init__(*args, **kwargs)
         self.frames = None
         self.image = None
+        self.connect('realize', self.on_realize)
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -1317,17 +1181,11 @@ class Symbol(Gtk.Widget):
         y = allocation.height / 2
         if self.image:
             scale = min(allocation.width / self.frames.width, allocation.height / self.frames.height)
-            w = self.image.get_width()*scale
+            w = self.image.get_width() * scale
             h = self.image.get_height() * scale
             pixbuf = self.image.scale_simple(w, h, GdkPixbuf.InterpType.BILINEAR)
-
-            Gdk.cairo_set_source_pixbuf(
-                cr, pixbuf,
-                x - w / 2,
-                y - h / 2
-            )
+            Gdk.cairo_set_source_pixbuf(cr, pixbuf, x - w / 2, y - h / 2)
             cr.paint()
-
         else:
             # draw boxes
             style = self.get_style_context()
@@ -1336,27 +1194,9 @@ class Symbol(Gtk.Widget):
             cr.rectangle(1.5, 1.5, allocation.width - 3, allocation.height - 3)
             cr.stroke()
 
-    def do_realize(self):
-        allocation = self.get_allocation()
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.x = allocation.x
-        attr.y = allocation.y
-        attr.width = allocation.width
-        attr.height = allocation.height
-        attr.visual = self.get_visual()
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        WAT = Gdk.WindowAttributesType
-        mask = WAT.X | WAT.Y | WAT.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
-        self.set_window(window)
-        self.register_window(window)
-        self.set_realized(True)
-        window.set_background_pattern(None)
-
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+    def on_realize(self, widget):
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
 
@@ -1368,18 +1208,9 @@ class Symbol(Gtk.Widget):
         self.image = self.frames(value)
         self.queue_draw()
 
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.set_sensitive(True)
-        else:
-            self.set_sensitive(False)
-        self.queue_draw()
 
-
-class Diagram(Gtk.Widget):
+class Diagram(BlankWidget):
     __gtype_name__ = 'Diagram'
-
     pixbuf = GObject.Property(type=GdkPixbuf.Pixbuf, nick='Image File')
 
     def __init__(self, *args, **kwargs):
@@ -1408,26 +1239,8 @@ class Diagram(Gtk.Widget):
             cr.rectangle(1.5, 1.5, allocation.width - 3, allocation.height - 3)
             cr.stroke()
 
-    def do_realize(self):
-        allocation = self.get_allocation()
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.x = allocation.x
-        attr.y = allocation.y
-        attr.width = allocation.width
-        attr.height = allocation.height
-        attr.visual = self.get_visual()
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        WAT = Gdk.WindowAttributesType
-        mask = WAT.X | WAT.Y | WAT.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
-        self.set_window(window)
-        self.register_window(window)
-        self.set_realized(True)
-        window.set_background_pattern(None)
 
-
-class CheckControl(Gtk.EventBox):
+class CheckControl(ActiveMixin, AlarmMixin, Gtk.Bin):
     __gtype_name__ = 'CheckControl'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -1440,25 +1253,24 @@ class CheckControl(Gtk.EventBox):
         self.in_progress = False
         self.add(self.btn)
         self.pv = None
-        self.connect('realize', self.on_realize)
+        self.get_style_context().add_class('gtkdm')
         self.btn.connect('toggled', self.on_toggle)
         self.bind_property('label', self.btn, 'label', GObject.BindingFlags.DEFAULT)
+        self.connect('realize', self.on_realize)
 
     def on_toggle(self, obj):
         if not self.in_progress:
             self.pv.put(int(obj.get_active()))
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -1470,29 +1282,8 @@ class CheckControl(Gtk.EventBox):
         self.btn.set_active(bool(value))
         self.in_progress = False
 
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            if alarm == gepics.Alarm.MAJOR:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                self.get_style_context().add_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
-            else:
-                self.get_style_context().remove_class('gtkdm-warning')
-                self.get_style_context().remove_class('gtkdm-critical')
 
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.get_style_context().remove_class('gtkdm-inactive')
-            self.set_sensitive(True)
-        else:
-            self.get_style_context().add_class('gtkdm-inactive')
-            self.set_sensitive(False)
-
-
-class DisplayButton(Gtk.EventBox):
+class DisplayButton(Gtk.Bin):
     __gtype_name__ = 'DisplayButton'
     label = GObject.Property(type=str, default='', nick='Label')
     display = GObject.Property(type=str, default='', nick='Display File')
@@ -1504,11 +1295,8 @@ class DisplayButton(Gtk.EventBox):
         super().__init__(*args, **kwargs)
         self.button = Gtk.Button(label=self.label)
         self.button.connect('clicked', self.on_clicked)
-        self.connect('realize', self.on_realize)
         self.bind_property('label', self.button, 'label', GObject.BindingFlags.DEFAULT)
         self.add(self.button)
-
-    def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, button):
@@ -1521,7 +1309,7 @@ class DisplayButton(Gtk.EventBox):
                 Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
-class Shape(Gtk.Widget):
+class Shape(ActiveMixin, AlarmMixin, BlankWidget):
     __gtype_name__ = 'Shape'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
@@ -1533,20 +1321,19 @@ class Shape(Gtk.Widget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        style = self.get_style_context()
         self.theme = {
-            'border': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+            'border': style.get_color(style.get_state())
         }
         self.value = 0
+        self.connect('realize', self.on_realize)
+        self.palette = ColorSequence(self.colors)
 
     def do_draw(self, cr):
+        # draw boxes
         allocation = self.get_allocation()
 
-        # draw boxes
-        style = self.get_style_context()
-        self.theme['border'] = style.get_color(style.get_state())
-
         cr.set_line_width(0.75)
-
         width = min(allocation.width - 2, allocation.height - 2)
         cr.set_font_size(min(2 * width // 5, 12))
         x = pix(allocation.width / 2)
@@ -1568,34 +1355,20 @@ class Shape(Gtk.Widget):
             cr.show_text(self.label)
             cr.stroke()
 
-    def do_realize(self):
-        allocation = self.get_allocation()
-        attr = Gdk.WindowAttr()
-        attr.window_type = Gdk.WindowType.CHILD
-        attr.x = allocation.x
-        attr.y = allocation.y
-        attr.width = allocation.width
-        attr.height = allocation.height
-        attr.visual = self.get_visual()
-        attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        WAT = Gdk.WindowAttributesType
-        mask = WAT.X | WAT.Y | WAT.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
-        self.set_window(window)
-        self.register_window(window)
-        self.set_realized(True)
-        window.set_background_pattern(None)
+    def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        style = self.get_style_context()
+        self.theme = {
+            'border': style.get_color(style.get_state())
+        }
+        if self.channel:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -1604,29 +1377,6 @@ class Shape(Gtk.Widget):
 
     def on_change(self, pv, value):
         self.value = value
-        self.queue_draw()
-
-    def on_alarm(self, pv, alarm):
-        if self.alarm:
-            style = self.get_style_context()
-            if alarm == gepics.Alarm.MAJOR:
-                style.remove_class('gtkdm-warning')
-                style.add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
-                style.add_class('gtkdm-warning')
-                style.remove_class('gtkdm-critical')
-            else:
-                style.remove_class('gtkdm-warning')
-                style.remove_class('gtkdm-critical')
-
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.set_sensitive(True)
-            self.theme['border'] = Gdk.RGBA(0.0, 0.0, 0.0, 1.0)
-        else:
-            self.set_sensitive(False)
-            self.theme['border'] = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
         self.queue_draw()
 
 
@@ -1647,9 +1397,6 @@ class MenuButton(Gtk.Bin):
         self.add(self.btn)
         self.bind_property('label', self.text, 'label', GObject.BindingFlags.DEFAULT)
         self.bind_property('menu', self.btn, 'popover', GObject.BindingFlags.DEFAULT)
-        self.connect('realize', self.on_realize)
-
-    def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
 
 
@@ -1659,9 +1406,6 @@ class DisplayMenu(Gtk.Popover):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_border_width(3)
-        self.connect('realize', self.on_realize)
-
-    def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
 
 
@@ -1679,11 +1423,8 @@ class DisplayMenuItem(Gtk.Bin):
         self.bind_property('label', self.entry, 'text', GObject.BindingFlags.DEFAULT)
         self.add(self.entry)
         self.entry.connect('clicked', self.on_clicked)
-        self.show_all()
-        self.connect('realize', self.on_realize)
-
-    def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
+        self.show_all()
 
     def on_clicked(self, obj):
         top_level = self.get_toplevel()
@@ -1692,7 +1433,7 @@ class DisplayMenuItem(Gtk.Bin):
             Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
-class MessageLog(Gtk.Bin):
+class MessageLog(ActiveMixin, Gtk.Bin):
     __gtype_name__ = 'MessageLog'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -1723,10 +1464,9 @@ class MessageLog(Gtk.Bin):
         }
         self.active_tag = self.tags[gepics.Alarm.NORMAL]
         self.connect('realize', self.on_realize)
-
-    def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
 
+    def on_realize(self, obj):
         pv_name = self.channel
         if pv_name:
             self.pv = gepics.PV(pv_name)
@@ -1756,28 +1496,20 @@ class MessageLog(Gtk.Bin):
         if self.alarm:
             self.active_tag = self.tags[alarm]
 
-    def on_active(self, pv, connected):
-        if connected:
-            self.pv.get_with_metadata()
-            self.get_style_context().remove_class('gtkdm-inactive')
-            self.set_sensitive(True)
-        else:
-            self.get_style_context().add_class('gtkdm-inactive')
-            self.set_sensitive(False)
-
 
 class HideSwitch(Gtk.Bin):
     __gtype_name__ = 'HideSwitch'
     widgets = GObject.Property(type=str, nick='Widgets')
+    default = GObject.Property(type=bool, default=False, nick='Show by default')
 
     def __init__(self):
         super().__init__()
         self.btn = Gtk.Switch(active=True)
         self.add(self.btn)
+        self.get_style_context().add_class('gtkdm')
         self.btn.connect('realize', self.on_realize)
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
         top_level = self.get_toplevel()
         if isinstance(top_level, DisplayWindow):
             for name in self.widgets.split(','):
@@ -1785,4 +1517,4 @@ class HideSwitch(Gtk.Bin):
                 if w:
                     self.btn.bind_property('active', w, 'visible', GObject.BindingFlags.DEFAULT)
 
-        self.btn.set_active(False)
+        self.btn.set_active(self.default)

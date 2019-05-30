@@ -50,11 +50,8 @@
     opacity: 0.5;
 }
 
-.gtkdm ChoiceMenu button {
-    border-radius: 3px;
-}
 .gtkdm-warning {
-    color: #CA9900;
+    color: #ffcb00;
 }
 
 .gtkdm-critical {

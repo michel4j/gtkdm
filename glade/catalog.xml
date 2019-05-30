@@ -68,7 +68,7 @@
         <glade-widget-class name="MenuButton" generic-name="menubutton" title="Menu Button"
                             icon-name="widget-gtk-menubutton">
             <properties>
-                <property id="menu" custom-layout="True" name="Menu">
+                <property id="menu" name="Menu">
                     <parameter-spec>
                         <type>GladeParamObjects</type>
                         <value-type>DisplayMenu</value-type>
@@ -78,7 +78,7 @@
         </glade-widget-class>
     </glade-widget-classes>
 
-    <glade-widget-group name="gtkdm-display" title="GtkDM Display Widgets">
+    <glade-widget-group name="gtkdm-display" title="GtkDM Display">
         <glade-widget-class-ref name="Layout"/>
         <glade-widget-class-ref name="DisplayFrame"/>
         <glade-widget-class-ref name="TextMonitor"/>
@@ -93,7 +93,7 @@
         <glade-widget-class-ref name="MessageLog"/>
         <glade-widget-class-ref name="HideSwitch"/>
     </glade-widget-group>
-    <glade-widget-group name="gtkdm-control" title="GtkDM Control Widgets">
+    <glade-widget-group name="gtkdm-control" title="GtkDM Control">
         <glade-widget-class-ref name="ScaleControl"/>
         <glade-widget-class-ref name="TweakControl"/>
         <glade-widget-class-ref name="TextControl"/>

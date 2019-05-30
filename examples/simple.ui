@@ -368,8 +368,8 @@
         </child>
         <child>
           <object class="Symbol">
-            <property name="width_request">23</property>
-            <property name="height_request">39</property>
+            <property name="width_request">20</property>
+            <property name="height_request">36</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
@@ -400,10 +400,10 @@
             <property name="height_request">27</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="display">clsmtr-vme.ui</property>
+            <property name="display">pseudoMtr.ui</property>
             <property name="frame">displayframe1</property>
             <property name="label">VFM</property>
-            <property name="macros">motor=SMTR1608-4-B10-20,units=mm</property>
+            <property name="macros">motor=PSL1608-4-B10-03:gap,units=mm</property>
           </object>
           <packing>
             <property name="x">56</property>
