@@ -111,7 +111,6 @@
             <property name="height_request">28</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="visible_window">False</property>
             <property name="channel">michel:PM1:intensityM</property>
             <property name="color">rgb(32,74,135)</property>
             <property name="xalign">0.5</property>
@@ -127,7 +126,6 @@
             <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="visible_window">False</property>
             <property name="channel">michel:PM2:X:positionM</property>
             <property name="color">rgb(115,210,22)</property>
             <property name="font_size">3</property>
@@ -167,8 +165,8 @@
             <property name="size">12</property>
           </object>
           <packing>
-            <property name="x">424</property>
-            <property name="y">424</property>
+            <property name="x">307</property>
+            <property name="y">413</property>
           </packing>
         </child>
         <child>
@@ -212,13 +210,13 @@
             <property name="text">Beam Transport</property>
           </object>
           <packing>
-            <property name="x">113</property>
-            <property name="y">451</property>
+            <property name="x">103</property>
+            <property name="y">440</property>
           </packing>
         </child>
         <child>
           <object class="LineMonitor" id="linemonitor3">
-            <property name="width_request">813</property>
+            <property name="width_request">519</property>
             <property name="height_request">20</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -340,7 +338,7 @@
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">131</property>
+            <property name="width_request">180</property>
             <property name="height_request">29</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -348,8 +346,8 @@
             <property name="orientation">horizontal</property>
           </object>
           <packing>
-            <property name="x">647</property>
-            <property name="y">462</property>
+            <property name="x">19</property>
+            <property name="y">474</property>
           </packing>
         </child>
         <child>
@@ -484,7 +482,7 @@
         </child>
         <child>
           <object class="MessageLog">
-            <property name="width_request">813</property>
+            <property name="width_request">517</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -538,6 +536,18 @@
           <packing>
             <property name="x">13</property>
             <property name="y">357</property>
+          </packing>
+        </child>
+        <child>
+          <object class="XYPlot">
+            <property name="width_request">222</property>
+            <property name="height_request">270</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="x">563</property>
+            <property name="y">306</property>
           </packing>
         </child>
       </object>

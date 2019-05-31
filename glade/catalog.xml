@@ -29,8 +29,6 @@
                             icon-name="widget-gtk-combobox"/>
         <glade-widget-class name="Gauge" generic-name="gauge" title="Gauge" icon-name="widget-gtk-frame"/>
         <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
-        <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="Check Control"
-                            icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Diagram" generic-name="diagram" title="Diagram" icon-name="widget-gtk-image"/>
         <glade-widget-class name="DisplayButton" generic-name="displaybutton" title="Display Button"
                             icon-name="widget-gtk-appchooserbutton">
@@ -56,6 +54,7 @@
             </properties>
         </glade-widget-class>
 
+        <glade-widget-class name="XYPlot" generic-name="xyplot" title="XY Plot" icon-name="widget-gtk-drawingarea" adaptor="XYPlotAdaptor"/>
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl"
                             icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
@@ -92,6 +91,7 @@
         <glade-widget-class-ref name="Shape"/>
         <glade-widget-class-ref name="MessageLog"/>
         <glade-widget-class-ref name="HideSwitch"/>
+        <glade-widget-class-ref name="XYPlot"/>
     </glade-widget-group>
     <glade-widget-group name="gtkdm-control" title="GtkDM Control">
         <glade-widget-class-ref name="ScaleControl"/>

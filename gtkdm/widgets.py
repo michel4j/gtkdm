@@ -10,7 +10,7 @@ from math import atan2, pi, cos, sin, ceil
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, Gladeui
 import gepics
 import xml.etree.ElementTree as ET
 
@@ -135,6 +135,7 @@ class DisplayManager(object):
         new_macros = {}
         new_macros.update(self.macros)
         new_macros.update(utils.parse_macro_spec(macros_spec))
+        new_macro_spec = utils.compress_macro(new_macros)
         try:
             utils.update_properties(tree, new_macros)
         except KeyError as e:
@@ -151,6 +152,10 @@ class DisplayManager(object):
             if child:
                 child.destroy()
             frame.add(display)
+            # If reloading main window, frame will be a DisplayWindow, keep reference to builder
+            if isinstance(frame, DisplayWindow):
+                frame.builder = builder
+                frame.macros = new_macro_spec
             display.show_all()
 
 
@@ -215,7 +220,7 @@ class BlankWidget(Gtk.Widget):
         attr.height = allocation.height
         attr.visual = self.get_visual()
         attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
-        mask = Gdk.WindowAttributesType.X |Gdk.WindowAttributesType.Y | Gdk.WindowAttributesType.VISUAL
+        mask = Gdk.WindowAttributesType.X | Gdk.WindowAttributesType.Y | Gdk.WindowAttributesType.VISUAL
         window = Gdk.Window(self.get_parent_window(), attr, mask);
         self.set_window(window)
         self.register_window(window)
@@ -327,7 +332,7 @@ class DisplayWindow(Gtk.Window):
         about_dialog.set_logo_icon_name('applications-engineering')
         about_dialog.set_comments("Python-based Gtk Display Manager for \nEPICS Operator Screens")
         about_dialog.set_version("2019.6.1")
-        about_dialog.set_copyright("(c) 2019 Michel Fodje")
+        about_dialog.set_copyright("© 2019 Michel Fodje")
         about_dialog.set_license_type(Gtk.License.MIT_X11)
         about_dialog.set_authors(["Michel Fodje <michel.fodje@lightsource.ca>"])
         about_dialog.present()
@@ -366,7 +371,7 @@ class DisplayFrame(Gtk.Bin):
             Manager.embed_display(self, display_path, macros_spec=self.macros)
 
 
-class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
+class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
     __gtype_name__ = 'TextMonitor'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -385,7 +390,7 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.get_style_context().add_class('gtkdm')
-        self.font_styles = {1: 'xs', 2: 'sm',  3: 'md', 4: 'lg', 5: 'xl'}
+        self.font_styles = {1: 'xs', 2: 'sm', 3: 'md', 4: 'lg', 5: 'xl'}
 
     def on_realize(self, obj):
         style = self.get_style_context()
@@ -418,7 +423,7 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.label.set_markup(text)
 
 
-class TextLabel(Gtk.EventBox):
+class TextLabel(Gtk.Bin):
     __gtype_name__ = 'TextLabel'
 
     text = GObject.Property(type=str, default='Label', nick='Label')
@@ -778,6 +783,7 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.pv = None
         self.add(self.entry)
         self.get_style_context().add_class('gtkdm')
+        self.set_sensitive(False)
 
     def on_realize(self, obj):
         if self.channel:
@@ -825,6 +831,7 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.connect('realize', self.on_realize)
         self.button.connect('clicked', self.on_clicked)
         self.add(self.button)
+        self.set_sensitive(False)
 
     def on_clicked(self, button):
         if self.pv:
@@ -924,6 +931,7 @@ class ChoiceMenu(Gtk.Bin):
         self.add(self.box)
         self.box.get_style_context().add_class('linked')
         self.get_style_context().add_class('gtkdm')
+        self.set_sensitive(False)
 
     def on_toggled(self, box):
         if not self.in_progress:
@@ -1284,6 +1292,9 @@ class CheckControl(ActiveMixin, AlarmMixin, Gtk.Bin):
 
 
 class DisplayButton(Gtk.Bin):
+    """
+    A button for launching single related displays
+    """
     __gtype_name__ = 'DisplayButton'
     label = GObject.Property(type=str, default='', nick='Label')
     display = GObject.Property(type=str, default='', nick='Display File')
@@ -1310,6 +1321,9 @@ class DisplayButton(Gtk.Bin):
 
 
 class Shape(ActiveMixin, AlarmMixin, BlankWidget):
+    """
+    A drawing of a rectangle or oval with fill color determined by a process variable and optional label.
+    """
     __gtype_name__ = 'Shape'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
@@ -1381,6 +1395,9 @@ class Shape(ActiveMixin, AlarmMixin, BlankWidget):
 
 
 class MenuButton(Gtk.Bin):
+    """
+    A Menu Button for launching DisplayMenu popovers
+    """
     __gtype_name__ = 'MenuButton'
     label = GObject.Property(type=str, default='', nick='Label')
     menu = GObject.Property(type=Gtk.Popover, nick='Display Menu')
@@ -1401,6 +1418,9 @@ class MenuButton(Gtk.Bin):
 
 
 class DisplayMenu(Gtk.Popover):
+    """
+    A Popover menu for DisplayMenuItem entries
+    """
     __gtype_name__ = 'DisplayMenu'
 
     def __init__(self, *args, **kwargs):
@@ -1410,6 +1430,9 @@ class DisplayMenu(Gtk.Popover):
 
 
 class DisplayMenuItem(Gtk.Bin):
+    """
+    A menu item for a display menu linking to a related display.
+    """
     __gtype_name__ = 'DisplayMenuItem'
     file = GObject.Property(type=str, default='', nick='Display')
     label = GObject.Property(type=str, default='', nick='Label')
@@ -1434,6 +1457,9 @@ class DisplayMenuItem(Gtk.Bin):
 
 
 class MessageLog(ActiveMixin, Gtk.Bin):
+    """
+    A rolling log viewer displaying values from the process variable with optional time prefix and alarm colors.
+    """
     __gtype_name__ = 'MessageLog'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -1498,6 +1524,9 @@ class MessageLog(ActiveMixin, Gtk.Bin):
 
 
 class HideSwitch(Gtk.Bin):
+    """
+    A Switch to which widgets are attached. The visibility of attached widgets follows the active state of the switch.
+    """
     __gtype_name__ = 'HideSwitch'
     widgets = GObject.Property(type=str, nick='Widgets')
     default = GObject.Property(type=bool, default=False, nick='Show by default')
@@ -1518,3 +1547,17 @@ class HideSwitch(Gtk.Bin):
                     self.btn.bind_property('active', w, 'visible', GObject.BindingFlags.DEFAULT)
 
         self.btn.set_active(self.default)
+
+
+class XYPlot(Gtk.Bin):
+    __gtype_name__ = 'XYPlot'
+
+    channels = GObject.Property(type=Gtk.ListStore, nick='X/Y Axis PVs')
+    memory = GObject.Property(type=int, default=0, minimum=0, maximum=20, nick='Tail Memory')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.canvas = Gtk.DrawingArea()
+        self.add(self.canvas)
+        print("Init", self.channels)
+

@@ -76,7 +76,7 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="channel">{motor}:stop</property>
-                        <property name="icon_name">media-playback-stop-symbolic</property>
+                        <property name="icon_name">process-stop</property>
                         <style>
                           <class name="warning"/>
                         </style>

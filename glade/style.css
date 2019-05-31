@@ -66,26 +66,30 @@
     font-size: 90%;
 }
 
-.tiny .linked *:not(:first-child):not(:last-child):not(.combo) {
+
+.tiny .linked *:not(:first-child):not(:last-child) > * {
     border-radius: 0px;
 }
-.tiny .linked.horizontal *:first-child:not(.combo) {
+.tiny .linked.horizontal *:first-child > * {
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
 }
-
-.tiny .linked.horizontal *:last-child:not(.combo) {
+.tiny .linked.horizontal *:last-child > * {
     border-top-left-radius: 0px;
     border-bottom-left-radius: 0px;
 }
-.tiny .linked.vertical *:last-child:not(.combo) {
-    border-top-right-radius: 0px;
-    border-top-left-radius: 0px;
-}
 
-.tiny .linked.vertical *:first-child:not(.combo) {
+.tiny .linked.vertical *:first-child > * {
     border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+.tiny .linked.vertical *:last-child > * {
+    border-top-left-radius: 0px;
+    border-top-left-radius: 0px;
+}
+
+.dark entry {
+    border: 0.5px solid rgba(0, 0, 0, 0.25)
 }
 
 .gtkdm.xs label {
