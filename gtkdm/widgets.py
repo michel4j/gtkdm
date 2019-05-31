@@ -10,6 +10,7 @@ from math import atan2, pi, cos, sin, ceil
 import gi
 
 gi.require_version('Gtk', '3.0')
+gi.require_version('Gladeui', '2.0')
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, Gladeui
 import gepics
 import xml.etree.ElementTree as ET
@@ -664,7 +665,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         self.queue_draw()
 
     def on_change(self, pv, value):
-        self.theme['fill'] = self.palette(value)
+        self.theme['fill'] = self.palette(int(value))
         self.queue_draw()
 
 

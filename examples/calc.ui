@@ -29,21 +29,6 @@
             <property name="column_spacing">6</property>
             <property name="column_homogeneous">True</property>
             <child>
-              <object class="CommandButton">
-                <property name="height_request">30</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">end</property>
-                <property name="channel">{P}{C}.PROC</property>
-                <property name="icon_name">media-playback-start-symbolic</property>
-                <property name="label">Process</property>
-              </object>
-              <packing>
-                <property name="left_attach">2</property>
-                <property name="top_attach">1</property>
-              </packing>
-            </child>
-            <child>
               <object class="TextLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -68,6 +53,18 @@
                 <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
                 <property name="width">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="ChoiceMenu">
+                <property name="width_request">100</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">{P}{C}.SCAN</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
           </object>
@@ -602,6 +599,12 @@
             <child>
               <placeholder/>
             </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
             <style>
               <class name="gtkdm-table"/>
             </style>
@@ -629,11 +632,14 @@
             <property name="can_focus">False</property>
             <property name="spacing">6</property>
             <child>
-              <object class="ChoiceMenu">
-                <property name="width_request">100</property>
+              <object class="CommandButton">
+                <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="channel">{P}{C}.SCAN</property>
+                <property name="halign">end</property>
+                <property name="channel">{P}{C}.PROC</property>
+                <property name="icon_name">media-playback-start-symbolic</property>
+                <property name="label">Process</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -659,7 +665,7 @@
                 <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="channel">{P}{C}.FLINK</property>
+                <property name="channel">{P}{C}.FLNK</property>
               </object>
               <packing>
                 <property name="expand">True</property>
