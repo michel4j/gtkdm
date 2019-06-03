@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <requires lib="gtkplugin" version="0.0"/>
+  <requires lib="gtkdmplugin" version="0.0"/>
   <object class="GtkWindow">
     <property name="height_request">400</property>
     <property name="can_focus">False</property>

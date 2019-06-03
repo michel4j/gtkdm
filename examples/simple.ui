@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <requires lib="gtkplugin" version="0.0"/>
+  <requires lib="gtkdmplugin" version="0.0"/>
   <object class="DisplayMenu" id="displaymenu1">
     <property name="can_focus">False</property>
     <child>
@@ -540,14 +540,33 @@
         </child>
         <child>
           <object class="XYPlot">
-            <property name="width_request">222</property>
-            <property name="height_request">270</property>
+            <property name="width_request">288</property>
+            <property name="height_request">240</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="buffer">4</property>
+            <property name="color_bg">rgb(85,87,83)</property>
+            <property name="color_fg">rgb(238,238,236)</property>
+            <property name="fontsize">8</property>
+            <property name="marginx">0.14999999999999999</property>
+            <property name="marginy">0.14999999999999999</property>
+            <property name="plot0">michel:PM1:X:positionM, michel:PM1:Y:positionM</property>
+            <property name="plot1">michel:PM2:X:positionM, michel:PM2:Y:positionM</property>
+            <property name="plot2">michel:PM3:X:positionM, michel:PM3:Y:positionM</property>
+            <property name="plot3">michel:PM4:X:positionM, michel:PM4:Y:positionM</property>
+            <property name="plot4">michel:PM5:X:positionM, michel:PM5:Y:positionM</property>
+            <property name="xmax">0.20000000000000001</property>
+            <property name="xmin">-0.20000000000000001</property>
+            <property name="xstep">0.050000000000000003</property>
+            <property name="xticks">4</property>
+            <property name="ymax">0.20000000000000001</property>
+            <property name="ymin">-0.20000000000000001</property>
+            <property name="ystep">0.050000000000000003</property>
+            <property name="yticks">3</property>
           </object>
           <packing>
-            <property name="x">563</property>
-            <property name="y">306</property>
+            <property name="x">548</property>
+            <property name="y">343</property>
           </packing>
         </child>
       </object>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<glade-catalog name="gtkplugin" library="gladepython" depends="gtk+" domain="glade-3">
+<glade-catalog name="gtkdmplugin" library="gladepython" depends="gtk+" domain="glade-3">
     <init-function>glade_python_init</init-function>
 
     <glade-widget-classes>
@@ -54,7 +54,13 @@
             </properties>
         </glade-widget-class>
 
-        <glade-widget-class name="XYPlot" generic-name="xyplot" title="XY Plot" icon-name="widget-gtk-drawingarea" adaptor="XYPlotAdaptor"/>
+        <glade-widget-class name="XYPlot" generic-name="xyplot" title="XY Plot" icon-name="widget-gtk-drawingarea">
+            <properties>
+                <property id="color_bg" optional="true"/>
+                <property id="color_fg" optional="true"/>
+
+            </properties>
+        </glade-widget-class>
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl"
                             icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>

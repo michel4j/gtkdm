@@ -60,16 +60,20 @@
 
 .tiny button, .tiny entry {
     min-height: 10px;
-    min-width: 8px;
-    padding: 0px;
+    min-width: 10px;
+    padding: 0px 5px;
     border-radius: 3px;
     font-size: 90%;
 }
 
-
 .tiny .linked *:not(:first-child):not(:last-child) > * {
     border-radius: 0px;
 }
+
+.tiny .linked.horizontal *:not(:first-child) > * {
+    border-left: none;
+}
+
 .tiny .linked.horizontal *:first-child > * {
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
@@ -89,7 +93,7 @@
 }
 
 .dark entry {
-    border: 0.25px solid rgba(0, 0, 0, 0.5)
+    border: 0.25px solid rgba(0, 0, 0, 0.05)
 }
 
 .gtkdm.xs label {
@@ -114,7 +118,7 @@
 }
 
 .dark entry, .dark label {
-    background: dimgray;
+    background: #878787;
     color: lawngreen;
 }
 
