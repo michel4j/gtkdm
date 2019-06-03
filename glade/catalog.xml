@@ -54,13 +54,19 @@
             </properties>
         </glade-widget-class>
 
-        <glade-widget-class name="XYPlot" generic-name="xyplot" title="XY Plot" icon-name="widget-gtk-drawingarea">
+        <glade-widget-class name="XYScatter" generic-name="xyscatter" title="XY Scatter Plot" icon-name="widget-gtk-drawingarea">
             <properties>
                 <property id="color_bg" optional="true"/>
                 <property id="color_fg" optional="true"/>
-
             </properties>
         </glade-widget-class>
+        <glade-widget-class name="StripPlot" generic-name="stripplot" title="Strip Plot" icon-name="widget-gtk-drawingarea">
+            <properties>
+                <property id="color_bg" optional="true"/>
+                <property id="color_fg" optional="true"/>
+            </properties>
+        </glade-widget-class>
+
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl"
                             icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
@@ -86,31 +92,34 @@
     <glade-widget-group name="gtkdm-display" title="GtkDM Display">
         <glade-widget-class-ref name="Layout"/>
         <glade-widget-class-ref name="DisplayFrame"/>
+        <glade-widget-class-ref name="TextLabel"/>
+        <glade-widget-class-ref name="Diagram"/>
+        <glade-widget-class-ref name="HideSwitch"/>
+    </glade-widget-group>
+    <glade-widget-group name="gtkdm-monitor" title="GtkDM Monitor">
         <glade-widget-class-ref name="TextMonitor"/>
+        <glade-widget-class-ref name="MessageLog"/>
         <glade-widget-class-ref name="LineMonitor"/>
         <glade-widget-class-ref name="Byte"/>
         <glade-widget-class-ref name="Indicator"/>
-        <glade-widget-class-ref name="TextLabel"/>
         <glade-widget-class-ref name="Gauge"/>
         <glade-widget-class-ref name="Symbol"/>
-        <glade-widget-class-ref name="Diagram"/>
         <glade-widget-class-ref name="Shape"/>
-        <glade-widget-class-ref name="MessageLog"/>
-        <glade-widget-class-ref name="HideSwitch"/>
-        <glade-widget-class-ref name="XYPlot"/>
+        <glade-widget-class-ref name="XYScatter"/>
+        <glade-widget-class-ref name="StripPlot"/>
     </glade-widget-group>
     <glade-widget-group name="gtkdm-control" title="GtkDM Control">
+        <glade-widget-class-ref name="TextControl"/>
         <glade-widget-class-ref name="ScaleControl"/>
         <glade-widget-class-ref name="TweakControl"/>
-        <glade-widget-class-ref name="TextControl"/>
+        <glade-widget-class-ref name="CheckControl"/>
         <glade-widget-class-ref name="CommandButton"/>
         <glade-widget-class-ref name="ChoiceButton"/>
-        <glade-widget-class-ref name="ChoiceMenu"/>
-        <glade-widget-class-ref name="CheckControl"/>
         <glade-widget-class-ref name="DisplayButton"/>
         <glade-widget-class-ref name="MenuButton"/>
-        <glade-widget-class-ref name="DisplayMenuItem"/>
+        <glade-widget-class-ref name="ChoiceMenu"/>
         <glade-widget-class-ref name="DisplayMenu"/>
+        <glade-widget-class-ref name="DisplayMenuItem"/>
     </glade-widget-group>
 
 </glade-catalog>

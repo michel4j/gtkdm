@@ -101,8 +101,8 @@
             <property name="pixbuf">cmcfid.svg</property>
           </object>
           <packing>
-            <property name="x">106</property>
-            <property name="y">174</property>
+            <property name="x">10</property>
+            <property name="y">180</property>
           </packing>
         </child>
         <child>
@@ -290,14 +290,14 @@
         <child>
           <object class="ChoiceButton">
             <property name="width_request">129</property>
-            <property name="height_request">20</property>
+            <property name="height_request">55</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:autoC</property>
           </object>
           <packing>
-            <property name="x">318</property>
-            <property name="y">304</property>
+            <property name="x">208</property>
+            <property name="y">327</property>
           </packing>
         </child>
         <child>
@@ -394,7 +394,7 @@
         </child>
         <child>
           <object class="DisplayButton">
-            <property name="width_request">66</property>
+            <property name="width_request">41</property>
             <property name="height_request">27</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
@@ -404,7 +404,7 @@
             <property name="macros">motor=PSL1608-4-B10-03:gap,units=mm</property>
           </object>
           <packing>
-            <property name="x">56</property>
+            <property name="x">57</property>
             <property name="y">323</property>
           </packing>
         </child>
@@ -443,7 +443,7 @@
         <child>
           <object class="MenuButton">
             <property name="width_request">122</property>
-            <property name="height_request">26</property>
+            <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label">Extras</property>
@@ -476,8 +476,8 @@
             <property name="channel">michel:cathodeCurrentC</property>
           </object>
           <packing>
-            <property name="x">219</property>
-            <property name="y">119</property>
+            <property name="x">22</property>
+            <property name="y">115</property>
           </packing>
         </child>
         <child>
@@ -505,24 +505,8 @@
             <property name="label">DCM</property>
           </object>
           <packing>
-            <property name="x">333</property>
-            <property name="y">263</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Gauge">
-            <property name="width_request">121</property>
-            <property name="height_request">85</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="angle">134</property>
-            <property name="channel">michel:FC1:intensityM</property>
-            <property name="step">25</property>
-            <property name="ticks">3</property>
-          </object>
-          <packing>
-            <property name="x">470</property>
-            <property name="y">205</property>
+            <property name="x">165</property>
+            <property name="y">181</property>
           </packing>
         </child>
         <child>
@@ -539,17 +523,15 @@
           </packing>
         </child>
         <child>
-          <object class="XYPlot">
-            <property name="width_request">288</property>
-            <property name="height_request">240</property>
+          <object class="XYScatter">
+            <property name="width_request">238</property>
+            <property name="height_request">195</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="buffer">4</property>
             <property name="color_bg">rgb(85,87,83)</property>
-            <property name="color_fg">rgb(238,238,236)</property>
+            <property name="color_fg">rgb(211,215,207)</property>
             <property name="fontsize">8</property>
-            <property name="marginx">0.14999999999999999</property>
-            <property name="marginy">0.14999999999999999</property>
             <property name="plot0">michel:PM1:X:positionM, michel:PM1:Y:positionM</property>
             <property name="plot1">michel:PM2:X:positionM, michel:PM2:Y:positionM</property>
             <property name="plot2">michel:PM3:X:positionM, michel:PM3:Y:positionM</property>
@@ -558,7 +540,7 @@
             <property name="xmax">0.20000000000000001</property>
             <property name="xmin">-0.20000000000000001</property>
             <property name="xstep">0.050000000000000003</property>
-            <property name="xticks">4</property>
+            <property name="xticks">0</property>
             <property name="ymax">0.20000000000000001</property>
             <property name="ymin">-0.20000000000000001</property>
             <property name="ystep">0.050000000000000003</property>
@@ -566,7 +548,31 @@
           </object>
           <packing>
             <property name="x">548</property>
-            <property name="y">343</property>
+            <property name="y">391</property>
+          </packing>
+        </child>
+        <child>
+          <object class="StripPlot">
+            <property name="width_request">204</property>
+            <property name="height_request">104</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="colors">RGBOC</property>
+            <property name="period">30</property>
+            <property name="plot0">michel:CM1:intensityM</property>
+            <property name="plot1">michel:FC1:intensityM</property>
+            <property name="plot2">michel:FC2:intensityM</property>
+            <property name="refresh">2</property>
+            <property name="sample">2</property>
+            <property name="xstep">20</property>
+            <property name="xticks">4</property>
+            <property name="ymax">20</property>
+            <property name="ystep">10</property>
+            <property name="yticks">4</property>
+          </object>
+          <packing>
+            <property name="x">343</property>
+            <property name="y">276</property>
           </packing>
         </child>
       </object>

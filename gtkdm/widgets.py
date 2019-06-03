@@ -210,8 +210,11 @@ def tick_points(vmin, vmax, vstep, vticks):
     minimum = (vmin// vstep) * vstep
     maximum = ceil(vmax // vstep) * vstep
     major = ticks(minimum, maximum, vstep)
-    minor_raw = ticks(minimum, maximum, vstep / (vticks + 1))
-    minor = [minor_raw[v] for v in list(range(len(minor_raw))) if v % (vticks+1) != 0]
+    if vticks:
+        minor_raw = ticks(minimum, maximum, vstep / (vticks + 1))
+        minor = [minor_raw[v] for v in list(range(len(minor_raw))) if v % (vticks+1) != 0]
+    else:
+        minor = []
     return minimum, maximum, major, minor
 
 
@@ -1489,7 +1492,7 @@ class MessageLog(ActiveMixin, Gtk.Bin):
         self.sw.set_shadow_type(Gtk.ShadowType.IN)
         self.sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.ALWAYS)
         self.view.set_buffer(self.buffer)
-        self.view.set_editable = False
+        self.view.set_editable(False)
         self.view.set_border_width(3)
         self.wrap_mode = Gtk.WrapMode.WORD
         self.sw.add(self.view)
@@ -1563,28 +1566,36 @@ class HideSwitch(Gtk.Bin):
 
 
 class ChartCoord(object):
-    def __init__(self, xlimits=(-1.0, 1.0), ylimits=(-1.0, 1.0), size=(400, 300), margins=(0.1, 0.1), showx=True, showy=True):
+    def __init__(self, xlimits=(-1.0, 1.0), ylimits=(-1.0, 1.0), size=(400, 300), margins=(0, 0), xoffset=0.0, yoffset=0.0):
         self.xmin, self.xmax = xlimits
         self.ymin, self.ymax = ylimits
         self.width, self.height = size
 
-        self.xmargin = margins[0]*size[0]
-        self.ymargin = margins[1]*size[1]
+        xmargin = margins[0] + 10
+        ymargin = margins[1] + 10
 
-        self.width = (size[0] - 2*self.xmargin)
-        self.height = (size[1] - 2*self.ymargin)
+        self.width = (size[0] - 2*xmargin) - xoffset
+        self.height = (size[1] - 2*ymargin) - yoffset
 
-        self.orgx = self.xmargin
-        self.orgy = size[1] - self.ymargin
+        self.orgx = xmargin + xoffset
+        self.orgy = size[1] - (ymargin + yoffset)
         self.xscale = self.width/(self.xmax - self.xmin)
         self.yscale = self.height/(self.ymax - self.ymin)
 
-    def xy(self, points):
+    def xy(self, points, xoff=0.0, yoff=0.0):
         points = numpy.asarray(points)
         out = numpy.zeros_like(points)
-        out[:,0] = (points[:,0] - self.xmin)*self.xscale + self.orgx
-        out[:,1] = self.orgy - (points[:,1] - self.ymin)*self.yscale
+        out[:,0] = (points[:,0] - self.xmin)*self.xscale + self.orgx + xoff
+        out[:,1] = self.orgy - (points[:,1] - self.ymin)*self.yscale + yoff
         return out
+
+    def x(self, points, offset=0.0):
+        points = numpy.asarray(points)
+        return (points - self.xmin)*self.xscale + self.orgx + offset
+
+    def y(self, points, offset=0.0):
+        points = numpy.asarray(points)
+        return self.orgy - (points - self.ymin)*self.yscale + offset
 
 
 class ChartPair(GObject.GObject):
@@ -1594,11 +1605,15 @@ class ChartPair(GObject.GObject):
 
     def __init__(self, xname, yname, size=1, update=0.01):
         super().__init__()
-        self.data = numpy.empty((size, 2))
+        self.size = size
+        self.array_mode = False
+        self.data = numpy.empty((self.size, 2))
         self.xpv = gepics.PV(xname)
         self.ypv = gepics.PV(yname)
         self.xpv.connect('changed', self.on_change)
         self.ypv.connect('changed', self.on_change)
+        self.xpv.connect('active', self.on_active)
+        self.ypv.connect('active', self.on_active)
         self.min_update = update
         self.last_change = time.time()
 
@@ -1606,14 +1621,32 @@ class ChartPair(GObject.GObject):
         if time.time() - self.last_change >= self.min_update:
             x = self.xpv.get()
             y = self.ypv.get()
-            self.data[:-1] = self.data[1:]
-            self.data[-1] = (x, y)
+            if self.array_mode:
+                cx = self.data.shape[0] if self.xpv.count == 1 else x.shape[0]
+                cy = self.data.shape[0] if self.ypv.count == 1 else y.shape[0]
+                self.data[:cx, 0] = x
+                self.data[:cy, 1] = y
+            else:
+                self.data[:-1] = self.data[1:]
+                self.data[-1] = (x, y)
+
             self.emit('changed')
             self.last_change = time.time()
 
+    def on_active(self, pv, active):
+        # prepare data array according to pv sizes
+        if self.xpv.is_active() and self.ypv.is_active():
+            sizes = (self.xpv.count, self.ypv.count)
+            if sizes == (1, 1):
+                self.data = numpy.empty((self.size, 2))
+                self.array_mode = False
+            else:
+                self.data = numpy.empty((max(sizes), 2))
+                self.array_mode = True
 
-class XYPlot(Gtk.DrawingArea):
-    __gtype_name__ = 'XYPlot'
+
+class XYScatter(Gtk.DrawingArea):
+    __gtype_name__ = 'XYScatter'
     buffer = GObject.Property(type=int, default=1, minimum=1, maximum=10, nick='Buffer Size')
     color_bg = GObject.Property(type=Gdk.RGBA, nick='Background Color')
     color_fg = GObject.Property(type=Gdk.RGBA, nick='Foreground Color')
@@ -1627,8 +1660,8 @@ class XYPlot(Gtk.DrawingArea):
     ymin = GObject.Property(type=float, default=-1.0, nick='Y min')
     ymax = GObject.Property(type=float, default=1.0, nick='Y max')
 
-    marginx = GObject.Property(type=float, minimum=0, maximum=0.25, default=0.05, nick='X margin')
-    marginy = GObject.Property(type=float, minimum=0, maximum=0.25, default=0.05, nick='Y margin')
+    marginx = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='X margin')
+    marginy = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='Y margin')
 
     plot0 = GObject.Property(type=str, default='', nick='Plot {i} PVs'.format(i=0))
     plot1 = GObject.Property(type=str, default='', nick='Plot {i} PVs'.format(i=1))
@@ -1665,6 +1698,10 @@ class XYPlot(Gtk.DrawingArea):
         yminor_points = list(zip((xminimum,) * len(yminor), yminor))
 
         alloc = self.get_allocation()
+
+        yoffset = 0.0 if not self.show_xaxis else self.fontsize*2
+        xoffset = 0.0 if not self.show_yaxis else self.fontsize*3
+
         self.params = {
             'alloc': alloc,
             'xmin': xminimum,
@@ -1680,13 +1717,17 @@ class XYPlot(Gtk.DrawingArea):
                 ylimits=(yminimum, ymaximum),
                 size=(alloc.width, alloc.height),
                 margins=(self.marginx, self.marginy),
-                showx=self.show_xaxis, showy=self.show_yaxis
+                xoffset=xoffset, yoffset=yoffset
             )
         }
 
     def on_realize(self, widget):
         self.get_style_context().add_class('gtkdm')
         self.palette = ColorSequence(self.colors)
+        top_level = self.get_toplevel()
+        if not isinstance(top_level, DisplayWindow):
+            return
+
         # extract pairs of pv names
         for i in range(5):
             m = re.match('^\s*([^\s,|;]+)[\s,|;]*([^\s,|;]+)\s*$', getattr(self, 'plot{}'.format(i), ''))
@@ -1715,63 +1756,330 @@ class XYPlot(Gtk.DrawingArea):
 
         if self.show_xaxis:
             xframe = self.params['converter'].xy(
-                [(self.params['xmin'], self.params['ymin']), (self.params['xmax'], self.params['ymin'])]
+                [
+                    (self.params['xmin'], self.params['ymin']),
+                    (self.params['xmax'], self.params['ymin']),
+                    (self.params['xmin'], self.params['ymax']),
+                    (self.params['xmax'], self.params['ymax'])
+                ],
+                yoff=5
             )
             cr.move_to(*xframe[0])
             cr.line_to(*xframe[1])
             cr.stroke()
+            # if self.show_yaxis:
+            #     cr.move_to(*xframe[2])
+            #     cr.line_to(*xframe[3])
+            #     cr.stroke()
 
-            major = self.params['converter'].xy(self.params['xmajor'])
-            minor = self.params['converter'].xy(self.params['xminor'])
-
+            major = self.params['converter'].xy(self.params['xmajor'], yoff=5)
             for i, tick in enumerate(major):
                 vtick = self.params['xmajor'][i]
                 cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0], tick[1]+10)
+                cr.line_to(tick[0], tick[1]+5)
                 cr.stroke()
                 text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[0])
                 xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] -xb - w/2, tick[1] + 12 - yb)
+                cr.move_to(tick[0] -xb - w/2, tick[1] + 7 - yb)
                 cr.show_text(text)
 
-            for tick in minor:
-                cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0], tick[1]+5)
-                cr.stroke()
+            if self.xticks:
+                minor = self.params['converter'].xy(self.params['xminor'], yoff=5)
+                for tick in minor:
+                    cr.move_to(tick[0], tick[1])
+                    cr.line_to(tick[0], tick[1]+3)
+                    cr.stroke()
 
         if self.show_yaxis:
             yframe = self.params['converter'].xy(
-                [(self.params['xmin'], self.params['ymin']), (self.params['xmin'], self.params['ymax'])]
+                [
+                    (self.params['xmin'], self.params['ymin']),
+                    (self.params['xmin'], self.params['ymax']),
+                    (self.params['xmax'], self.params['ymin']),
+                    (self.params['xmax'], self.params['ymax'])
+                ],
+                xoff=-5
             )
 
             cr.move_to(*yframe[0])
             cr.line_to(*yframe[1])
             cr.stroke()
+            # if self.show_xaxis:
+            #     cr.move_to(*yframe[2])
+            #     cr.line_to(*yframe[3])
+            #     cr.stroke()
 
-            major = self.params['converter'].xy(self.params['ymajor'])
-            minor = self.params['converter'].xy(self.params['yminor'])
-
+            major = self.params['converter'].xy(self.params['ymajor'], xoff=-5)
             for i, tick in enumerate(major):
                 vtick = self.params['ymajor'][i]
                 cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0] - 10, tick[1])
+                cr.line_to(tick[0] - 5, tick[1])
                 cr.stroke()
                 text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[1])
                 xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] - 12 - w - xb, tick[1] - yb - h / 2)
+                cr.move_to(tick[0] - 7 - w - xb, tick[1] - yb - h / 2)
                 cr.show_text(text)
 
-            for tick in minor:
+            if self.yticks:
+                minor = self.params['converter'].xy(self.params['yminor'], xoff=-5)
+                for tick in minor:
+                    cr.move_to(tick[0], tick[1])
+                    cr.line_to(tick[0] - 2, tick[1])
+                    cr.stroke()
+
+        if not self.plots:
+            return
+
+        for i, plot in enumerate(self.plots):
+            pos = self.params['converter'].xy(plot.data)
+            if plot.array_mode:
+                cr.set_line_width(0.75)
+                cr.set_source_rgba(*self.palette(i))
+                for j, mark in enumerate(pos):
+                    if j == 0:
+                        cr.arc(*mark, 2, 0, 2 * pi)
+                        cr.fill_preserve()
+                        cr.stroke()
+                        cr.move_to(*mark)
+                        continue
+                    else:
+                        cr.save()
+                        cr.arc(*mark, 2, 0, 2*pi)
+                        cr.fill_preserve()
+                        cr.stroke()
+                        cr.restore()
+                        cr.line_to(*mark)
+                cr.stroke()
+            else:
+                cr.set_line_width(1.0)
+                for j, mark in enumerate(pos):
+                    cr.set_source_rgba(*alpha(self.palette(i), (j+1.)/(self.buffer+1.)))
+                    cr.arc(*mark, 3, 0, 2*pi)
+                    cr.fill_preserve()
+                    cr.stroke()
+
+
+class StripData(GObject.GObject):
+    __gsignals__ = {
+        'changed': (GObject.SIGNAL_RUN_FIRST, None, [])
+    }
+
+    def __init__(self, names, period=60.0, sample_freq=1, refresh_freq=1):
+        super().__init__()
+        self.size = int(period*sample_freq)
+        self.count = len(names)
+        self.ydata = numpy.empty((self.size, self.count))
+        self.xdata = numpy.linspace(-period, 0, self.size)
+        self.ydata.fill(numpy.nan)
+        self.pvs = [
+            gepics.PV(name) for name in names
+        ]
+        self.sample_time = 1000./sample_freq
+        self.refresh_time = 1000./refresh_freq
+        GLib.timeout_add(self.sample_time, self.sample_data)
+        GLib.timeout_add(self.refresh_time,self.refresh)
+
+    def sample_data(self):
+        self.ydata[:-1] = self.ydata[1:]
+        for i, pv in enumerate(self.pvs):
+            self.ydata[-1, i] = numpy.nan if not pv.is_active() else pv.get()
+        return True
+
+    def refresh(self):
+        self.emit("changed")
+        return True
+
+
+class StripPlot(Gtk.DrawingArea):
+    __gtype_name__ = 'StripPlot'
+    period = GObject.Property(type=int, default=60, minimum=5, maximum=1440, nick='Time Window (s)')
+    refresh = GObject.Property(type=float, default=1, minimum=1, maximum=10, nick='Redraw Freq (hz)')
+    sample = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Sample Freq (hz)')
+
+    color_bg = GObject.Property(type=Gdk.RGBA, nick='Background Color')
+    color_fg = GObject.Property(type=Gdk.RGBA, nick='Foreground Color')
+    colors = GObject.Property(type=str, default='RGYOPB', nick='Plot Colors')
+    fontsize = GObject.Property(type=int, minimum=5, default=9, maximum=30, nick='Font Size')
+    digits = GObject.Property(type=int, minimum=0, default=3, maximum=8, nick='Significant Digits')
+
+    ymin = GObject.Property(type=float, default=-1.0, nick='Y min')
+    ymax = GObject.Property(type=float, default=1.0, nick='Y max')
+    marginx = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='X margin')
+    marginy = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='Y margin')
+
+    plot0 = GObject.Property(type=str, default='', nick='Plot 1 PV')
+    plot1 = GObject.Property(type=str, default='', nick='Plot 2 PV')
+    plot2 = GObject.Property(type=str, default='', nick='Plot 3 PV')
+    plot3 = GObject.Property(type=str, default='', nick='Plot 4 PV')
+    plot4 = GObject.Property(type=str, default='', nick='Plot 5 PV')
+
+    show_xaxis = GObject.Property(type=bool, default=True, nick='Show X-axis')
+    show_yaxis = GObject.Property(type=bool, default=True, nick='Show Y-axis')
+
+    xstep = GObject.Property(type=float, default=.1, nick='X Step Size')
+    xticks = GObject.Property(type=int, default=5, nick='X Ticks/Step')
+    ystep = GObject.Property(type=float, default=.1, nick='Y Step Size')
+    yticks = GObject.Property(type=int, default=5, nick='Y Ticks/Step')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
+        self.params = {}
+        self.plot = None
+        self.palette = None
+        self.connect('realize', self.on_realize)
+
+    def calculate_parameters(self):
+        self.xmin = - self.period
+        self.xmax = 0.0
+
+        xminimum, xmaximum, xmajor, xminor = tick_points(self.xmin, self.xmax, self.xstep, self.xticks)
+        yminimum, ymaximum, ymajor, yminor = tick_points(self.ymin, self.ymax, self.ystep, self.yticks)
+
+        xmajor_points = list(zip(xmajor, (yminimum,) * len(xmajor)))
+        xminor_points = list(zip(xminor, (yminimum,) * len(xminor)))
+
+        ymajor_points = list(zip((xminimum,) * len(ymajor), ymajor))
+        yminor_points = list(zip((xminimum,) * len(yminor), yminor))
+
+        alloc = self.get_allocation()
+
+        yoffset = 0.0 if not self.show_xaxis else self.fontsize*2
+        xoffset = 0.0 if not self.show_yaxis else self.fontsize*3
+
+        self.params = {
+            'alloc': alloc,
+            'xmin': xminimum,
+            'xmax': xmaximum,
+            'xmajor': xmajor_points,
+            'xminor': xminor_points,
+            'ymin': yminimum,
+            'ymax': ymaximum,
+            'ymajor': ymajor_points,
+            'yminor': yminor_points,
+            'converter': ChartCoord(
+                xlimits=(xminimum, xmaximum),
+                ylimits=(yminimum, ymaximum),
+                size=(alloc.width, alloc.height),
+                margins=(self.marginx, self.marginy),
+                xoffset=xoffset, yoffset=yoffset
+            )
+        }
+        if self.plot:
+            self.xvalues = self.params['converter'].x(self.plot.xdata)
+
+    def on_realize(self, widget):
+        self.get_style_context().add_class('gtkdm')
+        self.palette = ColorSequence(self.colors)
+        # extract pairs of pv names
+        pv_names = filter(None, [getattr(self, 'plot{}'.format(i), '').strip() for i in range(5)])
+        xminimum, xmaximum, xmajor, xminor = tick_points(-self.period, 0, self.xstep, self.xticks)
+        top_level = self.get_toplevel()
+        if isinstance(top_level, DisplayWindow):
+            self.plot = StripData(list(pv_names), period=-xminimum, sample_freq=self.sample, refresh_freq=self.refresh)
+            self.plot.connect('changed', lambda x: self.queue_draw())
+
+    def do_draw(self, cr):
+        if self.color_bg:
+            cr.set_source_rgba(*self.color_bg)
+            cr.paint()
+
+        if self.color_fg:
+            cr.set_source_rgba(*self.color_fg)
+        else:
+            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+
+        # draw axes
+        cr.set_line_width(0.75)
+        cr.set_font_size(self.fontsize)
+        alloc = self.get_allocation()
+        if not self.params or (alloc.width, alloc.height) != (self.params['alloc'].width, self.params['alloc'].height):
+            self.calculate_parameters()
+
+        if self.show_xaxis:
+            xframe = self.params['converter'].xy(
+                [
+                    (self.params['xmin'], self.params['ymin']),
+                    (self.params['xmax'], self.params['ymin']),
+                    (self.params['xmin'], self.params['ymax']),
+                    (self.params['xmax'], self.params['ymax'])
+                ],
+                yoff=5
+            )
+            cr.move_to(*xframe[0])
+            cr.line_to(*xframe[1])
+            cr.stroke()
+            # if self.show_yaxis:
+            #     cr.move_to(*xframe[2])
+            #     cr.line_to(*xframe[3])
+            #     cr.stroke()
+
+            major = self.params['converter'].xy(self.params['xmajor'], yoff=5)
+            for i, tick in enumerate(major):
+                vtick = self.params['xmajor'][i]
+                cr.move_to(tick[0], tick[1])
+                cr.line_to(tick[0], tick[1]+5)
+                cr.stroke()
+                text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[0])
+                xb, yb, w, h = cr.text_extents(text)[:4]
+                cr.move_to(tick[0] -xb - w/2, tick[1] + 7 - yb)
+                cr.show_text(text)
+
+            if self.xticks:
+                minor = self.params['converter'].xy(self.params['xminor'], yoff=5)
+                for tick in minor:
+                    cr.move_to(tick[0], tick[1])
+                    cr.line_to(tick[0], tick[1]+3)
+                    cr.stroke()
+
+        if self.show_yaxis:
+            yframe = self.params['converter'].xy(
+                [
+                    (self.params['xmin'], self.params['ymin']),
+                    (self.params['xmin'], self.params['ymax']),
+                    (self.params['xmax'], self.params['ymin']),
+                    (self.params['xmax'], self.params['ymax'])
+                ],
+                xoff=-5
+            )
+
+            cr.move_to(*yframe[0])
+            cr.line_to(*yframe[1])
+            cr.stroke()
+            # if self.show_xaxis:
+            #     cr.move_to(*yframe[2])
+            #     cr.line_to(*yframe[3])
+            #     cr.stroke()
+
+            major = self.params['converter'].xy(self.params['ymajor'], xoff=-5)
+            for i, tick in enumerate(major):
+                vtick = self.params['ymajor'][i]
                 cr.move_to(tick[0], tick[1])
                 cr.line_to(tick[0] - 5, tick[1])
                 cr.stroke()
+                text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[1])
+                xb, yb, w, h = cr.text_extents(text)[:4]
+                cr.move_to(tick[0] - 7 - w - xb, tick[1] - yb - h / 2)
+                cr.show_text(text)
 
-        cr.set_line_width(1.0)
-        for i, plot in enumerate(self.plots):
-            pos = self.params['converter'].xy(plot.data)
-            for j, mark in enumerate(pos):
-                cr.set_source_rgba(*alpha(self.palette(i), (j+1.)/(self.buffer+1.)))
-                cr.arc(*mark, 3, 0, 2*pi)
-                cr.fill_preserve()
-                cr.stroke()
+            if self.yticks:
+                minor = self.params['converter'].xy(self.params['yminor'], xoff=-5)
+                for tick in minor:
+                    cr.move_to(tick[0], tick[1])
+                    cr.line_to(tick[0] - 2, tick[1])
+                    cr.stroke()
 
+        if not self.plot:
+            return
+
+        cr.set_line_width(0.75)
+        for j in range(self.plot.count):
+            sel = numpy.logical_not(numpy.isnan(self.plot.ydata[:,j]))
+            yvalues = self.params['converter'].y(self.plot.ydata[sel,j])
+            cr.set_source_rgba(*self.palette(j))
+            for i, (x, y) in enumerate(zip(self.xvalues[sel], yvalues)):
+                if i== 0:
+                    cr.move_to(x, y)
+                    continue
+                cr.line_to(x, y)
+            cr.stroke()

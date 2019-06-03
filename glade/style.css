@@ -14,7 +14,7 @@
     border-radius: 3px;
 }
 .gtkdm spinbutton {
-    min-height: 12px;
+    min-height: 10px;
     border-radius: 3px;
     font-size: 95%;
 }
@@ -61,7 +61,7 @@
 .tiny button, .tiny entry {
     min-height: 10px;
     min-width: 10px;
-    padding: 0px 5px;
+    padding: 0px 4px;
     border-radius: 3px;
     font-size: 90%;
 }
