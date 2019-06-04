@@ -19,8 +19,9 @@ if __name__ == '__main__':
             if directory:
                 os.chdir(directory)
             if os.path.exists(file_name):
-                print('Adding {} to {} ...'.format(file_name, sym_file))
-                sym.write(file_name)
+                if file_name not in names:
+                    print('Adding {} to {} ...'.format(file_name, sym_file))
+                    sym.write(file_name)
                 names.append(file_name)
             else:
                 print('{} not found! Skipping ...'.format(image))

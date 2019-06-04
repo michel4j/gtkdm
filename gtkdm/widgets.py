@@ -13,8 +13,7 @@ from math import atan2, pi, cos, sin, ceil
 import gi
 
 gi.require_version('Gtk', '3.0')
-gi.require_version('Gladeui', '2.0')
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, Gladeui
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
 import gepics
 import xml.etree.ElementTree as ET
 
@@ -981,6 +980,35 @@ class ChoiceMenu(Gtk.Bin):
         self.in_progress = False
 
 
+class ShellButton(Gtk.Bin):
+    __gtype_name__ = 'ShellButton'
+    command = GObject.Property(type=str, default='', nick='Shell Command')
+    label = GObject.Property(type=str, default='', nick='Label')
+    icon_name = GObject.Property(type=str, default='', nick='Icon Name')
+    multiple = GObject.Property(type=bool, default=False, nick='Multiple')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.button = Gtk.Button()
+        self.connect('realize', self.on_realize)
+        self.button.connect('clicked', self.on_clicked)
+        self.add(self.button)
+        self.proc = None
+        self.bind_property('label', self.button, 'label', GObject.BindingFlags.DEFAULT)
+        self.show_all()
+
+    def on_clicked(self, button):
+        if self.command:
+            if self.proc:
+                self.proc.poll()
+            if self.multiple or self.proc is None or self.proc.returncode is not None:
+                cmds = self.command.split()
+                self.proc = subprocess.Popen(cmds, shell=True, stdout=subprocess.DEVNULL)
+
+    def on_realize(self, obj):
+        self.get_style_context().add_class('gtkdm')
+
+
 class Gauge(BlankWidget):
     __gtype_name__ = 'Gauge'
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -1184,7 +1212,7 @@ class SymbolFrames(object):
             return sf
 
     def __call__(self, value):
-        if 0 <= value < len(self.frames):
+        if 0 <=  abs(int(value)) < len(self.frames):
             return self.frames[int(value)]
 
 
@@ -1192,6 +1220,7 @@ class Symbol(ActiveMixin, BlankWidget):
     __gtype_name__ = 'Symbol'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     file = GObject.Property(type=str, nick='Symbol File')
+    angle = GObject.Property(type=float, default=0, nick='Angle')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1208,6 +1237,10 @@ class Symbol(ActiveMixin, BlankWidget):
             w = self.image.get_width() * scale
             h = self.image.get_height() * scale
             pixbuf = self.image.scale_simple(w, h, GdkPixbuf.InterpType.BILINEAR)
+            if self.angle != 0:
+                cr.translate(x, y)
+                cr.rotate(self.angle * pi / 180.0)
+                cr.translate(-x, -y)
             Gdk.cairo_set_source_pixbuf(cr, pixbuf, x - w / 2, y - h / 2)
             cr.paint()
         else:
@@ -1226,7 +1259,7 @@ class Symbol(ActiveMixin, BlankWidget):
 
         if self.file:
             self.frames = SymbolFrames.new_from_file(self.file)
-            self.image = self.frames(0)
+            self.image = self.frames(-1)
 
     def on_change(self, pv, value):
         self.image = self.frames(value)
@@ -1648,6 +1681,7 @@ class ChartPair(GObject.GObject):
 class XYScatter(Gtk.DrawingArea):
     __gtype_name__ = 'XYScatter'
     buffer = GObject.Property(type=int, default=1, minimum=1, maximum=10, nick='Buffer Size')
+    sample = GObject.Property(type=float, default=10, minimum=.1, maximum=50, nick='Update Freq (hz)')
     color_bg = GObject.Property(type=Gdk.RGBA, nick='Background Color')
     color_fg = GObject.Property(type=Gdk.RGBA, nick='Foreground Color')
     colors = GObject.Property(type=str, default='RGYOPB', nick='Plot Colors')
@@ -1733,7 +1767,7 @@ class XYScatter(Gtk.DrawingArea):
             m = re.match('^\s*([^\s,|;]+)[\s,|;]*([^\s,|;]+)\s*$', getattr(self, 'plot{}'.format(i), ''))
             if m:
                 xname, yname = m.groups()
-                pair = ChartPair(xname, yname, self.buffer)
+                pair = ChartPair(xname, yname, self.buffer, update=1/self.sample)
                 pair.connect('changed', lambda x: self.queue_draw())
                 self.plots.append(pair)
 

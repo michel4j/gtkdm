@@ -352,30 +352,16 @@
         </child>
         <child>
           <object class="Symbol">
-            <property name="width_request">20</property>
-            <property name="height_request">33</property>
+            <property name="width_request">29</property>
+            <property name="height_request">52</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
-            <property name="file">faces.sym</property>
+            <property name="file">shutters.sym</property>
           </object>
           <packing>
-            <property name="x">74</property>
-            <property name="y">383</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Symbol">
-            <property name="width_request">20</property>
-            <property name="height_request">36</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="channel">michel:GV1:positionM</property>
-            <property name="file">valves.sym</property>
-          </object>
-          <packing>
-            <property name="x">166</property>
-            <property name="y">354</property>
+            <property name="x">152</property>
+            <property name="y">357</property>
           </packing>
         </child>
         <child>
@@ -571,8 +557,50 @@
             <property name="yticks">4</property>
           </object>
           <packing>
-            <property name="x">343</property>
-            <property name="y">276</property>
+            <property name="x">318</property>
+            <property name="y">211</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Symbol">
+            <property name="width_request">34</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">michel:GV1:positionC</property>
+            <property name="file">iop.sym</property>
+          </object>
+          <packing>
+            <property name="x">28</property>
+            <property name="y">408</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Symbol">
+            <property name="width_request">34</property>
+            <property name="height_request">34</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="angle">180</property>
+            <property name="file">tmp.sym</property>
+          </object>
+          <packing>
+            <property name="x">450</property>
+            <property name="y">361</property>
+          </packing>
+        </child>
+        <child>
+          <object class="ShellButton">
+            <property name="width_request">40</property>
+            <property name="height_request">20</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="command">gedit</property>
+            <property name="label">Editor</property>
+          </object>
+          <packing>
+            <property name="x">216</property>
+            <property name="y">133</property>
           </packing>
         </child>
       </object>

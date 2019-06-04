@@ -23,6 +23,8 @@
         <glade-widget-class name="TextLabel" generic-name="textlabel" title="Text Label" icon-name="widget-gtk-label"/>
         <glade-widget-class name="CommandButton" generic-name="commandbutton" title="Command Button"
                             icon-name="widget-gtk-button"/>
+        <glade-widget-class name="ShellButton" generic-name="shellbutton" title="Shell Button"
+                            icon-name="widget-gtk-button"/>
         <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="Choice Button"
                             icon-name="widget-gtk-stackswitcher"/>
         <glade-widget-class name="ChoiceMenu" generic-name="choicemenu" title="Choice Menu"
@@ -114,6 +116,8 @@
         <glade-widget-class-ref name="TweakControl"/>
         <glade-widget-class-ref name="CheckControl"/>
         <glade-widget-class-ref name="CommandButton"/>
+        <glade-widget-class-ref name="ShellButton"/>
+        <glade-widget-class-ref name="StripPlot"/>
         <glade-widget-class-ref name="ChoiceButton"/>
         <glade-widget-class-ref name="DisplayButton"/>
         <glade-widget-class-ref name="MenuButton"/>
