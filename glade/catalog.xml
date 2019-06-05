@@ -41,6 +41,7 @@
                         <type>GladeParamObjects</type>
                         <value-type>DisplayFrame</value-type>
                     </parameter-spec>
+                    <tooltip>A list of LED labels</tooltip>
                 </property>
             </properties>
         </glade-widget-class>

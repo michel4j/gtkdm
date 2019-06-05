@@ -119,6 +119,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">PCT1402-01:mA:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -136,6 +138,7 @@
                     <property name="alarm">True</property>
                     <property name="channel">UND1408-01:gap:mm:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -153,6 +156,7 @@
                     <property name="alarm">True</property>
                     <property name="channel">SYSTEM:mode:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
                     <style>
                       <class name="dark"/>
@@ -169,7 +173,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="color">rgb(114,159,207)</property>
-                    <property name="font_size">2</property>
+                    <property name="font_size">3</property>
                     <property name="format">%a %b %d, %H:%M</property>
                     <property name="refresh">0.10000000000000001</property>
                     <style>
@@ -245,6 +249,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1002:cntr:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -261,6 +267,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1001:gap:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -277,7 +285,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1001:cntr:mm:sp</property>
                     <property name="colors">RG</property>
-                    <property name="xalign">0.5</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -319,6 +328,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1002:gap:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -335,6 +346,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1002:mm:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
                     <style>
                       <class name="dark"/>
@@ -352,6 +365,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1004:mm:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
                     <style>
                       <class name="dark"/>
@@ -369,6 +384,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1001:mm:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
                     <style>
                       <class name="dark"/>
@@ -386,6 +403,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1003:mm:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
                     <style>
                       <class name="dark"/>
@@ -506,6 +525,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1005:deg:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -522,6 +543,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1006:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -538,6 +561,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">PMTR1608-002:energy:keV:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
                     <style>
                       <class name="dark"/>
@@ -579,6 +604,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1010:deg:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -643,6 +670,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1007:deg:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -659,6 +688,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1008:deg:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -675,6 +706,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1011:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -691,6 +724,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1012:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -762,6 +797,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Ht:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -778,6 +815,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFMTrans:strip1:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -794,7 +833,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Pitch:fbk</property>
                     <property name="colors">RG</property>
-                    <property name="xalign">0.5</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -835,6 +875,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Roll:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -899,6 +941,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Roll:fbk</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -915,6 +959,7 @@
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Focus:foc:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -931,6 +976,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1018:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -947,6 +994,8 @@
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1017:mm:sp</property>
                     <property name="colors">RG</property>
+                    <property name="font_size">3</property>
+                    <property name="monospace">True</property>
                     <style>
                       <class name="dark"/>
                     </style>
