@@ -415,6 +415,7 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
 
     def on_realize(self, obj):
         style = self.get_style_context()
+        style.add_class('gtkdm-inactive')
         # adjust style classes
         for k, v in self.font_styles.items():
             if k == self.font_size:
