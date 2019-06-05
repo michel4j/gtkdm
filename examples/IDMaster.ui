@@ -60,13 +60,910 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
+          <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">To be determined ...</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="row_spacing">1</property>
+                <property name="column_spacing">3</property>
+                <property name="row_homogeneous">True</property>
+                <property name="column_homogeneous">True</property>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">False</property>
+                    <property name="text">Storage Ring Status</property>
+                    <style>
+                      <class name="section"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Stored</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">SGU</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">PCT1402-01:mA:fbk</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                    <property name="width">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">UND1408-01:gap:mm:fbk</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">4</property>
+                    <property name="width">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SYSTEM:mode:fbk</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                    <property name="width">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="DateLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="color">rgb(114,159,207)</property>
+                    <property name="font_size">2</property>
+                    <property name="format">%a %b %d, %H:%M</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                    <property name="width">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="row_spacing">1</property>
+                <property name="column_spacing">3</property>
+                <property name="row_homogeneous">True</property>
+                <property name="column_homogeneous">True</property>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">False</property>
+                    <property name="text">WBS</property>
+                    <style>
+                      <class name="section"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Y-cent</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Width</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">PSL16082I1002:cntr:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">PSL16082I1001:gap:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">PSL16082I1001:cntr:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Height</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="text">X-cent</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">PSL16082I1002:gap:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1002:mm:fbk</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1004:mm:fbk</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1001:mm:fbk</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1003:mm:fbk</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">H+</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">V+</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">H-</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">V-</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="row_spacing">1</property>
+                <property name="column_spacing">3</property>
+                <property name="row_homogeneous">True</property>
+                <property name="column_homogeneous">True</property>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">False</property>
+                    <property name="text">DCM</property>
+                    <style>
+                      <class name="section"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Bragg</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Y</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1005:deg:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1006:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">PMTR1608-002:energy:keV:fbk</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Pitch</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Energy</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1010:deg:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">C1-Roll</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">C2-Roll</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">T1</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">T2</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1007:deg:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1008:deg:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1011:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1012:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="row_spacing">1</property>
+                <property name="column_spacing">3</property>
+                <property name="row_homogeneous">True</property>
+                <property name="column_homogeneous">True</property>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">False</property>
+                    <property name="text">VFM</property>
+                    <style>
+                      <class name="section"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                    <property name="width">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Height</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Stripe</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">BL08ID1:VFM:Ht:fbk</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">BL08ID1:VFMTrans:strip1:fbk</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">BL08ID1:VFM:Pitch:fbk</property>
+                    <property name="colors">RG</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Roll</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Pitch</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">BL08ID1:VFM:Roll:fbk</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Yaw</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Focus</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Slits-Y</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="text">Slits-H</property>
+                    <property name="xalign">1</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">BL08ID1:VFM:Roll:fbk</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">BL08ID1:VFM:Focus:foc:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1018:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="TextMonitor">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="alarm">True</property>
+                    <property name="channel">SMTR16082I1017:mm:sp</property>
+                    <property name="colors">RG</property>
+                    <style>
+                      <class name="dark"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">3</property>
+                    <property name="top_attach">4</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">2</property>
           </packing>

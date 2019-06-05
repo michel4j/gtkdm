@@ -21,6 +21,7 @@
         <glade-widget-class name="TextControl" generic-name="textcontrol" title="Text Control"
                             icon-name="widget-gtk-entry"/>
         <glade-widget-class name="TextLabel" generic-name="textlabel" title="Text Label" icon-name="widget-gtk-label"/>
+        <glade-widget-class name="DateLabel" generic-name="datelabel" title="Date Label" icon-name="widget-gtk-label"/>
         <glade-widget-class name="CommandButton" generic-name="commandbutton" title="Command Button"
                             icon-name="widget-gtk-button"/>
         <glade-widget-class name="ShellButton" generic-name="shellbutton" title="Shell Button"
@@ -95,6 +96,7 @@
         <glade-widget-class-ref name="Layout"/>
         <glade-widget-class-ref name="DisplayFrame"/>
         <glade-widget-class-ref name="TextLabel"/>
+        <glade-widget-class-ref name="DateLabel"/>
         <glade-widget-class-ref name="Diagram"/>
         <glade-widget-class-ref name="HideSwitch"/>
     </glade-widget-group>

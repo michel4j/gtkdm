@@ -288,7 +288,6 @@ class DisplayWindow(Gtk.Window):
         self.header = Gtk.HeaderBar()
         self.header.set_show_close_button(True)
         self.set_titlebar(self.header)
-        self.header.props.title = "GtkDM"
         self.set_icon_name('applications-engineering')
         button = Gtk.MenuButton()
         icon = Gio.ThemedIcon(name="open-menu-symbolic")
@@ -331,6 +330,12 @@ class DisplayWindow(Gtk.Window):
         btn.set_size_request(100, -1)
         box.pack_start(btn, False, False, 0)
         popover.show_all()
+        title = self.header.get_title()
+        if title:
+            self.header.props.title = "GtkDM - {}".format(title)
+        else:
+            self.header.props.title = "GtkDM"
+
 
     def on_edit(self, btn):
         try:
@@ -470,6 +475,45 @@ class TextLabel(Gtk.Bin):
                 style.add_class(v)
             else:
                 style.remove_class(v)
+
+
+class DateLabel(Gtk.Bin):
+    __gtype_name__ = 'DateLabel'
+
+    format = GObject.Property(type=str, default='%a %b %d, %X', nick='Date/Time Format')
+    refresh = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Redraw Freq (hz)')
+    xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
+    color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.label = Gtk.Label(label='')
+        self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
+        self.add(self.label)
+        self.connect('realize', self.on_realize)
+        self.get_style_context().add_class('gtkdm')
+        self.font_styles = {
+            1: 'xs',
+            2: 'sm',
+            3: 'md',
+            4: 'lg',
+            5: 'xl'
+        }
+
+    def update(self):
+        self.label.set_text(datetime.now().strftime(self.format))
+        return True
+
+    def on_realize(self, obj):
+        style = self.get_style_context()
+        # adjust style classes
+        for k, v in self.font_styles.items():
+            if k == self.font_size:
+                style.add_class(v)
+            else:
+                style.remove_class(v)
+        GLib.timeout_add(1000./self.refresh, self.update)
 
 
 class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
@@ -985,7 +1029,7 @@ class ShellButton(Gtk.Bin):
     command = GObject.Property(type=str, default='', nick='Shell Command')
     label = GObject.Property(type=str, default='', nick='Label')
     icon_name = GObject.Property(type=str, default='', nick='Icon Name')
-    multiple = GObject.Property(type=bool, default=False, nick='Multiple')
+    multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1505,6 +1549,35 @@ class DisplayMenuItem(Gtk.Bin):
             Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
 
 
+class ShellMenuItem(Gtk.Bin):
+    """
+    A menu item for a display menu linking to a shell command.
+    """
+    __gtype_name__ = 'ShellMenuItem'
+    label = GObject.Property(type=str, default='', nick='Label')
+    command = GObject.Property(type=str, default='', nick='Command')
+    multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.entry = Gtk.ModelButton(text=self.label)
+        self.entry.set_size_request(100, -1)
+        self.bind_property('label', self.entry, 'text', GObject.BindingFlags.DEFAULT)
+        self.add(self.entry)
+        self.proc = None
+        self.entry.connect('clicked', self.on_clicked)
+        self.get_style_context().add_class('gtkdm')
+        self.show_all()
+
+    def on_clicked(self, button):
+        if self.command:
+            if self.proc:
+                self.proc.poll()
+            if self.multiple or self.proc is None or self.proc.returncode is not None:
+                cmds = self.command.split()
+                self.proc = subprocess.Popen(cmds, shell=True, stdout=subprocess.DEVNULL)
+
+
 class MessageLog(ActiveMixin, Gtk.Bin):
     """
     A rolling log viewer displaying values from the process variable with optional time prefix and alarm colors.
@@ -1927,7 +2000,7 @@ class StripData(GObject.GObject):
 class StripPlot(Gtk.DrawingArea):
     __gtype_name__ = 'StripPlot'
     period = GObject.Property(type=int, default=60, minimum=5, maximum=1440, nick='Time Window (s)')
-    refresh = GObject.Property(type=float, default=1, minimum=1, maximum=10, nick='Redraw Freq (hz)')
+    refresh = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Redraw Freq (hz)')
     sample = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Sample Freq (hz)')
 
     color_bg = GObject.Property(type=Gdk.RGBA, nick='Background Color')
