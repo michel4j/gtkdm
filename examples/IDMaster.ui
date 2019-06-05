@@ -171,8 +171,10 @@
                     <property name="color">rgb(114,159,207)</property>
                     <property name="font_size">2</property>
                     <property name="format">%a %b %d, %H:%M</property>
+                    <property name="refresh">0.10000000000000001</property>
                     <style>
                       <class name="dark"/>
+                      <class name="monospace"/>
                     </style>
                   </object>
                   <packing>
@@ -1015,7 +1017,8 @@
                 <property name="pixbuf">IDoptics.png</property>
               </object>
               <packing>
-                <property name="x">3</property>
+                <property name="x">5</property>
+                <property name="y">45</property>
               </packing>
             </child>
           </object>

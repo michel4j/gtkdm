@@ -140,3 +140,6 @@
     border-bottom: 1px solid rgba(0,0,0,0.15);
 }
 
+.monospace label {
+    font-family: "TheSansMonoCd Office", "Monaco", monospace;
+}

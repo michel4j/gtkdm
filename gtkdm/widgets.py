@@ -399,6 +399,7 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
     colors = GObject.Property(type=str, default="", nick='Value Colors')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
     font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
 
@@ -420,6 +421,8 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
                 style.add_class(v)
             else:
                 style.remove_class(v)
+        if self.monospace:
+            style.add_class('monospace')
 
         pv_name = self.channel
         if pv_name:
