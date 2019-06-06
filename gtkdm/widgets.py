@@ -19,6 +19,8 @@ import xml.etree.ElementTree as ET
 
 from . import utils
 
+EDITOR = True
+
 COLORS = {
     'R': '#ef2929',
     'G': '#73d216',
@@ -71,6 +73,9 @@ class DisplayManager(object):
         self.macros = utils.parse_macro_spec(macro_spec)
 
     def show_display(self, path, macros_spec="", main=False, multiple=False):
+        global EDITOR
+        if main:
+            EDITOR = False
         full_path = os.path.abspath(path)
         directory, filename = os.path.split(full_path)
         try:
@@ -260,6 +265,7 @@ class AlarmMixin(object):
 
 class ActiveMixin(object):
     def on_active(self, pv, connected):
+        self.set_tooltip(self.pv.name)
         if connected:
             self.pv.get_with_metadata()
             self.get_style_context().remove_class('gtkdm-inactive')
@@ -335,7 +341,6 @@ class DisplayWindow(Gtk.Window):
             self.header.props.title = "GtkDM - {}".format(title)
         else:
             self.header.props.title = "GtkDM"
-
 
     def on_edit(self, btn):
         try:
@@ -425,9 +430,8 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
         if self.monospace:
             style.add_class('monospace')
 
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -517,6 +521,7 @@ class DateLabel(Gtk.Bin):
                 style.add_class(v)
             else:
                 style.remove_class(v)
+
         GLib.timeout_add(1000./self.refresh, self.update)
 
 
@@ -588,7 +593,8 @@ class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
 
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-        if self.channel:
+
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
@@ -653,7 +659,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
 
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-        if self.channel:
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
@@ -712,7 +718,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
 
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-        if self.channel:
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
@@ -766,9 +772,8 @@ class ScaleControl(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.scale.add_mark(self.minimum, position, '{}'.format(self.minimum))
         self.scale.add_mark(self.maximum, position, '{}'.format(self.maximum))
 
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -808,9 +813,8 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
     def on_realize(self, obj):
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -849,7 +853,7 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.set_sensitive(False)
 
     def on_realize(self, obj):
-        if self.channel:
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
@@ -902,13 +906,12 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.Bin):
 
     def on_realize(self, obj):
         self.get_style_context().add_class('gtkdm')
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('active', self.on_active)
 
             if not (self.label or self.icon_name):
-                self.label_pv = gepics.PV('{}.DESC'.format(pv_name))
+                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
             else:
                 if self.icon_name:
@@ -950,9 +953,8 @@ class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.Bin):
             self.pv.put(i)
 
     def on_realize(self, obj):
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('active', self.on_active)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('changed', self.on_change)
@@ -1003,9 +1005,8 @@ class ChoiceMenu(Gtk.Bin):
                 self.pv.put(active)
 
     def on_realize(self, obj):
-        pv_name = self.channel
-        if pv_name:
-            self.pv = gepics.PV(pv_name)
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
             self.pv.connect('active', self.on_active)
             self.pv.connect('changed', self.on_change)
 
@@ -1205,7 +1206,7 @@ class Gauge(BlankWidget):
 
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-        if self.channel:
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
@@ -1300,7 +1301,7 @@ class Symbol(ActiveMixin, BlankWidget):
             cr.stroke()
 
     def on_realize(self, widget):
-        if self.channel:
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
@@ -1368,7 +1369,7 @@ class CheckControl(ActiveMixin, AlarmMixin, Gtk.Bin):
             self.pv.put(int(obj.get_active()))
 
     def on_realize(self, obj):
-        if self.channel:
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
@@ -1472,7 +1473,7 @@ class Shape(ActiveMixin, AlarmMixin, BlankWidget):
         self.theme = {
             'border': style.get_color(style.get_state())
         }
-        if self.channel:
+        if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
@@ -1835,18 +1836,16 @@ class XYScatter(Gtk.DrawingArea):
     def on_realize(self, widget):
         self.get_style_context().add_class('gtkdm')
         self.palette = ColorSequence(self.colors)
-        top_level = self.get_toplevel()
-        if not isinstance(top_level, DisplayWindow):
-            return
 
-        # extract pairs of pv names
-        for i in range(5):
-            m = re.match('^\s*([^\s,|;]+)[\s,|;]*([^\s,|;]+)\s*$', getattr(self, 'plot{}'.format(i), ''))
-            if m:
-                xname, yname = m.groups()
-                pair = ChartPair(xname, yname, self.buffer, update=1/self.sample)
-                pair.connect('changed', lambda x: self.queue_draw())
-                self.plots.append(pair)
+        if not EDITOR:
+            # extract pairs of pv names
+            for i in range(5):
+                m = re.match('^\s*([^\s,|;]+)[\s,|;]*([^\s,|;]+)\s*$', getattr(self, 'plot{}'.format(i), ''))
+                if m:
+                    xname, yname = m.groups()
+                    pair = ChartPair(xname, yname, self.buffer, update=1/self.sample)
+                    pair.connect('changed', lambda x: self.queue_draw())
+                    self.plots.append(pair)
 
     def do_draw(self, cr):
         if self.color_bg:
@@ -2085,8 +2084,8 @@ class StripPlot(Gtk.DrawingArea):
         # extract pairs of pv names
         pv_names = filter(None, [getattr(self, 'plot{}'.format(i), '').strip() for i in range(5)])
         xminimum, xmaximum, xmajor, xminor = tick_points(-self.period, 0, self.xstep, self.xticks)
-        top_level = self.get_toplevel()
-        if isinstance(top_level, DisplayWindow):
+
+        if not EDITOR:
             self.plot = StripData(list(pv_names), period=-xminimum, sample_freq=self.sample, refresh_freq=self.refresh)
             self.plot.connect('changed', lambda x: self.queue_draw())
 
