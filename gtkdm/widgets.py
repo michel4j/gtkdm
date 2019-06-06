@@ -897,6 +897,7 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.label_pv = None
         self.connect('realize', self.on_realize)
         self.button.connect('clicked', self.on_clicked)
+        self.bind_property('label', self.button, 'label', GObject.BindingFlags.DEFAULT)
         self.add(self.button)
         self.set_sensitive(False)
 
