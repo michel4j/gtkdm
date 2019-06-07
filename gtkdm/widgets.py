@@ -265,7 +265,7 @@ class AlarmMixin(object):
 
 class ActiveMixin(object):
     def on_active(self, pv, connected):
-        self.set_tooltip(self.pv.name)
+        self.set_tooltip_text(self.pv.name)
         if connected:
             self.pv.get_with_metadata()
             self.get_style_context().remove_class('gtkdm-inactive')

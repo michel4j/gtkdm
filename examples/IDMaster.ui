@@ -1115,10 +1115,11 @@
                 </child>
                 <child>
                   <object class="Symbol">
-                    <property name="width_request">28</property>
-                    <property name="height_request">50</property>
+                    <property name="width_request">24</property>
+                    <property name="height_request">40</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="channel">SSH1408-I00-01:state</property>
                     <property name="file">shutters.sym</property>
                   </object>
                   <packing>
@@ -1182,7 +1183,7 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="fill">True</property>
+                <property name="fill">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
