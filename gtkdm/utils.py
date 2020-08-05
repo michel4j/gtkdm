@@ -21,6 +21,7 @@ def update_properties(tree, macros):
     :param macros: Dictionary containing macro information
     """
     for prop in tree.findall(".//object/property"):
+        if not prop.text: continue
         prop.text = prop.text.format(**macros)
 
 

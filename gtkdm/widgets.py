@@ -17,23 +17,12 @@ from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
 import gepics
 import xml.etree.ElementTree as ET
 
-from . import utils
+from . import utils, colors
 
 EDITOR = True
 
-COLORS = {
-    'R': '#ef2929',
-    'G': '#73d216',
-    'Y': '#fce94f',
-    'O': '#fcaf3e',
-    'P': '#ad7fa8',
-    'B': '#729fcf',
-    'K': '#000000',
-    'A': '#888a85',
-    'C': '#17becf',
-    'W': '#ffffff',
-    'M': '#88419d'
-}
+
+
 
 ENTRY_CONVERTERS = {
     'string': str,
@@ -68,6 +57,7 @@ class DisplayManager(object):
     def __init__(self):
         self.macros = {}
         self.registry = {}
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_PRIMARY)
 
     def reset(self, macro_spec):
         self.macros = utils.parse_macro_spec(macro_spec)
@@ -172,16 +162,22 @@ Manager = DisplayManager()
 
 class ColorSequence(object):
     def __init__(self, sequence):
-        self.values = [self.parse(COLORS.get(v, '#000000')) for v in sequence]
+        self.specs = [colors.TANGO.get(v, '#000000') for v in sequence]
 
     def __call__(self, value, alpha=1.0):
-        if value < len(self.values):
-            col = self.values[value].copy()
-            col.alpha = alpha
-        else:
-            col = self.values[-1].copy()
-            col.alpha = alpha
-        return col
+        try:
+            i = min(value, len(self.specs)-1)
+        except ValueError:
+            i = 0
+        spec = self.specs[i]
+        return self.parse(spec)
+
+    def __getitem__(self, item):
+        try:
+            i = int(item)
+        except ValueError:
+            i = 0
+        return self.specs[i % len(self.specs)]
 
     @staticmethod
     def parse(spec):
@@ -264,16 +260,29 @@ class AlarmMixin(object):
 
 
 class ActiveMixin(object):
+    PV_COPY_BUTTON = 2
+
     def on_active(self, pv, connected):
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self.connect("button-press-event", self.on_mouse_press)
         self.set_tooltip_text(self.pv.name)
         if connected:
-            self.pv.get_with_metadata()
+            self.ctrlvars = self.pv.get_with_metadata(with_ctrlvars=True)
             self.get_style_context().remove_class('gtkdm-inactive')
             self.set_sensitive(True)
         else:
             self.get_style_context().add_class('gtkdm-inactive')
             self.set_sensitive(False)
         self.queue_draw()
+
+    def on_mouse_press(self, widget, event):
+        if event.button == self.PV_COPY_BUTTON:
+            valid = (
+                self.PV_COPY_BUTTON == 2,
+                self.PV_COPY_BUTTON == 1 and event.type == Gdk.EventType._2BUTTON_PRESS
+            )
+            if any(valid):
+                Manager.clipboard.set_text(self.pv.name, -1)
 
 
 class Layout(Gtk.Fixed):
@@ -396,7 +405,7 @@ class DisplayFrame(Gtk.Bin):
             Manager.embed_display(self, display_path, macros_spec=self.macros)
 
 
-class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
+class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'TextMonitor'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -404,23 +413,27 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
     colors = GObject.Property(type=str, default="", nick='Value Colors')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
     monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
     font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.label = Gtk.Label('')
+        self.label = Gtk.Label('Text ...')
         self.add(self.label)
         self.pv = None
         self.connect('realize', self.on_realize)
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.get_style_context().add_class('gtkdm')
         self.font_styles = {1: 'xs', 2: 'sm', 3: 'md', 4: 'lg', 5: 'xl'}
+        self.palette = ColorSequence(self.colors)
 
     def on_realize(self, obj):
         style = self.get_style_context()
         style.add_class('gtkdm-inactive')
+        self.palette = ColorSequence(self.colors)
+
         # adjust style classes
         for k, v in self.font_styles.items():
             if k == self.font_size:
@@ -440,16 +453,97 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.Bin):
         if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            value = round(value, pv.precision)
-            fmt = 'f' if (value == 0 or value > 1e-4 or value < 1e4) else 'e'
-            text = ('{{:0.{}{}}}'.format(pv.precision, fmt)).format(value)
+            precision = self.prec if self.prec >= 0 else pv.precision
+            precision = precision if precision >= 0 else 3
+            fmt = 'f' if (value == 0 or abs(value) > 1e-4) else 'e'
+            text = ('{{:0.{}{}}}'.format(precision, fmt)).format(value)
         else:
             text = pv.char_value
 
         if self.pv.units and self.show_units:
-            text = '{} {}'.format(text, pv.units)
+                text = '{} {}'.format(text, pv.units)
+        if self.colors:
+            text = '<span color="{}">{}</span>'.format(self.palette[value], text)
         self.label.set_markup(text)
 
+
+class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
+    __gtype_name__ = 'TextPanel'
+
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    label = GObject.Property(type=str, default='', nick='Label')
+    color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    colors = GObject.Property(type=str, default="", nick='Value Colors')
+    xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
+    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
+    show_units = GObject.Property(type=bool, default=True, nick='Show Units')
+    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=2, nick='Font Size')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.box.set_border_width(2)
+        self.desc_label = Gtk.Label('Description', xalign=0.0)
+        self.value_label = Gtk.Label('Value')
+        self.box.pack_start(self.desc_label, False, False, 0)
+        self.box.pack_end(self.value_label, True, True, 0)
+        self.add(self.box)
+        self.pv = None
+        self.label_pv = None
+        self.connect('realize', self.on_realize)
+        self.bind_property('xalign', self.value_label, 'xalign', GObject.BindingFlags.DEFAULT)
+        self.bind_property('label', self.desc_label, 'label', GObject.BindingFlags.DEFAULT)
+        self.get_style_context().add_class('gtkdm')
+        self.font_styles = {1: 'xs', 2: 'sm', 3: 'md', 4: 'lg', 5: 'xl'}
+        self.desc_label.get_style_context().add_class('panel-desc')
+        self.palette = ColorSequence(self.colors)
+
+    def on_realize(self, obj):
+        style = self.value_label.get_style_context()
+        style.add_class('gtkdm-inactive')
+        self.palette = ColorSequence(self.colors)
+
+        # adjust style classes
+        for k, v in self.font_styles.items():
+            if k == self.font_size:
+                style.add_class(v)
+            else:
+                style.remove_class(v)
+        if self.monospace:
+            style.add_class('monospace')
+
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('alarm', self.on_alarm)
+            self.pv.connect('active', self.on_active)
+            
+            if not self.label:
+                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
+                self.label_pv.connect('changed', self.on_label_change)
+
+    def on_label_change(self, pv, value):
+        self.props.label = value
+           
+    def on_change(self, pv, value):
+        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
+            text = pv.enum_strs[value]
+        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+            precision = self.prec if self.prec >= 0 else pv.precision
+            precision = precision if precision >= 0 else 3
+            fmt = 'f' if (value == 0 or abs(value) > 1e-4) else 'e'
+            text = ('{{:0.{}{}}}'.format(precision, fmt)).format(value)
+        else:
+            text = pv.char_value
+
+        if self.pv.units and self.show_units:
+                text = '{} {}'.format(text, pv.units)
+        if self.colors:
+            text = '<span color="{}">{}</span>'.format(self.palette[value], text)
+        self.value_label.set_markup(text)
+        
 
 class TextLabel(Gtk.Bin):
     __gtype_name__ = 'TextLabel'
@@ -521,7 +615,7 @@ class DateLabel(Gtk.Bin):
                 style.add_class(v)
             else:
                 style.remove_class(v)
-
+        self.update()
         GLib.timeout_add(1000./self.refresh, self.update)
 
 
@@ -608,7 +702,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
     __gtype_name__ = 'Byte'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     offset = GObject.Property(type=int, minimum=0, maximum=4, default=0, nick='Byte Offset')
-    count = GObject.Property(type=int, minimum=1, maximum=8, default=8, nick='Byte Count')
+    count = GObject.Property(type=int, minimum=1, maximum=8, default=8, nick='Bit Count')
     big_endian = GObject.Property(type=bool, default=False, nick='Big-Endian')
     labels = GObject.Property(type=str, default='', nick='Labels')
     colors = GObject.Property(type=str, default="AG", nick='Value Colors')
@@ -618,14 +712,13 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._view_bits = ['0'] * self.count
+        self._view_bits = '0' * self.count
         self._view_labels = [''] * self.count
-        self.set_size_request(196, 40)
+        
         self.theme = {
             'border': Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=1.0),
             'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
         }
-        self.set_sensitive(False)
         self.connect('realize', self.on_realize)
         self.palette = ColorSequence(self.colors)
 
@@ -650,30 +743,32 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
             cr.set_source_rgba(*self.theme['border'])
             cr.stroke()
 
-            cr.set_source_rgba(*self.theme['label'])
-            label = self._view_labels[i]
-            xb, yb, w, h = cr.text_extents(label)[:4]
-            cr.move_to(x + self.size + 4.5, y + self.size / 2 - yb - h / 2)
-            cr.show_text(label)
-            cr.stroke()
+            if i < len(self._view_labels):
+                cr.set_source_rgba(*self.theme['label'])
+                label = self._view_labels[i]
+                xb, yb, w, h = cr.text_extents(label)[:4]
+                cr.move_to(x + self.size + 4.5, y + self.size / 2 - yb - h / 2)
+                cr.show_text(label)
+                cr.stroke()
 
     def on_realize(self, widget):
+        v = (self.size + 5) * int(round(self.count/self.columns))
+        self.set_size_request(100, v)
         self.palette = ColorSequence(self.colors)
+        labels = [v.strip() for v in self.labels.split(',')]
+        self._view_labels = labels + (self.count - len(labels)) * ['']
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
-        labels = [v.strip() for v in self.labels.split(',')]
-        self._view_labels = labels + (self.count - len(labels)) * ['']
-
     def on_change(self, pv, value):
-        bits = list(bin(value)[2:].zfill(64))
+        bits = bin(value)[2:].zfill(64)
         if self.big_endian:
-            self._view_bits = bits[self.offset:][:self.count]
+            self._view_bits = bits[(self.offset*8):][:self.count]
         else:
-            self._view_bits = bits[::-1][self.offset:][:self.count]
+            self._view_bits = bits[(-(self.offset+1)*8):][:self.count]
         self.queue_draw()
 
 
@@ -687,20 +782,20 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.set_size_request(-1, 20)
+        self.set_size_request(20, 20)
         self.pv = None
         self.label_pv = None
+        self.palette = ColorSequence(self.colors)
         self.theme = {
             'border': Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=1.0),
-            'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
+            'fill': self.palette(0),
         }
         self.set_sensitive(False)
         self.connect('realize', self.on_realize)
-        self.palette = ColorSequence(self.colors)
-
+        
     def do_draw(self, cr):
         cr.set_line_width(0.75)
-        cr.set_font_size(self.size * 0.85)
+        cr.set_font_size(self.size)
         x = 4.5
         y = 4.5
         style = self.get_style_context()
@@ -737,7 +832,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         self.queue_draw()
 
 
-class ScaleControl(ActiveMixin, AlarmMixin, Gtk.Bin):
+class ScaleControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'ScaleControl'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     minimum = GObject.Property(type=float, default=0., nick='Minimum')
@@ -789,8 +884,10 @@ class ScaleControl(ActiveMixin, AlarmMixin, Gtk.Bin):
             self.pv.put(self.adjustment.props.value)
 
 
-class TweakControl(ActiveMixin, AlarmMixin, Gtk.Bin):
+class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'TweakControl'
+    PV_COPY_BUTTON = 1
+
     channel = GObject.Property(type=str, default='', nick='PV Name')
     minimum = GObject.Property(type=float, default=0., nick='Minimum')
     maximum = GObject.Property(type=float, default=100., nick='Maximum')
@@ -830,9 +927,9 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.Bin):
             self.pv.put(self.adjustment.props.value)
 
 
-class TextControl(ActiveMixin, AlarmMixin, Gtk.Bin):
+class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'TextControl'
-
+    PV_COPY_BUTTON = 1
     channel = GObject.Property(type=str, default='', nick='PV Name')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     editable = GObject.Property(type=bool, default=True, nick='Editable')
@@ -862,9 +959,9 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.Bin):
     def on_change(self, pv, value):
         self.in_progress = True
         if pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            value = round(value, pv.precision)
+            precision = pv.precision if pv.precision >= 0 else 3
             fmt = 'f' if (value == 0 or value > 1e-4 or value < 1e4) else 'e'
-            text = ('{{:0.{}{}}}'.format(pv.precision, fmt)).format(value)
+            text = ('{{:0.{}{}}}'.format(precision, fmt)).format(value)
         else:
             text = pv.char_value
         self.entry.set_text(text)
@@ -883,7 +980,7 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.Bin):
             print("Invalid Value: {}".format(e))
 
 
-class CommandButton(ActiveMixin, AlarmMixin, Gtk.Bin):
+class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'CommandButton'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     label = GObject.Property(type=str, default='', nick='Label')
@@ -926,7 +1023,29 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.queue_draw()
 
 
-class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.Bin):
+class MessageButton(CommandButton):
+    __gtype_name__ = 'MessageButton'
+    value = GObject.Property(type=str, default='', nick='Value')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def on_clicked(self, button):
+        if self.pv and self.value:
+            if self.pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+                converter = float
+            elif self.pv.type in ['int', 'long', 'time_int', 'time_long', 'ctrl_int', 'ctrl_long']:
+                converter = int
+            else:
+                converter = str
+            try:
+                value = converter(self.value)
+                self.pv.put(value)
+            except ValueError as e:
+                print('Invalid Value: {}'.format(e))
+
+
+class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'ChoiceButton'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     orientation = GObject.Property(type=Gtk.Orientation, default=Gtk.Orientation.VERTICAL, nick='Orientation')
@@ -983,7 +1102,7 @@ class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.in_progress = False
 
 
-class ChoiceMenu(Gtk.Bin):
+class ChoiceMenu(ActiveMixin, Gtk.EventBox):
     __gtype_name__ = 'ChoiceMenu'
     channel = GObject.Property(type=str, default='', nick='PV Name')
 
@@ -1008,21 +1127,15 @@ class ChoiceMenu(Gtk.Bin):
     def on_realize(self, obj):
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
-            self.pv.connect('active', self.on_active)
+            self.pv.connect_after('active', self.on_active)
             self.pv.connect('changed', self.on_change)
 
     def on_active(self, pv, connected):
+        super().on_active(pv, connected)
         if connected:
-            self.pv.get_with_metadata()
             self.box.remove_all()
             for i, label in enumerate(pv.enum_strs):
                 self.box.append_text(label)
-            self.get_style_context().remove_class('gtkdm-inactive')
-            self.set_sensitive(True)
-        else:
-            self.get_style_context().add_class('gtkdm-inactive')
-            self.set_sensitive(False)
-        self.queue_draw()
 
     def on_change(self, pv, value):
         self.in_progress = True
@@ -1059,7 +1172,7 @@ class ShellButton(Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
 
-class Gauge(BlankWidget):
+class Gauge(ActiveMixin, BlankWidget):
     __gtype_name__ = 'Gauge'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     angle = GObject.Property(type=int, minimum=90, maximum=335, default=270, nick='Angle')
@@ -1347,7 +1460,7 @@ class Diagram(BlankWidget):
             cr.stroke()
 
 
-class CheckControl(ActiveMixin, AlarmMixin, Gtk.Bin):
+class CheckControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'CheckControl'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -1584,7 +1697,7 @@ class ShellMenuItem(Gtk.Bin):
                 self.proc = subprocess.Popen(cmds, shell=True, stdout=subprocess.DEVNULL)
 
 
-class MessageLog(ActiveMixin, Gtk.Bin):
+class MessageLog(ActiveMixin, Gtk.EventBox):
     """
     A rolling log viewer displaying values from the process variable with optional time prefix and alarm colors.
     """

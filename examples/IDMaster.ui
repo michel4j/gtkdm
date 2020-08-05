@@ -71,7 +71,6 @@
                 <property name="row_spacing">1</property>
                 <property name="column_spacing">3</property>
                 <property name="row_homogeneous">True</property>
-                <property name="column_homogeneous">True</property>
                 <child>
                   <object class="TextLabel">
                     <property name="visible">True</property>
@@ -113,14 +112,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">PCT1402-01:mA:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">2</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -132,14 +131,16 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="alarm">True</property>
                     <property name="channel">UND1408-01:gap:mm:fbk</property>
                     <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">2</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -151,12 +152,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="alarm">True</property>
+                    <property name="hexpand">True</property>
                     <property name="channel">SYSTEM:mode:fbk</property>
-                    <property name="colors">RG</property>
+                    <property name="colors">CROYG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
@@ -203,7 +204,6 @@
                 <property name="row_spacing">1</property>
                 <property name="column_spacing">3</property>
                 <property name="row_homogeneous">True</property>
-                <property name="column_homogeneous">True</property>
                 <child>
                   <object class="TextLabel">
                     <property name="visible">True</property>
@@ -236,6 +236,7 @@
                   <object class="TextLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="text">Width</property>
                     <property name="xalign">1</property>
                   </object>
@@ -245,12 +246,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1002:cntr:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -263,12 +263,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor5">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1001:gap:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -281,12 +281,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor6">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1001:cntr:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -324,12 +324,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor7">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">PSL16082I1002:gap:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -342,12 +341,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor8">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1002:mm:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
@@ -361,12 +359,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor9">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1004:mm:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
@@ -380,12 +377,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor10">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1001:mm:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
@@ -399,12 +395,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor11">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1003:mm:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
@@ -479,7 +474,6 @@
                 <property name="row_spacing">1</property>
                 <property name="column_spacing">3</property>
                 <property name="row_homogeneous">True</property>
-                <property name="column_homogeneous">True</property>
                 <child>
                   <object class="TextLabel">
                     <property name="visible">True</property>
@@ -521,14 +515,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor12">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1005:deg:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">3</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -539,12 +533,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor13">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1006:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -557,12 +550,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor14">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="alarm">True</property>
                     <property name="channel">PMTR1608-002:energy:keV:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <property name="xalign">0.5</property>
@@ -591,6 +584,7 @@
                   <object class="TextLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="text">Energy</property>
                     <property name="xalign">1</property>
                   </object>
@@ -600,12 +594,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor15">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1010:deg:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -621,6 +614,7 @@
                   <object class="TextLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="text">C1-Roll</property>
                     <property name="xalign">1</property>
                   </object>
@@ -666,12 +660,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor16">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1007:deg:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -684,12 +678,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor17">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1008:deg:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -702,12 +695,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor18">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1011:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -720,12 +712,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor19">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1012:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -751,7 +742,6 @@
                 <property name="row_spacing">1</property>
                 <property name="column_spacing">3</property>
                 <property name="row_homogeneous">True</property>
-                <property name="column_homogeneous">True</property>
                 <child>
                   <object class="TextLabel">
                     <property name="visible">True</property>
@@ -793,14 +783,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor20">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Ht:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">2</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -811,12 +801,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor21">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFMTrans:strip1:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -829,14 +818,15 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor22">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Pitch:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">3</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -862,6 +852,7 @@
                   <object class="TextLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="text">Pitch</property>
                     <property name="xalign">1</property>
                   </object>
@@ -871,12 +862,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor23">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Roll:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -892,6 +882,7 @@
                   <object class="TextLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="text">Yaw</property>
                     <property name="xalign">1</property>
                   </object>
@@ -937,12 +928,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor24">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Roll:fbk</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
                     <style>
@@ -955,14 +946,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor25">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">BL08ID1:VFM:Focus:foc:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">3</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -973,14 +964,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor26">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1018:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">2</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -991,14 +982,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor27">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
                     <property name="channel">SMTR16082I1017:mm:sp</property>
-                    <property name="colors">RG</property>
                     <property name="font_size">3</property>
                     <property name="monospace">True</property>
+                    <property name="prec">2</property>
                     <style>
                       <class name="dark"/>
                     </style>
@@ -1044,7 +1035,8 @@
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
                 <property name="valign">start</property>
-                <property name="column_spacing">3</property>
+                <property name="column_spacing">2</property>
+                <property name="column_homogeneous">True</property>
                 <child>
                   <object class="TextLabel">
                     <property name="width_request">28</property>
@@ -1066,7 +1058,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="font_size">1</property>
-                    <property name="text">PSH2</property>
+                    <property name="text">SSH1</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1080,7 +1072,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="font_size">1</property>
-                    <property name="text">SSH1</property>
+                    <property name="text">PSH2</property>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
@@ -1088,11 +1080,108 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="Symbol">
-                    <property name="width_request">28</property>
-                    <property name="height_request">50</property>
+                  <object class="CommandButton">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="channel">SSH1408-I00-01:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="channel">PSH1408-I00-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="channel">SSH1408-I00-01:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="channel">PSH1408-I00-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label">⮝</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label">⮟</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="Symbol">
+                    <property name="width_request">25</property>
+                    <property name="height_request">55</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="channel">SSH1408-I00-01:state</property>
+                    <property name="file">shutters.sym</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="Symbol">
+                    <property name="width_request">25</property>
+                    <property name="height_request">55</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="channel">PSH1408-I00-01:state</property>
                     <property name="file">shutters.sym</property>
                   </object>
                   <packing>
@@ -1102,80 +1191,17 @@
                 </child>
                 <child>
                   <object class="Symbol">
-                    <property name="width_request">28</property>
-                    <property name="height_request">50</property>
+                    <property name="width_request">25</property>
+                    <property name="height_request">55</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="file">shutters.sym</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="Symbol">
-                    <property name="width_request">24</property>
-                    <property name="height_request">40</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="channel">SSH1408-I00-01:state</property>
+                    <property name="channel">PSH1408-I00-02:state</property>
                     <property name="file">shutters.sym</property>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
                     <property name="top_attach">2</property>
                   </packing>
-                </child>
-                <child>
-                  <object class="CommandButton">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label">⮝</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="CommandButton">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label">⮝</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">2</property>
-                    <property name="top_attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="CommandButton">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label">⮟</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="CommandButton">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label">⮟</property>
-                  </object>
-                  <packing>
-                    <property name="left_attach">2</property>
-                    <property name="top_attach">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
                 <style>
                   <class name="tiny"/>
@@ -1236,7 +1262,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor28">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1254,7 +1280,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor29">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1272,7 +1298,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor30">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1315,7 +1341,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor31">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1333,7 +1359,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor32">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1352,7 +1378,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor33">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1371,7 +1397,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor34">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1390,7 +1416,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor35">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1512,7 +1538,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor36">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1530,7 +1556,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor37">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1548,7 +1574,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor38">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1591,7 +1617,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor39">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1609,7 +1635,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor40">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1628,7 +1654,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor41">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1647,7 +1673,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor42">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1666,7 +1692,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor43">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1788,7 +1814,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor44">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1806,7 +1832,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor45">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1824,7 +1850,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor46">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1867,7 +1893,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor47">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1885,7 +1911,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor48">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1904,7 +1930,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor49">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1923,7 +1949,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor50">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -1942,7 +1968,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="TextMonitor">
+                  <object class="TextMonitor" id="textmonitor51">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="alarm">True</property>
@@ -2052,7 +2078,7 @@
             </child>
             <child>
               <object class="LineMonitor">
-                <property name="width_request">79</property>
+                <property name="width_request">28</property>
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -2064,27 +2090,30 @@
             </child>
             <child>
               <object class="Symbol">
-                <property name="width_request">28</property>
-                <property name="height_request">70</property>
+                <property name="width_request">30</property>
+                <property name="height_request">55</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">SMTR16082I1026:cw</property>
                 <property name="file">shutters.sym</property>
               </object>
               <packing>
-                <property name="x">321</property>
+                <property name="x">330</property>
+                <property name="y">16</property>
               </packing>
             </child>
             <child>
               <object class="Symbol">
-                <property name="width_request">28</property>
-                <property name="height_request">63</property>
+                <property name="width_request">30</property>
+                <property name="height_request">55</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">SSH1608-2-I10-01:state</property>
                 <property name="file">shutters.sym</property>
               </object>
               <packing>
-                <property name="x">723</property>
-                <property name="y">1</property>
+                <property name="x">790</property>
+                <property name="y">16</property>
               </packing>
             </child>
             <child>
@@ -2099,14 +2128,14 @@
                 </style>
               </object>
               <packing>
-                <property name="x">792</property>
-                <property name="y">49</property>
+                <property name="x">789</property>
+                <property name="y">109</property>
               </packing>
             </child>
             <child>
               <object class="CommandButton">
                 <property name="width_request">38</property>
-                <property name="height_request">20</property>
+                <property name="height_request">21</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label">WBS</property>
@@ -2115,13 +2144,13 @@
                 </style>
               </object>
               <packing>
-                <property name="x">389</property>
-                <property name="y">32</property>
+                <property name="x">390</property>
+                <property name="y">36</property>
               </packing>
             </child>
             <child>
               <object class="CommandButton">
-                <property name="width_request">31</property>
+                <property name="width_request">34</property>
                 <property name="height_request">21</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -2131,8 +2160,8 @@
                 </style>
               </object>
               <packing>
-                <property name="x">472</property>
-                <property name="y">31</property>
+                <property name="x">470</property>
+                <property name="y">37</property>
               </packing>
             </child>
             <child>
@@ -2154,7 +2183,7 @@
             <child>
               <object class="CommandButton">
                 <property name="width_request">42</property>
-                <property name="height_request">20</property>
+                <property name="height_request">21</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label">QBPM</property>
@@ -2163,14 +2192,14 @@
                 </style>
               </object>
               <packing>
-                <property name="x">562</property>
-                <property name="y">23</property>
+                <property name="x">561</property>
+                <property name="y">12</property>
               </packing>
             </child>
             <child>
               <object class="CommandButton">
                 <property name="width_request">38</property>
-                <property name="height_request">20</property>
+                <property name="height_request">21</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label">VSlits</property>
@@ -2179,8 +2208,8 @@
                 </style>
               </object>
               <packing>
-                <property name="x">605</property>
-                <property name="y">3</property>
+                <property name="x">604</property>
+                <property name="y">12</property>
               </packing>
             </child>
             <child>
@@ -2214,7 +2243,7 @@
             </child>
             <child>
               <object class="LineMonitor">
-                <property name="width_request">127</property>
+                <property name="width_request">118</property>
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -2227,53 +2256,56 @@
             </child>
             <child>
               <object class="LineMonitor">
-                <property name="width_request">94</property>
+                <property name="width_request">91</property>
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">CCG1608-2-I10-01:vac:p</property>
+                <property name="colors">AG</property>
                 <property name="line_width">8</property>
               </object>
               <packing>
-                <property name="x">384</property>
+                <property name="x">373</property>
                 <property name="y">250</property>
               </packing>
             </child>
             <child>
               <object class="LineMonitor">
-                <property name="width_request">67</property>
+                <property name="width_request">121</property>
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="line_width">8</property>
               </object>
               <packing>
-                <property name="x">501</property>
+                <property name="x">488</property>
                 <property name="y">250</property>
               </packing>
             </child>
             <child>
               <object class="LineMonitor">
-                <property name="width_request">134</property>
+                <property name="width_request">103</property>
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="line_width">8</property>
               </object>
               <packing>
-                <property name="x">589</property>
+                <property name="x">632</property>
                 <property name="y">250</property>
               </packing>
             </child>
             <child>
               <object class="LineMonitor">
-                <property name="width_request">132</property>
+                <property name="width_request">119</property>
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="line_width">8</property>
               </object>
               <packing>
-                <property name="x">744</property>
+                <property name="x">757</property>
                 <property name="y">250</property>
               </packing>
             </child>
@@ -2283,7 +2315,8 @@
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="file">valves.sym</property>
+                <property name="channel">VVR1608-1-I00-02:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
                 <property name="x">79</property>
@@ -2296,7 +2329,8 @@
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="file">valves.sym</property>
+                <property name="channel">VVR1608-1-I10-01:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
                 <property name="x">214</property>
@@ -2309,10 +2343,11 @@
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="file">valves.sym</property>
+                <property name="channel">VVR1608-2-I10-01:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
-                <property name="x">362</property>
+                <property name="x">350</property>
                 <property name="y">240</property>
               </packing>
             </child>
@@ -2322,10 +2357,11 @@
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="file">valves.sym</property>
+                <property name="channel">VVR1608-2-I10-03:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
-                <property name="x">567</property>
+                <property name="x">609</property>
                 <property name="y">240</property>
               </packing>
             </child>
@@ -2335,10 +2371,11 @@
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="file">valves.sym</property>
+                <property name="channel">VVR1608-2-I10-04:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
-                <property name="x">722</property>
+                <property name="x">734</property>
                 <property name="y">240</property>
               </packing>
             </child>
@@ -2348,10 +2385,11 @@
                 <property name="height_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="file">valves.sym</property>
+                <property name="channel">VVR1608-2-I10-02:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
-                <property name="x">478</property>
+                <property name="x">465</property>
                 <property name="y">240</property>
               </packing>
             </child>
@@ -2375,19 +2413,7 @@
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="file">iop.sym</property>
-              </object>
-              <packing>
-                <property name="x">39</property>
-                <property name="y">276</property>
-              </packing>
-            </child>
-            <child>
-              <object class="Symbol">
-                <property name="width_request">30</property>
-                <property name="height_request">30</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="channel">IOP1608-1-I00-03</property>
                 <property name="file">iop.sym</property>
               </object>
               <packing>
@@ -2401,6 +2427,7 @@
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">IOP1608-1-I10-01</property>
                 <property name="file">iop.sym</property>
               </object>
               <packing>
@@ -2414,10 +2441,11 @@
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">IOP1608-2-I10-01</property>
                 <property name="file">iop.sym</property>
               </object>
               <packing>
-                <property name="x">332</property>
+                <property name="x">320</property>
                 <property name="y">274</property>
               </packing>
             </child>
@@ -2427,6 +2455,7 @@
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">IOP1608-2-I10-02</property>
                 <property name="file">iop.sym</property>
               </object>
               <packing>
@@ -2440,6 +2469,7 @@
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">IOP1608-2-I10-03</property>
                 <property name="file">iop.sym</property>
               </object>
               <packing>
@@ -2449,30 +2479,32 @@
             </child>
             <child>
               <object class="Symbol">
-                <property name="width_request">49</property>
-                <property name="height_request">32</property>
+                <property name="width_request">60</property>
+                <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="angle">270</property>
-                <property name="file">valves.sym</property>
+                <property name="channel">VVR1608-2-I10-05:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
-                <property name="x">499</property>
-                <property name="y">220</property>
+                <property name="x">495</property>
+                <property name="y">221</property>
               </packing>
             </child>
             <child>
               <object class="Symbol">
-                <property name="width_request">56</property>
-                <property name="height_request">29</property>
+                <property name="width_request">60</property>
+                <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="angle">270</property>
-                <property name="file">valves.sym</property>
+                <property name="angle">90</property>
+                <property name="channel">VVR1608-2-I10-06:state</property>
+                <property name="file">valve.sym</property>
               </object>
               <packing>
-                <property name="x">497</property>
-                <property name="y">283</property>
+                <property name="x">513</property>
+                <property name="y">281</property>
               </packing>
             </child>
             <child>
@@ -2481,10 +2513,11 @@
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">IOP1608-2-I10-04</property>
                 <property name="file">iop.sym</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">671</property>
                 <property name="y">274</property>
               </packing>
             </child>
@@ -2494,10 +2527,11 @@
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="channel">IOP1608-2-I10-05</property>
                 <property name="file">iop.sym</property>
               </object>
               <packing>
-                <property name="x">768</property>
+                <property name="x">795</property>
                 <property name="y">275</property>
               </packing>
             </child>
@@ -2507,6 +2541,7 @@
                 <property name="height_request">26</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="widgets">valvectrl, valvectrl1, valvectrl2, valvectrl3, valvectrl4, valvectrl5, valvectrl6, valvectrl7, valvectrl8, valvectrl9, valvectrl11</property>
               </object>
               <packing>
                 <property name="x">826</property>
@@ -2525,21 +2560,6 @@
               <packing>
                 <property name="x">518</property>
                 <property name="y">196</property>
-              </packing>
-            </child>
-            <child>
-              <object class="LineMonitor">
-                <property name="width_request">26</property>
-                <property name="height_request">31</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="alarm">True</property>
-                <property name="arrow">True</property>
-                <property name="direction">south-east</property>
-              </object>
-              <packing>
-                <property name="x">23</property>
-                <property name="y">235</property>
               </packing>
             </child>
             <child>
@@ -2580,11 +2600,11 @@
                 <property name="can_focus">False</property>
                 <property name="alarm">True</property>
                 <property name="arrow">True</property>
-                <property name="direction">south-east</property>
+                <property name="direction">north-east</property>
               </object>
               <packing>
-                <property name="x">417</property>
-                <property name="y">227</property>
+                <property name="x">368</property>
+                <property name="y">276</property>
               </packing>
             </child>
             <child>
@@ -2613,7 +2633,7 @@
                 <property name="direction">south-east</property>
               </object>
               <packing>
-                <property name="x">637</property>
+                <property name="x">674</property>
                 <property name="y">229</property>
               </packing>
             </child>
@@ -2628,8 +2648,802 @@
                 <property name="direction">south-east</property>
               </object>
               <packing>
-                <property name="x">792</property>
-                <property name="y">232</property>
+                <property name="x">826</property>
+                <property name="y">231</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl">
+                <property name="width_request">20</property>
+                <property name="height_request">47</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">466</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Symbol">
+                <property name="width_request">23</property>
+                <property name="height_request">40</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">VVR1608-1-I00-01:state</property>
+                <property name="file">valve.sym</property>
+              </object>
+              <packing>
+                <property name="x">54</property>
+                <property name="y">240</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Symbol">
+                <property name="width_request">23</property>
+                <property name="height_request">40</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">VVR1408-I00-01:state</property>
+                <property name="file">valve.sym</property>
+              </object>
+              <packing>
+                <property name="x">30</property>
+                <property name="y">240</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl1">
+                <property name="width_request">20</property>
+                <property name="height_request">66</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">352</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl2">
+                <property name="width_request">20</property>
+                <property name="height_request">44</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">216</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl3">
+                <property name="width_request">20</property>
+                <property name="height_request">46</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-1-I00-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-1-I00-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">81</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl4">
+                <property name="width_request">20</property>
+                <property name="height_request">66</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-1-I00-01:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-1-I00-01:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">56</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl5">
+                <property name="width_request">20</property>
+                <property name="height_request">48</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">609</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl6">
+                <property name="width_request">20</property>
+                <property name="height_request">47</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">736</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl7">
+                <property name="width_request">40</property>
+                <property name="height_request">43</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">561</property>
+                <property name="y">285</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl8">
+                <property name="width_request">40</property>
+                <property name="height_request">39</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">544</property>
+                <property name="y">223</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl9">
+                <property name="width_request">20</property>
+                <property name="height_request">66</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">VVR1608-2-I10-02:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">31</property>
+                <property name="y">195</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl10">
+                <property name="width_request">20</property>
+                <property name="height_request">46</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">SSH1608-2-I10-01:opr:open</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">SSH1608-2-I10-01:opr:close</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">820</property>
+                <property name="y">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl11">
+                <property name="width_request">20</property>
+                <property name="height_request">53</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">XTAL1608-2-I10-01:opr:close</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">XTAL1608-2-I10-01:opr:open</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">309</property>
+                <property name="y">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Symbol">
+                <property name="width_request">30</property>
+                <property name="height_request">55</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="channel">XTAL1608-2-I10-01:state</property>
+                <property name="file">shutters.sym</property>
+              </object>
+              <packing>
+                <property name="x">728</property>
+                <property name="y">16</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkGrid" id="valvectrl12">
+                <property name="width_request">20</property>
+                <property name="height_request">66</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">XTAL1608-2-I10-01:opr:close</property>
+                    <property name="label">⮝</property>
+                    <style>
+                      <class name="green"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="CommandButton">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="channel">XTAL1608-2-I10-01:opr:open</property>
+                    <property name="label">⮟</property>
+                    <style>
+                      <class name="red"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="tiny"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">706</property>
+                <property name="y">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="width_request">56</property>
+                <property name="height_request">20</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="font_size">1</property>
+                <property name="text">SOE SSH</property>
+              </object>
+              <packing>
+                <property name="x">788</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="width_request">44</property>
+                <property name="height_request">20</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="font_size">1</property>
+                <property name="text">MBV</property>
+              </object>
+              <packing>
+                <property name="x">719</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel">
+                <property name="width_request">44</property>
+                <property name="height_request">20</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="font_size">1</property>
+                <property name="text">WBV</property>
+              </object>
+              <packing>
+                <property name="x">324</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor">
+                <property name="width_request">80</property>
+                <property name="height_request">22</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">CCG1608-2-I10-04:vac:p</property>
+                <property name="font_size">3</property>
+                <property name="monospace">True</property>
+                <property name="prec">2</property>
+              </object>
+              <packing>
+                <property name="x">769</property>
+                <property name="y">208</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor">
+                <property name="width_request">88</property>
+                <property name="height_request">22</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">CCG1608-2-I10-03:vac:p</property>
+                <property name="font_size">3</property>
+                <property name="monospace">True</property>
+                <property name="prec">2</property>
+              </object>
+              <packing>
+                <property name="x">635</property>
+                <property name="y">204</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor">
+                <property name="width_request">76</property>
+                <property name="height_request">24</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">CCG1608-2-I10-02:vac:p</property>
+                <property name="font_size">3</property>
+                <property name="monospace">True</property>
+                <property name="prec">2</property>
+              </object>
+              <packing>
+                <property name="x">424</property>
+                <property name="y">317</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor">
+                <property name="width_request">81</property>
+                <property name="height_request">26</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">CCG1608-2-I10-01:vac:p</property>
+                <property name="font_size">3</property>
+                <property name="monospace">True</property>
+                <property name="prec">2</property>
+              </object>
+              <packing>
+                <property name="x">292</property>
+                <property name="y">316</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor">
+                <property name="width_request">100</property>
+                <property name="height_request">25</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">CCG1608-1-I10-01:vac:p</property>
+                <property name="font_size">3</property>
+                <property name="monospace">True</property>
+                <property name="prec">2</property>
+              </object>
+              <packing>
+                <property name="x">245</property>
+                <property name="y">199</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor">
+                <property name="width_request">100</property>
+                <property name="height_request">26</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">CCG1608-1-I00-03:vac:p</property>
+                <property name="font_size">3</property>
+                <property name="monospace">True</property>
+                <property name="prec">2</property>
+              </object>
+              <packing>
+                <property name="x">105</property>
+                <property name="y">201</property>
               </packing>
             </child>
           </object>

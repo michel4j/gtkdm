@@ -603,6 +603,19 @@
             <property name="y">133</property>
           </packing>
         </child>
+        <child>
+          <object class="TextMonitor">
+            <property name="width_request">100</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="channel">TST001:floatout</property>
+          </object>
+          <packing>
+            <property name="x">527</property>
+            <property name="y">226</property>
+          </packing>
+        </child>
       </object>
     </child>
   </object>
