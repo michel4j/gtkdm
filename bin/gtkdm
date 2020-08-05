@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 
 import argparse
-
+import logging
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from gtkdm import widgets
+from gtkdm import widgets, utils
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Gtk Display Manager for EPICS.')
     parser.add_argument('display', metavar='display', type=str, help='Display File Name')
-    parser.add_argument('-v', action='store_true', help='Verbose Logging')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose Logging')
     parser.add_argument('-m', '--macros', type=str, help='Macros', required=False)
     args = parser.parse_args()
+
+    if args.verbose:
+        utils.log_to_console(level=logging.DEBUG)
+    else:
+        utils.log_to_console(level=logging.INFO)
 
     widgets.Manager.reset(args.macros)
     widgets.Manager.show_display(args.display, main=True)

@@ -18,6 +18,7 @@ import gepics
 import xml.etree.ElementTree as ET
 
 from . import utils, PLUGIN_DIR
+from .utils import logger
 
 EDITOR = True
 
@@ -68,22 +69,52 @@ class DisplayManager(object):
     def __init__(self):
         self.macros = {}
         self.registry = {}
+        self.search_paths = [os.getcwd()] + os.environ.get('GTKDM_DISPLAY_PATH', '').split(':')
 
     def reset(self, macro_spec):
         self.macros = utils.parse_macro_spec(macro_spec)
 
+    def find_display(self, path):
+        """
+        Search for the display file and return the full path
+        :param path: relative or absolute path to find
+        :return: Full path to display file, or None if not found
+        """
+        is_abs = os.path.isabs(path)
+        if is_abs and os.path.exists(path):
+            full_path = path
+        elif not is_abs:
+            for display_path in self.search_paths:
+                full_path = os.path.join(display_path, path)
+                if os.path.exists(full_path):
+                    break
+            else:
+                full_path = None
+        else:
+            full_path = None
+
+        return full_path
+
     def show_display(self, path, macros_spec="", main=False, multiple=False):
+        """
+        Show a display file
+
+        :param path: absolute or relative path to display file
+        :param macros_spec: macro specification
+        :param main: Whether this is a main window or a related display
+        :param multiple: Whether multiple instances are allowed or not
+        """
         global EDITOR
         if main:
             EDITOR = False
-        full_path = os.path.abspath(path)
-        directory, filename = os.path.split(full_path)
-        try:
-            tree = ET.parse(path)
-        except FileNotFoundError as e:
-            print('Display File {} not found'.format(path))
+
+        full_path = self.find_display(path)
+        if not full_path:
+            logger.error('Display File {} not found'.format(path))
             return
 
+        directory, filename = os.path.split(full_path)
+        tree = ET.parse(full_path)
         w = tree.find(".//object[@class='GtkWindow']")
         w.set('class', 'DisplayWindow')  # Switch to full Window
         w.set('id', 'related_display')
@@ -97,7 +128,7 @@ class DisplayManager(object):
             try:
                 utils.update_properties(tree, new_macros)
             except KeyError as e:
-                print('Macro {} not specified for display "{}"'.format(e, filename))
+                logger.warn('Macro {} not specified for display "{}"'.format(e, filename))
             data = (
                     '<?xml version="1.0" encoding="UTF-8"?>\n' +
                     ET.tostring(tree.getroot(), encoding='unicode', method='xml')
@@ -121,13 +152,21 @@ class DisplayManager(object):
             window.present()
 
     def embed_display(self, frame, path, macros_spec=""):
-        directory, filename = os.path.split(os.path.abspath(path))
-        try:
-            tree = ET.parse(path)
-        except FileNotFoundError as e:
-            print('Display File {} not found'.format(path))
+        """
+        Embed a display in a target frame
+
+        :param frame: Target DisplayFrame to embed display in
+        :param path: relative or absolute path to the display file to embed
+        :param macros_spec: Macro specification
+        """
+
+        full_path = self.find_display(path)
+        if not full_path:
+            logger.error('Display File {} not found'.format(path))
             return
 
+        directory, filename = os.path.split(full_path)
+        tree = ET.parse(full_path)
         w = tree.find(".//object[@class='GtkWindow']/child/object[1]")
         w.set('id', 'embedded_display')
 
@@ -147,7 +186,7 @@ class DisplayManager(object):
         try:
             utils.update_properties(tree, new_macros)
         except KeyError as e:
-            print('Macro {} not specified for display "{}"'.format(e, filename))
+            logger.warn('Macro {} not specified for display "{}"'.format(e, filename))
         data = (
                 '<?xml version="1.0" encoding="UTF-8"?>\n' +
                 ET.tostring(tree.getroot(), encoding='unicode', method='xml')
@@ -353,7 +392,7 @@ class DisplayWindow(Gtk.Window):
             os.environ['GLADE_MODULE_SEARCH_PATH'] = PLUGIN_DIR
             subprocess.Popen(['glade', self.directory])
         except FileNotFoundError as e:
-            print("GtkDM Editor not available")
+            logger.warn("GtkDM Editor not available")
 
     def on_reload(self, btn):
         Manager.embed_display(self, self.directory, self.macros)
@@ -887,7 +926,7 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.Bin):
             value = converter(text)
             self.pv.put(value)
         except ValueError as e:
-            print("Invalid Value: {}".format(e))
+            logger.warn("Invalid Value: {}".format(e))
 
 
 class CommandButton(ActiveMixin, AlarmMixin, Gtk.Bin):
