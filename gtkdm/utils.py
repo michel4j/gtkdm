@@ -1,7 +1,8 @@
 import contextlib
 import os
 import re
-
+import logging
+import colors
 
 def parse_macro_spec(macro_spec):
     """
@@ -47,3 +48,55 @@ def working_dir(newdir):
         yield
     finally:
         os.chdir(curdir)
+
+
+class NullHandler(logging.Handler):
+    """
+    A do-nothing log handler.
+    """
+
+    def emit(self, record):
+        pass
+
+
+class ColoredConsoleHandler(logging.StreamHandler):
+    """
+    A colored console log handler
+    """
+    def format(self, record):
+        msg = super(ColoredConsoleHandler, self).format(record)
+        if record.levelno == logging.WARNING:
+            msg = colors.color(msg, fg=202)
+        elif record.levelno > logging.WARNING:
+            msg = colors.color(msg, fg=196)
+        elif record.levelno == logging.DEBUG:
+            msg = colors.color(msg, fg=57)
+        return msg
+
+
+def create_logger(name='gtkdm'):
+    """
+    Create a logger
+    """
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(NullHandler())
+    return logger
+
+
+def log_to_console(level=logging.DEBUG):
+    """
+    Add a log handler which logs to the console.
+    """
+
+    console = ColoredConsoleHandler()
+    console.setLevel(level)
+    if level == logging.DEBUG:
+        formatter = logging.Formatter('%(asctime)s [%(name)s] %(message)s', '%b/%d %H:%M:%S')
+    else:
+        formatter = logging.Formatter('%(asctime)s %(message)s', '%b/%d %H:%M:%S')
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
+
+
+logger = create_logger()

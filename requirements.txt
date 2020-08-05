@@ -1,4 +1,4 @@
-gepics==2019.7.1
-numpy==1.18.5
+gepics
+numpy
 pip-chill==1.0.0
-pygobject==3.36.1
+pygobject
