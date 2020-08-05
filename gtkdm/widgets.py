@@ -17,7 +17,7 @@ from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
 import gepics
 import xml.etree.ElementTree as ET
 
-from . import utils
+from . import utils, PLUGIN_DIR
 
 EDITOR = True
 
@@ -247,6 +247,11 @@ class BlankWidget(Gtk.Widget):
         self.set_realized(True)
         window.set_background_pattern(None)
 
+    def get_top_level(self):
+        parent = self.get_parent()
+        if parent:
+            return parent.get_toplevel()
+
 
 class AlarmMixin(object):
     def on_alarm(self, pv, alarm):
@@ -344,7 +349,9 @@ class DisplayWindow(Gtk.Window):
 
     def on_edit(self, btn):
         try:
-            cmd = subprocess.Popen(['gtkdm-editor', self.directory])
+            os.environ['GLADE_CATALOG_SEARCH_PATH'] = PLUGIN_DIR
+            os.environ['GLADE_MODULE_SEARCH_PATH'] = PLUGIN_DIR
+            subprocess.Popen(['glade', self.directory])
         except FileNotFoundError as e:
             print("GtkDM Editor not available")
 
