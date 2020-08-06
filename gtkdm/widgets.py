@@ -17,7 +17,7 @@ from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
 import gepics
 import xml.etree.ElementTree as ET
 
-from . import utils, colors, PLUGIN_DIR
+from . import utils, colors, version, PLUGIN_DIR
 from .utils import logger
 
 EDITOR = True
@@ -421,8 +421,8 @@ class DisplayWindow(Gtk.Window):
         about_dialog.set_program_name("GtkDM")
         about_dialog.set_logo_icon_name('applications-engineering')
         about_dialog.set_comments("Python-based Gtk Display Manager for \nEPICS Operator Screens")
-        about_dialog.set_version("2019.6.1")
-        about_dialog.set_copyright("© 2019 Michel Fodje")
+        about_dialog.set_version(version.get_version())
+        about_dialog.set_copyright("© 2019-{} Canadian Light Source, Inc.".format(datetime.now().year))
         about_dialog.set_license_type(Gtk.License.MIT_X11)
         about_dialog.set_authors(["Michel Fodje <michel.fodje@lightsource.ca>"])
         about_dialog.present()
