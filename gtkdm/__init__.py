@@ -6,6 +6,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
 PLUGIN_DIR = os.path.join(os.path.dirname(__file__), 'glade')
+NAME = __name__
+
 css = Gtk.CssProvider()
 with open(os.path.join(PLUGIN_DIR, 'style.css'), 'rb') as handle:
     css_data = handle.read()
