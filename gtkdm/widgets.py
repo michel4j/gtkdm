@@ -1919,7 +1919,7 @@ class ChartPair(GObject.GObject):
 
 class XYScatter(Gtk.DrawingArea):
     __gtype_name__ = 'XYScatter'
-    buffer = GObject.Property(type=int, default=1, minimum=1, maximum=10, nick='Buffer Size')
+    buffer = GObject.Property(type=int, default=1, minimum=1, maximum=100, nick='Buffer Size')
     sample = GObject.Property(type=float, default=10, minimum=.1, maximum=50, nick='Update Freq (hz)')
     color_bg = GObject.Property(type=Gdk.RGBA, nick='Background Color')
     color_fg = GObject.Property(type=Gdk.RGBA, nick='Foreground Color')
@@ -1949,7 +1949,6 @@ class XYScatter(Gtk.DrawingArea):
     xticks = GObject.Property(type=int, default=5, nick='X Ticks/Step')
     ystep = GObject.Property(type=float, default=.1, nick='Y Step Size')
     yticks = GObject.Property(type=int, default=5, nick='Y Ticks/Step')
-
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -2125,7 +2124,7 @@ class XYScatter(Gtk.DrawingArea):
                 cr.set_line_width(1.0)
                 for j, mark in enumerate(pos):
                     cr.set_source_rgba(*alpha(self.palette(i), (j+1.)/(self.buffer+1.)))
-                    cr.arc(*mark, 3, 0, 2*pi)
+                    cr.arc(*mark, 2, 0, 2*pi)
                     cr.fill_preserve()
                     cr.stroke()
 

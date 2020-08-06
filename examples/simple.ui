@@ -85,7 +85,7 @@
     <property name="resizable">False</property>
     <child>
       <object class="Layout">
-        <property name="width_request">850</property>
+        <property name="width_request">1050</property>
         <property name="height_request">600</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -393,15 +393,15 @@
         </child>
         <child>
           <object class="DisplayFrame" id="displayframe1">
-            <property name="width_request">228</property>
-            <property name="height_request">198</property>
+            <property name="width_request">382</property>
+            <property name="height_request">184</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="display">embed.ui</property>
             <property name="macros">device=michel</property>
           </object>
           <packing>
-            <property name="x">614</property>
+            <property name="x">653</property>
             <property name="y">170</property>
           </packing>
         </child>
@@ -466,7 +466,7 @@
         <child>
           <object class="MessageLog">
             <property name="width_request">517</property>
-            <property name="height_request">80</property>
+            <property name="height_request">66</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="alarm">True</property>
@@ -474,7 +474,7 @@
           </object>
           <packing>
             <property name="x">16</property>
-            <property name="y">507</property>
+            <property name="y">521</property>
           </packing>
         </child>
         <child>
@@ -507,11 +507,11 @@
         </child>
         <child>
           <object class="XYScatter">
-            <property name="width_request">238</property>
-            <property name="height_request">195</property>
+            <property name="width_request">143</property>
+            <property name="height_request">119</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="buffer">4</property>
+            <property name="buffer">100</property>
             <property name="color_bg">rgb(85,87,83)</property>
             <property name="color_fg">rgb(211,215,207)</property>
             <property name="fontsize">8</property>
@@ -611,6 +611,35 @@
           <packing>
             <property name="x">527</property>
             <property name="y">226</property>
+          </packing>
+        </child>
+        <child>
+          <object class="XYScatter">
+            <property name="width_request">337</property>
+            <property name="height_request">191</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="buffer">4</property>
+            <property name="color_bg">rgb(85,87,83)</property>
+            <property name="color_fg">rgb(211,215,207)</property>
+            <property name="fontsize">8</property>
+            <property name="plot0">michel:PM:distancesWF, michel:PM:iTrajectoryWF</property>
+            <property name="plot1">michel:PM:distancesWF, michel:PM:xTrajectoryWF</property>
+            <property name="plot2">michel:PM:distancesWF, michel:PM:yTrajectoryWF</property>
+            <property name="plot3">michel:PM:refLocationsWF, michel:PM:referenceHiWF</property>
+            <property name="plot4">michel:PM:refLocationsWF, michel:PM:referenceLoWF</property>
+            <property name="xmax">60</property>
+            <property name="xmin">0</property>
+            <property name="xstep">5</property>
+            <property name="xticks">0</property>
+            <property name="ymax">20</property>
+            <property name="ymin">-5</property>
+            <property name="ystep">5</property>
+            <property name="yticks">3</property>
+          </object>
+          <packing>
+            <property name="x">702</property>
+            <property name="y">391</property>
           </packing>
         </child>
       </object>
