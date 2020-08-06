@@ -64,17 +64,22 @@ class DisplayManager(object):
     def reset(self, macro_spec):
         self.macros = utils.parse_macro_spec(macro_spec)
 
-    def find_display(self, path):
+    def find_display(self, path, root_path=None):
         """
         Search for the display file and return the full path
         :param path: relative or absolute path to find
+        :param root_path: top-level path of display frame to search first.
         :return: Full path to display file, or None if not found
+
         """
+
+        search_locations = self.search_paths if not root_path else [root_path] + self.search_paths
+
         is_abs = os.path.isabs(path)
         if is_abs and os.path.exists(path):
             full_path = path
         elif not is_abs:
-            for display_path in self.search_paths:
+            for display_path in search_locations:
                 full_path = os.path.join(display_path, path)
                 if os.path.exists(full_path):
                     break
@@ -103,6 +108,8 @@ class DisplayManager(object):
             logger.error('Display File {} not found'.format(path))
             return
 
+        logger.info(f"Loading: {full_path}...")
+
         directory, filename = os.path.split(full_path)
         tree = ET.parse(full_path)
         w = tree.find(".//object[@class='GtkWindow']")
@@ -130,7 +137,7 @@ class DisplayManager(object):
                 window.builder = builder
                 window.macros = new_macro_spec
                 window.header.set_subtitle(filename)
-                window.props.directory = full_path
+                window.props.path = full_path
                 if main:
                     window.connect('destroy', lambda x: Gtk.main_quit())
                 elif not multiple:
@@ -150,7 +157,10 @@ class DisplayManager(object):
         :param macros_spec: Macro specification
         """
 
-        full_path = self.find_display(path)
+        top_level = frame.get_toplevel()
+        root_path = os.path.dirname(top_level.path) if isinstance(top_level, DisplayWindow) else None
+
+        full_path = self.find_display(path, root_path=root_path)
         if not full_path:
             logger.error('Display File {} not found'.format(path))
             return
@@ -276,7 +286,7 @@ class BlankWidget(Gtk.Widget):
         attr.visual = self.get_visual()
         attr.event_mask = self.get_events() | Gdk.EventMask.EXPOSURE_MASK
         mask = Gdk.WindowAttributesType.X | Gdk.WindowAttributesType.Y | Gdk.WindowAttributesType.VISUAL
-        window = Gdk.Window(self.get_parent_window(), attr, mask);
+        window = Gdk.Window(self.get_parent_window(), attr, mask)
         self.set_window(window)
         self.register_window(window)
         self.set_realized(True)
@@ -338,7 +348,7 @@ class Layout(Gtk.Fixed):
 
 class DisplayWindow(Gtk.Window):
     __gtype_name__ = 'DisplayWindow'
-    directory = GObject.Property(type=str, default='')
+    path = GObject.Property(type=str, default='')
     builder = GObject.Property(type=Gtk.Builder)
     macros = GObject.Property(type=str, default='')
 
@@ -399,12 +409,12 @@ class DisplayWindow(Gtk.Window):
         try:
             os.environ['GLADE_CATALOG_SEARCH_PATH'] = PLUGIN_DIR
             os.environ['GLADE_MODULE_SEARCH_PATH'] = PLUGIN_DIR
-            subprocess.Popen(['glade', self.directory])
+            subprocess.Popen(['glade', self.path])
         except FileNotFoundError as e:
             logger.warn("GtkDM Editor not available")
 
     def on_reload(self, btn):
-        Manager.embed_display(self, self.directory, self.macros)
+        Manager.embed_display(self, self.path, self.macros)
 
     def on_about(self, btn):
         about_dialog = Gtk.AboutDialog(transient_for=self, modal=True)
@@ -447,8 +457,7 @@ class DisplayFrame(Gtk.Bin):
     def on_realize(self, obj):
         top_level = self.get_toplevel()
         if self.display and isinstance(top_level, DisplayWindow):
-            display_path = os.path.join(os.path.dirname(top_level.directory), self.display)
-            Manager.embed_display(self, display_path, macros_spec=self.macros)
+            Manager.embed_display(self, self.display, macros_spec=self.macros)
 
 
 class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
@@ -477,7 +486,6 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_realize(self, obj):
         style = self.get_style_context()
-        style.add_class('gtkdm-inactive')
         self.palette = ColorSequence(self.colors)
 
         # adjust style classes
@@ -548,7 +556,6 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_realize(self, obj):
         style = self.value_label.get_style_context()
-        style.add_class('gtkdm-inactive')
         self.palette = ColorSequence(self.colors)
 
         # adjust style classes
@@ -799,7 +806,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
 
     def on_realize(self, widget):
         v = (self.size + 5) * int(round(self.count/self.columns))
-        self.set_size_request(100, v)
+        #self.set_size_request(100, v)
         self.palette = ColorSequence(self.colors)
         labels = [v.strip() for v in self.labels.split(',')]
         self._view_labels = labels + (self.count - len(labels)) * ['']
@@ -841,7 +848,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         
     def do_draw(self, cr):
         cr.set_line_width(0.75)
-        cr.set_font_size(self.size)
+        cr.set_font_size(self.size - 2)
         x = 4.5
         y = 4.5
         style = self.get_style_context()
@@ -1387,10 +1394,7 @@ class Gauge(ActiveMixin, BlankWidget):
         if connected:
             self.ctrlvars = self.pv.get_ctrlvars()
             self.units_label = self.pv.units
-            self.set_sensitive(True)
-        else:
-            self.set_sensitive(False)
-        self.queue_draw()
+        super().on_active(pv, connected)
 
 
 class SymbolFrames(object):
@@ -1467,7 +1471,8 @@ class Symbol(ActiveMixin, BlankWidget):
             self.pv.connect('active', self.on_active)
 
         if self.file:
-            self.frames = SymbolFrames.new_from_file(self.file)
+            symbol_path =  Manager.find_display(self.file)
+            self.frames = SymbolFrames.new_from_file(symbol_path)
             self.image = self.frames(-1)
 
     def on_change(self, pv, value):
@@ -1569,13 +1574,11 @@ class DisplayButton(Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
     def on_clicked(self, button):
-        if self.display:
-            top_level = self.get_toplevel()
-            display_path = os.path.join(os.path.dirname(top_level.directory), self.display)
+        if self.display and not EDITOR:
             if self.frame:
-                Manager.embed_display(self.frame, display_path, macros_spec=self.macros)
+                Manager.embed_display(self.frame, self.display, macros_spec=self.macros)
             else:
-                Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
+                Manager.show_display(self.display, macros_spec=self.macros, multiple=self.multiple)
 
 
 class Shape(ActiveMixin, AlarmMixin, BlankWidget):
@@ -1708,10 +1711,8 @@ class DisplayMenuItem(Gtk.Bin):
         self.show_all()
 
     def on_clicked(self, obj):
-        top_level = self.get_toplevel()
-        if self.file and isinstance(top_level, DisplayWindow):
-            display_path = os.path.join(os.path.dirname(top_level.directory), self.file)
-            Manager.show_display(display_path, macros_spec=self.macros, multiple=self.multiple)
+        if self.file and not EDITOR:
+            Manager.show_display(self.file, macros_spec=self.macros, multiple=self.multiple)
 
 
 class ShellMenuItem(Gtk.Bin):
@@ -1735,7 +1736,7 @@ class ShellMenuItem(Gtk.Bin):
         self.show_all()
 
     def on_clicked(self, button):
-        if self.command:
+        if self.command and not EDITOR:
             if self.proc:
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:

@@ -183,3 +183,11 @@
 .shaded {
     background: rgba(128, 128, 128, 0.25);
 }
+
+tooltip {
+    border-radius: 4px;
+}
+tooltip * {
+    font-size: 90%;
+    padding: 1px;
+}

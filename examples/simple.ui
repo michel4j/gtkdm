@@ -152,8 +152,8 @@
         </child>
         <child>
           <object class="Byte" id="byte1">
-            <property name="width_request">221</property>
-            <property name="height_request">62</property>
+            <property name="width_request">224</property>
+            <property name="height_request">79</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
@@ -249,7 +249,7 @@
             <property name="can_focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
             <property name="colors">YGRO</property>
-            <property name="size">13</property>
+            <property name="size">12</property>
           </object>
           <packing>
             <property name="x">548</property>
