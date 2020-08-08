@@ -23,7 +23,7 @@ setup(
     package_data={
         'gtkdm': [
             'glade/catalog.xml',
-            'glade/styles.css',
+            'glade/style.css',
         ]
     },
     install_requires=requirements + [

@@ -126,6 +126,7 @@
             <property name="channel">michel:PM2:X:positionM</property>
             <property name="color">rgb(115,210,22)</property>
             <property name="font_size">3</property>
+            <property name="monospace">True</property>
             <property name="xalign">0.5</property>
             <style>
               <class name="dark"/>

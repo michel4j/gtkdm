@@ -509,8 +509,11 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
             precision = precision if precision >= 0 else 3
-            fmt = 'f' if (value == 0 or abs(value) > 1e-4) else 'e'
-            text = ('{{:0.{}{}}}'.format(precision, fmt)).format(value)
+
+            if abs(value) > 1e-1**precision:
+                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
+            else:
+                text = utils.sci_fmt(value, digits=precision, sign=self.monospace)
         else:
             text = pv.char_value
 
@@ -586,8 +589,10 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
             precision = precision if precision >= 0 else 3
-            fmt = 'f' if (value == 0 or abs(value) > 1e-4) else 'e'
-            text = ('{{:0.{}{}}}'.format(precision, fmt)).format(value)
+            if abs(value) > 1e-1**precision:
+                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
+            else:
+                text = utils.sci_fmt(value, digits=precision, sign=self.monospace)
         else:
             text = pv.char_value
 
@@ -1400,22 +1405,40 @@ class Gauge(ActiveMixin, BlankWidget):
 class SymbolFrames(object):
     registry = {}
 
-    def __init__(self, path):
+    def __init__(self, path=None):
         self.frames = []
         self.width = 0
         self.height = 0
+        if path:
+            self.load_symbol_file(path)
+
+    def load_symbol_file(self, path):
         with zipfile.ZipFile(path, 'r') as sym:
             index = json.loads(sym.read('symbol.json'))
             for frame in index:
                 data = sym.read(frame)
-                stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(data))
-                pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, None)
-                self.width = max(self.width, pixbuf.get_width())
-                self.height = max(self.height, pixbuf.get_height())
-                self.frames.append(pixbuf)
+                if frame.endswith('.sym'):  # nested symbols for animation
+                    self.frames.append(SymbolFrames.new_from_data(data, os.path.join(path, frame)))
+                else:
+                    stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(data))
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, None)
+                    self.width = max(self.width, pixbuf.get_width())
+                    self.height = max(self.height, pixbuf.get_height())
+                    self.frames.append(pixbuf)
+
 
     @classmethod
     def new_from_file(cls, path):
+        full_path = os.path.abspath(path)
+        if full_path in cls.registry:
+            return cls.registry[full_path]
+        else:
+            sf = SymbolFrames(full_path)
+            cls.registry[full_path] = sf
+            return sf
+
+    @classmethod
+    def new_from_data(cls, data, path):
         full_path = os.path.abspath(path)
         if full_path in cls.registry:
             return cls.registry[full_path]

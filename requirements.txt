@@ -1,4 +1,5 @@
 gepics
 numpy
-pip-chill==1.0.0
+pip-chill
 pygobject
+ansicolors
