@@ -1,10 +1,6 @@
 import os
 import sys
 
-import gi
-
-gi.require_version('Gladeui', '2.0')
-
 PLUGIN_DIR = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(PLUGIN_DIR)
 
