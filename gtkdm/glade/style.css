@@ -1,5 +1,5 @@
 .gtkdm-window * {
-    font-size: 9pt;
+    font-size: 8pt;
 }
 
 .gtkdm-window popover, .gtkdm-window menu {
@@ -55,12 +55,12 @@
 }
 
 .gtkdm-critical {
-    color: #FC0000;
+    color: #ef2929;
 }
 
 .tiny button, .tiny entry {
-    min-height: 8px;
-    min-width: 8px;
+    min-height: 7px;
+    min-width: 7px;
     padding: 2px;
     border-radius: 3px;
     font-size: 90%;
@@ -95,35 +95,71 @@
 .dark entry {
     border: 0.25px solid rgba(0, 0, 0, 0.05)
 }
+.xxs label {
+    font-size: 6pt;
+}
 
-.gtkdm.xs label {
+.xs label {
     font-size: 7pt;
 }
 
-.gtkdm.sm label {
+.sm label {
     font-size: 8pt;
 }
 
-.gtkdm.md label {
+.md label {
     font-size: 9pt;
 }
 
-.gtkdm.lg label {
+.lg label {
     font-size: 10pt;
 }
 
-.gtkdm.xl label {
+.xl label {
     font-size: 12pt;
     font-weight: bold;
 }
 
 .dark entry, .dark label {
-    background: #878787;
-    color: lawngreen;
+    background: #555753;
+    color: #73d216;
+}
+
+.dark-panel {
+    background: rgb(85,87,83);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.dark-panel label.panel-desc{
+    font-size: 6.8pt;
+    color: rgba(255, 255, 255, 0.25);
 }
 
 .warning button {
     background: rgba(255, 0.0, 0.0, 0.15);
+}
+
+.red button {
+    color: red;
+}
+.green button {
+    color: green;
+}
+.red-bg button {
+    background: rgba(255, 0, 0, 0.25);
+}
+.green-bg button {
+    background: rgba(0, 255, 0, 0.25);
+}
+
+.vara-bg button {
+    background: rgba(255, 128, 0, 0.25);
+}
+.varb-bg button {
+    background: rgba(128, 255, 0, 0.25);
+}
+.varc-bg button {
+    background: rgba(0, 128, 128, 0.25);
 }
 
 .gtkdm-table entry {
@@ -142,4 +178,16 @@
 
 .monospace label {
     font-family: "TheSansMonoCd Office", "Monaco", monospace;
+}
+
+.shaded {
+    background: rgba(128, 128, 128, 0.25);
+}
+
+tooltip {
+    border-radius: 4px;
+}
+tooltip * {
+    font-size: 90%;
+    padding: 1px;
 }

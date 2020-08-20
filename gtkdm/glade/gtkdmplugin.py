@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 import gi
 
 gi.require_version('Gladeui', '2.0')
@@ -11,4 +12,4 @@ from gtkdm import widgets
 
 
 def do_post_create(*args, **kwargs):
-        print(*args, **kwargs)
+    print(widgets, *args, **kwargs)

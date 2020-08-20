@@ -1,7 +1,9 @@
 import contextlib
 import os
 import re
-
+import math
+import logging
+import colors
 
 def parse_macro_spec(macro_spec):
     """
@@ -21,6 +23,7 @@ def update_properties(tree, macros):
     :param macros: Dictionary containing macro information
     """
     for prop in tree.findall(".//object/property"):
+        if not prop.text: continue
         prop.text = prop.text.format(**macros)
 
 
@@ -46,3 +49,71 @@ def working_dir(newdir):
         yield
     finally:
         os.chdir(curdir)
+
+SUPERSCRIPTS_TRANS = str.maketrans('0123456789+-', '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻')
+
+
+def sci_fmt(number, digits=3, sign=False):
+    exp = 0 if number == 0 else math.floor(math.log10(abs(number)))
+    value = number*(10**-exp)
+    exp_text = f'{exp}'.translate(SUPERSCRIPTS_TRANS)
+    val_fmt = f'{{:+0.{digits}f}}' if sign else f'{{:0.{digits}f}}'
+    val_text = val_fmt.format(value)
+    return f"{val_text}" if exp == 0 else f"{val_text}×10{exp_text}"
+
+
+def fix_fmt(number, digits=3, sign=False):
+    pr = '+0.' if sign else '0.'
+    return f'{{:{pr}{digits}f}}'.format(number)
+
+
+class NullHandler(logging.Handler):
+    """
+    A do-nothing log handler.
+    """
+
+    def emit(self, record):
+        pass
+
+
+class ColoredConsoleHandler(logging.StreamHandler):
+    """
+    A colored console log handler
+    """
+    def format(self, record):
+        msg = super(ColoredConsoleHandler, self).format(record)
+        if record.levelno == logging.WARNING:
+            msg = colors.color(msg, fg=202)
+        elif record.levelno > logging.WARNING:
+            msg = colors.color(msg, fg=196)
+        elif record.levelno == logging.DEBUG:
+            msg = colors.color(msg, fg=57)
+        return msg
+
+
+def create_logger(name='gtkdm'):
+    """
+    Create a logger
+    """
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(NullHandler())
+    return logger
+
+
+def log_to_console(level=logging.DEBUG):
+    """
+    Add a log handler which logs to the console.
+    """
+
+    console = ColoredConsoleHandler()
+    console.setLevel(level)
+    if level == logging.DEBUG:
+        formatter = logging.Formatter('%(asctime)s [%(name)s] %(message)s', '%b/%d %H:%M:%S')
+    else:
+        formatter = logging.Formatter('%(asctime)s %(message)s', '%b/%d %H:%M:%S')
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
+
+
+logger = create_logger()

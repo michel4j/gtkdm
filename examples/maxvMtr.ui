@@ -14,24 +14,23 @@
         <property name="can_focus">False</property>
         <property name="halign">center</property>
         <property name="valign">center</property>
-        <property name="label_xalign">0.070000000298023224</property>
-        <property name="label_yalign">0.30000001192092896</property>
+        <property name="label_xalign">0.10000000149011612</property>
         <property name="shadow_type">in</property>
         <child>
           <object class="GtkAlignment">
-            <property name="width_request">185</property>
+            <property name="width_request">160</property>
+            <property name="height_request">50</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-            <property name="border_width">6</property>
+            <property name="border_width">3</property>
             <property name="yalign">0</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">1</property>
                 <child>
                   <object class="GtkBox">
                     <property name="height_request">24</property>
@@ -39,21 +38,21 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="TextControl">
-                        <property name="width_request">75</property>
+                        <property name="width_request">70</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="channel">{motor}:{units}</property>
                         <property name="xalign">0.90000000000000002</property>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <object class="TextControl">
-                        <property name="width_request">75</property>
+                        <property name="width_request">70</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="channel">{motor}:{units}:fbk</property>
@@ -64,7 +63,7 @@
                         </style>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
@@ -76,7 +75,7 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="channel">{motor}:stop</property>
-                        <property name="icon_name">process-stop</property>
+                        <property name="label">⯀</property>
                         <style>
                           <class name="warning"/>
                         </style>
@@ -108,39 +107,12 @@
                         <property name="can_focus">False</property>
                         <property name="channel">{motor}:calibDone</property>
                         <property name="label">CAL</property>
+                        <property name="size">8</property>
                       </object>
                       <packing>
-                        <property name="expand">True</property>
+                        <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="Indicator">
-                        <property name="width_request">40</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="channel">{motor}:ccw</property>
-                        <property name="label">CCW</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="Indicator">
-                        <property name="width_request">35</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="channel">{motor}:cw</property>
-                        <property name="label">CW</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -150,12 +122,35 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="channel">{motor}:moving</property>
+                        <property name="colors">AGG</property>
                         <property name="label">MOV</property>
+                        <property name="size">8</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="TextMonitor">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">end</property>
+                        <property name="hexpand">True</property>
+                        <property name="channel">{motor}:status</property>
+                        <property name="colors">BOCMR</property>
+                        <property name="font_size">1</property>
+                        <property name="show_units">False</property>
+                        <property name="xalign">0</property>
+                        <style>
+                          <class name="tiny"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">3</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
@@ -163,20 +158,6 @@
                     <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="TextMonitor">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="hexpand">True</property>
-                    <property name="channel">{motor}:status</property>
-                    <property name="font_size">2</property>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -190,7 +171,7 @@
             <property name="can_focus">False</property>
             <child>
               <object class="DisplayButton">
-                <property name="width_request">24</property>
+                <property name="width_request">18</property>
                 <property name="height_request">18</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -215,7 +196,7 @@
                 <property name="margin_left">3</property>
                 <property name="margin_right">3</property>
                 <property name="channel">{motor}:desc</property>
-                <property name="font_size">2</property>
+                <property name="font_size">1</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -227,7 +208,7 @@
               <object class="TextLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="font_size">2</property>
+                <property name="font_size">1</property>
                 <property name="text">({units})</property>
                 <property name="xalign">1</property>
               </object>
