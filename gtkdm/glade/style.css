@@ -7,7 +7,7 @@
 }
 
 .gtkdm entry {
-    font-family: "TheSansMonoCd Office", "Monaco", monospace;
+    font-family: "Fira Code", "TheSansMonoCd Office", "Monaco", monospace;
 }
 .gtkdm entry, .gtkdm button, .gtkdm button.combo, .gtkdm button.toggle {
     min-height: 10px;
@@ -22,7 +22,7 @@
 .gtkdm textview {
     font-size: 95%;
     margin: 2px;
-    font-family: "TheSansMonoCd Office", "Monaco", monospace;
+    font-family: "Fira Code", "TheSansMonoCd Office", "Monaco", monospace;
 }
 
 .gtkdm .linked button:not(:first-child):not(:last-child):not(.combo) {
@@ -177,7 +177,7 @@
 }
 
 .monospace label {
-    font-family: "TheSansMonoCd Office", "Monaco", monospace;
+    font-family: "Fira Code", "TheSansMonoCd Office", "Monaco", monospace;
 }
 
 .shaded {
