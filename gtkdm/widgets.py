@@ -72,7 +72,6 @@ class DisplayManager(object):
         :return: Full path to display file, or None if not found
 
         """
-
         search_locations = self.search_paths if not root_path else [root_path] + self.search_paths
 
         is_abs = os.path.isabs(path)
@@ -159,7 +158,6 @@ class DisplayManager(object):
 
         top_level = frame.get_toplevel()
         root_path = os.path.dirname(top_level.path) if isinstance(top_level, DisplayWindow) else None
-
         full_path = self.find_display(path, root_path=root_path)
         if not full_path:
             logger.error('Display File {} not found'.format(path))
@@ -407,9 +405,12 @@ class DisplayWindow(Gtk.Window):
 
     def on_edit(self, btn):
         try:
-            os.environ['GLADE_CATALOG_SEARCH_PATH'] = PLUGIN_DIR
-            os.environ['GLADE_MODULE_SEARCH_PATH'] = PLUGIN_DIR
-            subprocess.Popen(['glade', self.path])
+            environ = dict(os.environ)
+            import pprint
+            pprint.pprint(environ)
+            environ['GLADE_CATALOG_SEARCH_PATH'] = PLUGIN_DIR
+            environ['GLADE_MODULE_SEARCH_PATH'] = PLUGIN_DIR
+            subprocess.Popen(['glade', self.path], env=environ)
         except FileNotFoundError as e:
             logger.warn("GtkDM Editor not available")
 
@@ -457,6 +458,11 @@ class DisplayFrame(Gtk.Bin):
     def on_realize(self, obj):
         top_level = self.get_toplevel()
         if self.display and isinstance(top_level, DisplayWindow):
+            try:
+                self.display = self.display.format(**utils.parse_macro_spec(self.macros))
+            except KeyError as e:
+
+                logger.warn('Macro {} not specified for display "{}": {}'.format(e, self.display, self.macros))
             Manager.embed_display(self, self.display, macros_spec=self.macros)
 
 
@@ -680,7 +686,7 @@ class DateLabel(Gtk.Bin):
 class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
     __gtype_name__ = 'LineMonitor'
     channel = GObject.Property(type=str, default='', nick='PV Name')
-    line_width = GObject.Property(type=float, minimum=0.1, maximum=10.0, default=1.0, nick='Width')
+    line_width = GObject.Property(type=float, minimum=0.1, maximum=100.0, default=1.0, nick='Width')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
     colors = GObject.Property(type=str, default="K", nick='Value Colors')
     arrow = GObject.Property(type=bool, default=False, nick='Arrow')
@@ -717,8 +723,10 @@ class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
     def do_draw(self, cr):
         # draw line
         x1, y1, x2, y2 = self.get_coords()
+
         if not self.color:
             self.props.color = self.get_style_context().get_color(Gtk.StateFlags.NORMAL)
+
         cr.set_source_rgba(*self.color)
         cr.set_line_width(self.line_width)
 
@@ -753,7 +761,7 @@ class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        pass
+        self.color = self.palette(int(value))
 
 
 class Byte(ActiveMixin, AlarmMixin, BlankWidget):
