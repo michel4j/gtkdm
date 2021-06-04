@@ -50,16 +50,22 @@ def working_dir(newdir):
     finally:
         os.chdir(curdir)
 
+
 SUPERSCRIPTS_TRANS = str.maketrans('0123456789+-', '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻')
 
 
-def sci_fmt(number, digits=3, sign=False):
+def sci_fmt_unicode(number, digits=3, sign=False):
     exp = 0 if number == 0 else math.floor(math.log10(abs(number)))
     value = number*(10**-exp)
     exp_text = f'{exp}'.translate(SUPERSCRIPTS_TRANS)
     val_fmt = f'{{:0.{digits}f}}' if sign else f'{{:0.{digits}f}}'
     val_text = val_fmt.format(value)
     return f"{val_text}" if exp == 0 else f"{val_text}×10{exp_text}"
+
+
+def sci_fmt(number, digits=3, sign=False):
+    val_fmt = f'{{:0.{digits}E}}'
+    return val_fmt.format(number)
 
 
 def fix_fmt(number, digits=3, sign=False):

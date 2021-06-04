@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/gtkdm.iml" filepath="$PROJECT_DIR$/.idea/gtkdm.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../gtkdm-displays/.idea/gtkdm-displays.iml" filepath="$PROJECT_DIR$/../gtkdm-displays/.idea/gtkdm-displays.iml" />
     </modules>
   </component>
 </project>
