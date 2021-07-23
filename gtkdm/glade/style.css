@@ -1,4 +1,5 @@
 .gtkdm-window * {
+    font-family: Inder, sans-serif;
     font-size: 9pt;
 }
 
@@ -63,7 +64,7 @@
     min-width: 7px;
     padding: 2px;
     border-radius: 3px;
-    font-size: 90%;
+    font-size: 95%;
 }
 
 .tiny .linked *:not(:first-child):not(:last-child) > * {
@@ -145,10 +146,10 @@
 .green button {
     color: green;
 }
-.red-bg button {
+.on-btn button, .red-bg button {
     background: rgba(255, 0, 0, 0.25);
 }
-.green-bg button {
+.off-btn button, .green-bg button {
     background: rgba(0, 255, 0, 0.25);
 }
 

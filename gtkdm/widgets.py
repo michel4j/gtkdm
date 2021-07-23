@@ -15,6 +15,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
 import gepics
+import epics
 import xml.etree.ElementTree as ET
 
 from . import utils, colors, version, PLUGIN_DIR
@@ -315,11 +316,12 @@ class ActiveMixin(object):
     PV_COPY_BUTTON = 2
 
     def on_active(self, pv, connected):
+        self.copy_text = pv.name
         self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.connect("button-press-event", self.on_mouse_press)
-        self.set_tooltip_text(self.pv.name)
+        self.set_tooltip_text(self.copy_text)
         if connected:
-            self.ctrlvars = self.pv.get_with_metadata(with_ctrlvars=True)
+            self.ctrlvars = pv.get_with_metadata(with_ctrlvars=True)
             self.get_style_context().remove_class('gtkdm-inactive')
             self.set_sensitive(True)
         else:
@@ -333,8 +335,8 @@ class ActiveMixin(object):
                 self.PV_COPY_BUTTON == 2,
                 self.PV_COPY_BUTTON == 1 and event.type == Gdk.EventType._2BUTTON_PRESS
             )
-            if any(valid):
-                Manager.clipboard.set_text(self.pv.name, -1)
+            if any(valid) and hasattr(self, 'copy_text'):
+                Manager.clipboard.set_text(self.copy_text, -1)
 
 
 class Layout(Gtk.Fixed):
@@ -1088,6 +1090,81 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.props.label = value
         self.queue_draw()
 
+
+class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
+    __gtype_name__ = 'OnOffButton'
+    # channels
+    on_channel = GObject.Property(type=str, default='', nick='On PV')
+    off_channel = GObject.Property(type=str, default='', nick='Off PV')
+    state_channel = GObject.Property(type=str, default='', nick='State PV')
+    # values
+    on_value = GObject.Property(type=int, default=0, nick='On Value')
+    off_value = GObject.Property(type=int, default=1, nick='Off Value')
+    on_state_value = GObject.Property(type=int, default=0, nick='On State')
+    off_state_value = GObject.Property(type=int, default=1, nick='Off State')
+    # labels
+    on_label = GObject.Property(type=str, default='⏼', nick='On Label')
+    off_label = GObject.Property(type=str, default='⏼', nick='Off Label')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.button = Gtk.Button()
+        self.state_pv = None
+        self.state = None
+        self.registry = {}
+
+        self.connect('realize', self.on_realize)
+        self.button.connect('clicked', self.on_clicked)
+        self.bind_property('on_label', self.button, 'label', GObject.BindingFlags.DEFAULT)
+        self.add(self.button)
+        self.set_sensitive(False)
+
+    def on_clicked(self, button):
+        if self.state:
+            spec = self.registry[self.state]
+            spec['pv'].put(spec['value'], wait=True)
+
+    def on_state_change(self, obj, value):
+        self.state = None
+        ctx = self.get_style_context()
+        for state, spec in self.registry.items():
+            if value == spec['state']:
+                self.state = state
+                self.button.set_label(spec['label'])
+        if not self.state:
+            self.button.set_sensitive(False)
+            for cls in ['on-btn', 'off-btn']:
+                ctx.remove_class(cls)
+        else:
+            ctx.remove_class({'on': 'on-btn', 'off': 'off-btn'}[self.state])
+            ctx.add_class(f'{self.state}-btn')
+            self.button.set_sensitive(True)
+
+    def on_realize(self, obj):
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
+        ctx.add_class('tiny')
+        self.registry = {
+            'on': {
+                'channel': self.off_channel,
+                'value': self.off_value,
+                'state': self.on_state_value,
+                'label': self.off_label,
+            },
+            'off': {
+                'channel': self.on_channel,
+                'value': self.on_value,
+                'state': self.off_state_value,
+                'label': self.on_label
+            },
+        }
+        self.button.set_label(self.on_label)
+        if not EDITOR:
+            self.state_pv = gepics.PV(self.state_channel)
+            self.state_pv.connect('changed', self.on_state_change)
+            self.state_pv.connect('active', self.on_active)
+            for state, spec in self.registry.items():
+                spec['pv'] = gepics.PV(spec['channel'])
 
 class MessageButton(CommandButton):
     __gtype_name__ = 'MessageButton'
@@ -1864,8 +1941,8 @@ class HideSwitch(Gtk.Bin):
                 w = top_level.builder.get_object(name.strip())
                 if w:
                     self.btn.bind_property('active', w, 'visible', GObject.BindingFlags.DEFAULT)
-
-        self.btn.set_active(self.default)
+        GLib.timeout_add(2000, self.btn.set_active, self.default)
+        #self.btn.set_active(self.default)
 
 
 class ChartCoord(object):
