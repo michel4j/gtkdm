@@ -1,6 +1,6 @@
 .gtkdm-window * {
-    font-family: Inder, sans-serif;
-    font-size: 9pt;
+    font-family: "Fira Sans Condensed", Inder, Cantarell, sans-serif;
+    font-size: 10pt;
 }
 
 .gtkdm-window popover, .gtkdm-window menu {
@@ -8,7 +8,8 @@
 }
 
 .gtkdm entry {
-    font-family: "Fira Code", "TheSansMonoCd Office", "Monaco", monospace;
+    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
+    font-size: 95%;
 }
 .gtkdm entry, .gtkdm button, .gtkdm button.combo, .gtkdm button.toggle {
     min-height: 10px;
@@ -23,7 +24,7 @@
 .gtkdm textview {
     font-size: 95%;
     margin: 2px;
-    font-family: "Fira Code", "TheSansMonoCd Office", "Monaco", monospace;
+    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
 }
 
 .gtkdm .linked button:not(:first-child):not(:last-child):not(.combo) {
@@ -62,9 +63,9 @@
 .tiny button, .tiny entry {
     min-height: 7px;
     min-width: 7px;
-    padding: 2px;
+    padding: 1px;
     border-radius: 3px;
-    font-size: 95%;
+    font-size: 90%;
 }
 
 .tiny .linked *:not(:first-child):not(:last-child) > * {
@@ -96,28 +97,39 @@
 .dark entry {
     border: 0.25px solid rgba(0, 0, 0, 0.05)
 }
+
+/*
+label {
+    padding: 2px 6px;
+}
+*/
+
 .xxs label {
-    font-size: 6pt;
+    font-size: 80%;
 }
 
 .xs label {
-    font-size: 7pt;
+    font-size: 90%;
 }
 
 .sm label {
-    font-size: 8pt;
+    font-size: 100%;
 }
 
 .md label {
-    font-size: 9pt;
+    font-size: 110%;
 }
 
 .lg label {
-    font-size: 10pt;
+    font-size: 120%;
 }
 
 .xl label {
-    font-size: 12pt;
+    font-size: 140%;
+    font-weight: bold;
+}
+.xxl label {
+    font-size: 160%;
     font-weight: bold;
 }
 
@@ -178,7 +190,7 @@
 }
 
 .monospace label {
-    font-family: "Fira Code", "TheSansMonoCd Office", "Monaco", monospace;
+    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
 }
 
 .shaded {

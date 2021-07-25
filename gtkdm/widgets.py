@@ -13,9 +13,9 @@ from math import atan2, pi, cos, sin, ceil
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib
+gi.require_version('PangoCairo', "1.0")
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo
 import gepics
-import epics
 import xml.etree.ElementTree as ET
 
 from . import utils, colors, version, PLUGIN_DIR
@@ -131,8 +131,7 @@ class DisplayManager(object):
                     ET.tostring(tree.getroot(), encoding='unicode', method='xml')
             )
             with utils.working_dir(directory):
-                builder = Gtk.Builder()
-                builder.add_from_string(data)
+                builder = Gtk.Builder.new_from_string(data, -1)
                 window = builder.get_object('related_display')
                 window.builder = builder
                 window.macros = new_macro_spec
@@ -479,7 +478,7 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
     prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
     monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
-    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
+    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=1, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -544,7 +543,7 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
     prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
     monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
-    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=2, nick='Font Size')
+    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=1, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -800,10 +799,10 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
         self.theme['label'] = style.get_color(style.get_state())
 
         cr.set_line_width(0.75)
-
+        margin = 4
         for i in range(self.count):
-            x = pix((i // stride) * col_width + 4)
-            y = pix(4 + (i % stride) * (self.size + 5))
+            x = pix((i // stride) * col_width + margin)
+            y = pix(margin + (i % stride) * (self.size + 5))
             cr.rectangle(x, y, self.size, self.size)
             color = self.palette(int(self._view_bits[i]))
             cr.set_source_rgba(*color)
@@ -814,10 +813,15 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
             if i < len(self._view_labels):
                 cr.set_source_rgba(*self.theme['label'])
                 label = self._view_labels[i]
-                xb, yb, w, h = cr.text_extents(label)[:4]
-                cr.move_to(x + self.size + 4.5, y + self.size / 2 - yb - h / 2)
-                cr.show_text(label)
-                cr.stroke()
+                layout = self.create_pango_layout(label)
+                ink, logical = layout.get_pixel_extents()
+                cr.move_to(2 * margin + x + self.size, y + self.size / 2 - logical.height / 2)
+                PangoCairo.show_layout(cr, layout)
+
+                #xb, yb, w, h = cr.text_extents(label)[:4]
+                #cr.move_to(x + self.size + 4.5, y + self.size / 2 - yb - h / 2)
+                #cr.show_text(label)
+                #cr.stroke()
 
     def on_realize(self, widget):
         v = (self.size + 5) * int(round(self.count/self.columns))
@@ -862,22 +866,21 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         self.connect('realize', self.on_realize)
         
     def do_draw(self, cr):
-        cr.set_line_width(0.75)
-        cr.set_font_size(self.size - 2)
-        x = 4.5
-        y = 4.5
         style = self.get_style_context()
+        cr.set_line_width(0.75)
+        margin = 4.5
         self.theme['label'] = style.get_color(style.get_state())
         cr.set_source_rgba(*self.theme['fill'])
-        cr.rectangle(x, y, self.size, self.size)
+        cr.rectangle(margin, margin, self.size, self.size)
         cr.fill_preserve()
         cr.set_source_rgba(*self.theme['border'])
         cr.stroke()
 
-        xb, yb, w, h = cr.text_extents(self.label)[:4]
-        cr.move_to(x + self.size + 4, y + self.size / 2 - yb - h / 2 + .5)
         cr.set_source_rgba(*self.theme['label'])
-        cr.show_text(self.label)
+        layout = self.create_pango_layout(self.label)
+        ink, logical = layout.get_pixel_extents()
+        cr.move_to(2 * margin + self.size, margin + self.size/2 - logical.height/2)
+        PangoCairo.show_layout(cr, layout)
 
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
@@ -1126,19 +1129,18 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_state_change(self, obj, value):
         self.state = None
+        self.button.set_sensitive(False)
+
         ctx = self.get_style_context()
+        for cls in ['on-btn', 'off-btn']:
+            ctx.remove_class(cls)
+
         for state, spec in self.registry.items():
             if value == spec['state']:
                 self.state = state
                 self.button.set_label(spec['label'])
-        if not self.state:
-            self.button.set_sensitive(False)
-            for cls in ['on-btn', 'off-btn']:
-                ctx.remove_class(cls)
-        else:
-            ctx.remove_class({'on': 'on-btn', 'off': 'off-btn'}[self.state])
-            ctx.add_class(f'{self.state}-btn')
-            self.button.set_sensitive(True)
+                self.button.set_sensitive(True)
+                ctx.add_class(f'{self.state}-btn')
 
     def on_realize(self, obj):
         ctx = self.get_style_context()
