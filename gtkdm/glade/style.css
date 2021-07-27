@@ -95,7 +95,7 @@
 }
 
 .dark entry {
-    border: 0.25px solid rgba(0, 0, 0, 0.05)
+    border: 0.25px solid rgba(0, 0, 0, 0.85)
 }
 
 /*
@@ -129,7 +129,7 @@ label {
     font-weight: bold;
 }
 .xxl label {
-    font-size: 160%;
+    font-size: 140%;
     font-weight: bold;
 }
 
@@ -171,7 +171,7 @@ label {
 .varb-bg button {
     background: rgba(128, 255, 0, 0.25);
 }
-.varc-bg button {
+.varc-bg button, .command button {
     background: rgba(0, 128, 128, 0.25);
 }
 
@@ -189,6 +189,15 @@ label {
     border-bottom: 1px solid rgba(0,0,0,0.15);
 }
 
+.panel .panel-desc {
+    font-size: 80%;
+    color: rgba(0,0,0,0.35);
+    padding: 4px;
+}
+
+.dark .panel-desc {
+    color: rgba(255,255,255,0.35);
+}
 .monospace label {
     font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
 }

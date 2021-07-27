@@ -2,15 +2,15 @@ import hashlib
 import json
 import os
 import re
-import time
-import numpy
 import subprocess
 import textwrap
+import time
 import zipfile
 from datetime import datetime
 from math import atan2, pi, cos, sin, ceil
 
 import gi
+import numpy
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
@@ -22,9 +22,6 @@ from . import utils, colors, version, PLUGIN_DIR
 from .utils import logger
 
 EDITOR = True
-
-
-
 
 ENTRY_CONVERTERS = {
     'string': str,
@@ -50,6 +47,10 @@ ENTRY_CONVERTERS = {
     'ctrl_char': str,
     'ctrl_long': int,
     'ctrl_double': float
+}
+
+FONT_SIZES = {
+    1: 'xss', 2: 'xs', 3: 'sm', 4: 'md', 5: 'lg', 6: 'xl', 7: 'xxl'
 }
 
 
@@ -213,7 +214,7 @@ class ColorSequence(object):
 
     def __call__(self, value, alpha=1.0):
         try:
-            i = min(value, len(self.specs)-1)
+            i = min(value, len(self.specs) - 1)
         except ValueError:
             i = 0
         spec = self.specs[i]
@@ -254,12 +255,12 @@ def ticks(lo, hi, step):
 
 
 def tick_points(vmin, vmax, vstep, vticks):
-    minimum = (vmin// vstep) * vstep
+    minimum = (vmin // vstep) * vstep
     maximum = ceil(vmax // vstep) * vstep
     major = ticks(minimum, maximum, vstep)
     if vticks:
         minor_raw = ticks(minimum, maximum, vstep / (vticks + 1))
-        minor = [minor_raw[v] for v in list(range(len(minor_raw))) if v % (vticks+1) != 0]
+        minor = [minor_raw[v] for v in list(range(len(minor_raw))) if v % (vticks + 1) != 0]
     else:
         minor = []
     return minimum, maximum, major, minor
@@ -476,19 +477,19 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=1.0, nick='X-Alignment')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
+    sci = GObject.Property(type=bool, default=False, nick='Sci. Format')
     monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
-    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=1, nick='Font Size')
+    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.label = Gtk.Label('Text ...')
+        self.label = Gtk.Label('...')
         self.add(self.label)
         self.pv = None
         self.connect('realize', self.on_realize)
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.get_style_context().add_class('gtkdm')
-        self.font_styles = {1: 'xs', 2: 'sm', 3: 'md', 4: 'lg', 5: 'xl'}
         self.palette = ColorSequence(self.colors)
 
     def on_realize(self, obj):
@@ -496,7 +497,7 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.palette = ColorSequence(self.colors)
 
         # adjust style classes
-        for k, v in self.font_styles.items():
+        for k, v in FONT_SIZES.items():
             if k == self.font_size:
                 style.add_class(v)
             else:
@@ -515,17 +516,15 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            precision = precision if precision >= 0 else 3
-
-            if abs(value) > 1e-1**precision:
-                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
-            else:
+            if self.sci or 'e' in pv.char_value.lower():
                 text = utils.sci_fmt(value, digits=precision, sign=self.monospace)
+            else:
+                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
         else:
             text = pv.char_value
 
         if self.pv.units and self.show_units:
-                text = '{} {}'.format(text, pv.units)
+            text = '{} {}'.format(text, pv.units)
         if self.colors:
             text = '<span color="{}">{}</span>'.format(self.palette[value], text)
         self.label.set_markup(text)
@@ -541,14 +540,14 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
+    sci = GObject.Property(type=bool, default=False, nick='Sci. Format')
     monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
-    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=1, nick='Font Size')
+    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.box.set_border_width(2)
         self.desc_label = Gtk.Label('Description', xalign=0.0)
         self.value_label = Gtk.Label('Value')
         self.box.pack_start(self.desc_label, False, False, 0)
@@ -560,55 +559,58 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.bind_property('xalign', self.value_label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.bind_property('label', self.desc_label, 'label', GObject.BindingFlags.DEFAULT)
         self.get_style_context().add_class('gtkdm')
-        self.font_styles = {1: 'xs', 2: 'sm', 3: 'md', 4: 'lg', 5: 'xl'}
         self.desc_label.get_style_context().add_class('panel-desc')
         self.palette = ColorSequence(self.colors)
 
     def on_realize(self, obj):
+        main_style = self.get_style_context()
         style = self.value_label.get_style_context()
+        desc_style = self.desc_label.get_style_context()
         self.palette = ColorSequence(self.colors)
+        main_style.add_class('panel')
+        style.add_class('panel-value')
+        desc_style.add_class('panel-desc')
 
         # adjust style classes
-        for k, v in self.font_styles.items():
+        for k, v in FONT_SIZES.items():
             if k == self.font_size:
-                style.add_class(v)
+                main_style.add_class(v)
             else:
-                style.remove_class(v)
+                main_style.remove_class(v)
         if self.monospace:
-            style.add_class('monospace')
+            main_style.add_class('monospace')
 
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
-            
+
             if not self.label:
                 self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
         self.props.label = value
-           
+
     def on_change(self, pv, value):
         if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            precision = precision if precision >= 0 else 3
-            if abs(value) > 1e-1**precision:
-                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
-            else:
+            if self.sci or 'e' in pv.char_value.lower():
                 text = utils.sci_fmt(value, digits=precision, sign=self.monospace)
+            else:
+                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
         else:
             text = pv.char_value
 
         if self.pv.units and self.show_units:
-                text = '{} {}'.format(text, pv.units)
+            text = '{} {}'.format(text, pv.units)
         if self.colors:
             text = '<span color="{}">{}</span>'.format(self.palette[value], text)
         self.value_label.set_markup(text)
-        
+
 
 class TextLabel(Gtk.Bin):
     __gtype_name__ = 'TextLabel'
@@ -616,7 +618,7 @@ class TextLabel(Gtk.Bin):
     text = GObject.Property(type=str, default='Label', nick='Label')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
-    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
+    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -626,18 +628,11 @@ class TextLabel(Gtk.Bin):
         self.add(self.label)
         self.connect('realize', self.on_realize)
         self.get_style_context().add_class('gtkdm')
-        self.font_styles = {
-            1: 'xs',
-            2: 'sm',
-            3: 'md',
-            4: 'lg',
-            5: 'xl'
-        }
 
     def on_realize(self, obj):
         style = self.get_style_context()
         # adjust style classes
-        for k, v in self.font_styles.items():
+        for k, v in FONT_SIZES.items():
             if k == self.font_size:
                 style.add_class(v)
             else:
@@ -651,7 +646,7 @@ class DateLabel(Gtk.Bin):
     refresh = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Redraw Freq (hz)')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
-    font_size = GObject.Property(type=int, minimum=0, maximum=5, default=0, nick='Font Size')
+    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -660,13 +655,6 @@ class DateLabel(Gtk.Bin):
         self.add(self.label)
         self.connect('realize', self.on_realize)
         self.get_style_context().add_class('gtkdm')
-        self.font_styles = {
-            1: 'xs',
-            2: 'sm',
-            3: 'md',
-            4: 'lg',
-            5: 'xl'
-        }
 
     def update(self):
         self.label.set_text(datetime.now().strftime(self.format))
@@ -675,13 +663,13 @@ class DateLabel(Gtk.Bin):
     def on_realize(self, obj):
         style = self.get_style_context()
         # adjust style classes
-        for k, v in self.font_styles.items():
+        for k, v in FONT_SIZES.items():
             if k == self.font_size:
                 style.add_class(v)
             else:
                 style.remove_class(v)
         self.update()
-        GLib.timeout_add(1000./self.refresh, self.update)
+        GLib.timeout_add(1000. / self.refresh, self.update)
 
 
 class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
@@ -781,7 +769,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
         super().__init__(*args, **kwargs)
         self._view_bits = '0' * self.count
         self._view_labels = [''] * self.count
-        
+
         self.theme = {
             'border': Gdk.RGBA(red=0.0, green=0.0, blue=0.0, alpha=1.0),
             'fill': Gdk.RGBA(red=1.0, green=1.0, blue=1.0, alpha=1.0),
@@ -818,14 +806,14 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
                 cr.move_to(2 * margin + x + self.size, y + self.size / 2 - logical.height / 2)
                 PangoCairo.show_layout(cr, layout)
 
-                #xb, yb, w, h = cr.text_extents(label)[:4]
-                #cr.move_to(x + self.size + 4.5, y + self.size / 2 - yb - h / 2)
-                #cr.show_text(label)
-                #cr.stroke()
+                # xb, yb, w, h = cr.text_extents(label)[:4]
+                # cr.move_to(x + self.size + 4.5, y + self.size / 2 - yb - h / 2)
+                # cr.show_text(label)
+                # cr.stroke()
 
     def on_realize(self, widget):
-        v = (self.size + 5) * int(round(self.count/self.columns))
-        #self.set_size_request(100, v)
+        v = (self.size + 5) * int(round(self.count / self.columns))
+        # self.set_size_request(100, v)
         self.palette = ColorSequence(self.colors)
         labels = [v.strip() for v in self.labels.split(',')]
         self._view_labels = labels + (self.count - len(labels)) * ['']
@@ -838,9 +826,9 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
     def on_change(self, pv, value):
         bits = bin(value)[2:].zfill(64)
         if self.big_endian:
-            self._view_bits = bits[(self.offset*8):][:self.count]
+            self._view_bits = bits[(self.offset * 8):][:self.count]
         else:
-            self._view_bits = bits[(-(self.offset+1)*8):][:self.count]
+            self._view_bits = bits[(-(self.offset + 1) * 8):][:self.count]
         self.queue_draw()
 
 
@@ -864,7 +852,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         }
         self.set_sensitive(False)
         self.connect('realize', self.on_realize)
-        
+
     def do_draw(self, cr):
         style = self.get_style_context()
         cr.set_line_width(0.75)
@@ -879,7 +867,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         cr.set_source_rgba(*self.theme['label'])
         layout = self.create_pango_layout(self.label)
         ink, logical = layout.get_pixel_extents()
-        cr.move_to(2 * margin + self.size, margin + self.size/2 - logical.height/2)
+        cr.move_to(2 * margin + self.size, margin + self.size / 2 - logical.height / 2)
         PangoCairo.show_layout(cr, layout)
 
     def on_realize(self, widget):
@@ -1005,6 +993,8 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     editable = GObject.Property(type=bool, default=True, nick='Editable')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
+    sci = GObject.Property(type=bool, default=False, nick='Sci. Format')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1029,12 +1019,17 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_change(self, pv, value):
         self.in_progress = True
-        if pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            precision = pv.precision if pv.precision >= 0 else 3
-            fmt = 'f' if (value == 0 or value > 1e-4 or value < 1e4) else 'e'
-            text = ('{{:0.{}{}}}'.format(precision, fmt)).format(value)
+        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
+            text = pv.enum_strs[value]
+        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+            precision = self.prec if self.prec >= 0 else pv.precision
+            if self.sci or 'e' in pv.char_value.lower():
+                text = utils.sci_fmt(value, digits=precision)
+            else:
+                text = utils.fix_fmt(value, digits=precision)
         else:
             text = pv.char_value
+
         self.entry.set_text(text)
         self.in_progress = False
 
@@ -1168,10 +1163,11 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
             for state, spec in self.registry.items():
                 spec['pv'] = gepics.PV(spec['channel'])
 
+
 class MessageButton(CommandButton):
     __gtype_name__ = 'MessageButton'
     value = GObject.Property(type=str, default='', nick='Value')
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -1513,7 +1509,6 @@ class SymbolFrames(object):
                     self.height = max(self.height, pixbuf.get_height())
                     self.frames.append(pixbuf)
 
-
     @classmethod
     def new_from_file(cls, path):
         full_path = os.path.abspath(path)
@@ -1535,7 +1530,7 @@ class SymbolFrames(object):
             return sf
 
     def __call__(self, value):
-        if 0 <=  abs(int(value)) < len(self.frames):
+        if 0 <= abs(int(value)) < len(self.frames):
             return self.frames[int(value)]
 
 
@@ -1581,7 +1576,7 @@ class Symbol(ActiveMixin, BlankWidget):
             self.pv.connect('active', self.on_active)
 
         if self.file:
-            symbol_path =  Manager.find_display(self.file)
+            symbol_path = Manager.find_display(self.file)
             self.frames = SymbolFrames.new_from_file(symbol_path)
             self.image = self.frames(-1)
 
@@ -1944,11 +1939,12 @@ class HideSwitch(Gtk.Bin):
                 if w:
                     self.btn.bind_property('active', w, 'visible', GObject.BindingFlags.DEFAULT)
         GLib.timeout_add(2000, self.btn.set_active, self.default)
-        #self.btn.set_active(self.default)
+        # self.btn.set_active(self.default)
 
 
 class ChartCoord(object):
-    def __init__(self, xlimits=(-1.0, 1.0), ylimits=(-1.0, 1.0), size=(400, 300), margins=(0, 0), xoffset=0.0, yoffset=0.0):
+    def __init__(self, xlimits=(-1.0, 1.0), ylimits=(-1.0, 1.0), size=(400, 300), margins=(0, 0), xoffset=0.0,
+                 yoffset=0.0):
         self.xmin, self.xmax = xlimits
         self.ymin, self.ymax = ylimits
         self.width, self.height = size
@@ -1956,28 +1952,28 @@ class ChartCoord(object):
         xmargin = margins[0] + 10
         ymargin = margins[1] + 10
 
-        self.width = (size[0] - 2*xmargin) - xoffset
-        self.height = (size[1] - 2*ymargin) - yoffset
+        self.width = (size[0] - 2 * xmargin) - xoffset
+        self.height = (size[1] - 2 * ymargin) - yoffset
 
         self.orgx = xmargin + xoffset
         self.orgy = size[1] - (ymargin + yoffset)
-        self.xscale = self.width/(self.xmax - self.xmin)
-        self.yscale = self.height/(self.ymax - self.ymin)
+        self.xscale = self.width / (self.xmax - self.xmin)
+        self.yscale = self.height / (self.ymax - self.ymin)
 
     def xy(self, points, xoff=0.0, yoff=0.0):
         points = numpy.asarray(points)
         out = numpy.zeros_like(points)
-        out[:,0] = (points[:,0] - self.xmin)*self.xscale + self.orgx + xoff
-        out[:,1] = self.orgy - (points[:,1] - self.ymin)*self.yscale + yoff
+        out[:, 0] = (points[:, 0] - self.xmin) * self.xscale + self.orgx + xoff
+        out[:, 1] = self.orgy - (points[:, 1] - self.ymin) * self.yscale + yoff
         return out
 
     def x(self, points, offset=0.0):
         points = numpy.asarray(points)
-        return (points - self.xmin)*self.xscale + self.orgx + offset
+        return (points - self.xmin) * self.xscale + self.orgx + offset
 
     def y(self, points, offset=0.0):
         points = numpy.asarray(points)
-        return self.orgy - (points - self.ymin)*self.yscale + offset
+        return self.orgy - (points - self.ymin) * self.yscale + offset
 
 
 class ChartPair(GObject.GObject):
@@ -2081,8 +2077,8 @@ class XYScatter(Gtk.DrawingArea):
 
         alloc = self.get_allocation()
 
-        yoffset = 0.0 if not self.show_xaxis else self.fontsize*2
-        xoffset = 0.0 if not self.show_yaxis else self.fontsize*3
+        yoffset = 0.0 if not self.show_xaxis else self.fontsize * 2
+        xoffset = 0.0 if not self.show_yaxis else self.fontsize * 3
 
         self.params = {
             'alloc': alloc,
@@ -2113,7 +2109,7 @@ class XYScatter(Gtk.DrawingArea):
                 m = re.match('^\s*([^\s,|;]+)[\s,|;]*([^\s,|;]+)\s*$', getattr(self, 'plot{}'.format(i), ''))
                 if m:
                     xname, yname = m.groups()
-                    pair = ChartPair(xname, yname, self.buffer, update=1/self.sample)
+                    pair = ChartPair(xname, yname, self.buffer, update=1 / self.sample)
                     pair.connect('changed', lambda x: self.queue_draw())
                     self.plots.append(pair)
 
@@ -2156,18 +2152,18 @@ class XYScatter(Gtk.DrawingArea):
             for i, tick in enumerate(major):
                 vtick = self.params['xmajor'][i]
                 cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0], tick[1]+5)
+                cr.line_to(tick[0], tick[1] + 5)
                 cr.stroke()
                 text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[0])
                 xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] -xb - w/2, tick[1] + 7 - yb)
+                cr.move_to(tick[0] - xb - w / 2, tick[1] + 7 - yb)
                 cr.show_text(text)
 
             if self.xticks:
                 minor = self.params['converter'].xy(self.params['xminor'], yoff=5)
                 for tick in minor:
                     cr.move_to(tick[0], tick[1])
-                    cr.line_to(tick[0], tick[1]+3)
+                    cr.line_to(tick[0], tick[1] + 3)
                     cr.stroke()
 
         if self.show_yaxis:
@@ -2224,7 +2220,7 @@ class XYScatter(Gtk.DrawingArea):
                         continue
                     else:
                         cr.save()
-                        cr.arc(*mark, 2, 0, 2*pi)
+                        cr.arc(*mark, 2, 0, 2 * pi)
                         cr.fill_preserve()
                         cr.stroke()
                         cr.restore()
@@ -2233,8 +2229,8 @@ class XYScatter(Gtk.DrawingArea):
             else:
                 cr.set_line_width(1.0)
                 for j, mark in enumerate(pos):
-                    cr.set_source_rgba(*alpha(self.palette(i), (j+1.)/(self.buffer+1.)))
-                    cr.arc(*mark, 2, 0, 2*pi)
+                    cr.set_source_rgba(*alpha(self.palette(i), (j + 1.) / (self.buffer + 1.)))
+                    cr.arc(*mark, 2, 0, 2 * pi)
                     cr.fill_preserve()
                     cr.stroke()
 
@@ -2246,7 +2242,7 @@ class StripData(GObject.GObject):
 
     def __init__(self, names, period=60.0, sample_freq=1, refresh_freq=1):
         super().__init__()
-        self.size = int(period*sample_freq)
+        self.size = int(period * sample_freq)
         self.count = len(names)
         self.ydata = numpy.empty((self.size, self.count))
         self.xdata = numpy.linspace(-period, 0, self.size)
@@ -2254,10 +2250,10 @@ class StripData(GObject.GObject):
         self.pvs = [
             gepics.PV(name) for name in names
         ]
-        self.sample_time = 1000./sample_freq
-        self.refresh_time = 1000./refresh_freq
+        self.sample_time = 1000. / sample_freq
+        self.refresh_time = 1000. / refresh_freq
         GLib.timeout_add(self.sample_time, self.sample_data)
-        GLib.timeout_add(self.refresh_time,self.refresh)
+        GLib.timeout_add(self.refresh_time, self.refresh)
 
     def sample_data(self):
         self.ydata[:-1] = self.ydata[1:]
@@ -2324,8 +2320,8 @@ class StripPlot(Gtk.DrawingArea):
 
         alloc = self.get_allocation()
 
-        yoffset = 0.0 if not self.show_xaxis else self.fontsize*2
-        xoffset = 0.0 if not self.show_yaxis else self.fontsize*3
+        yoffset = 0.0 if not self.show_xaxis else self.fontsize * 2
+        xoffset = 0.0 if not self.show_yaxis else self.fontsize * 3
 
         self.params = {
             'alloc': alloc,
@@ -2398,18 +2394,18 @@ class StripPlot(Gtk.DrawingArea):
             for i, tick in enumerate(major):
                 vtick = self.params['xmajor'][i]
                 cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0], tick[1]+5)
+                cr.line_to(tick[0], tick[1] + 5)
                 cr.stroke()
                 text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[0])
                 xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] -xb - w/2, tick[1] + 7 - yb)
+                cr.move_to(tick[0] - xb - w / 2, tick[1] + 7 - yb)
                 cr.show_text(text)
 
             if self.xticks:
                 minor = self.params['converter'].xy(self.params['xminor'], yoff=5)
                 for tick in minor:
                     cr.move_to(tick[0], tick[1])
-                    cr.line_to(tick[0], tick[1]+3)
+                    cr.line_to(tick[0], tick[1] + 3)
                     cr.stroke()
 
         if self.show_yaxis:
@@ -2454,11 +2450,11 @@ class StripPlot(Gtk.DrawingArea):
 
         cr.set_line_width(0.75)
         for j in range(self.plot.count):
-            sel = numpy.logical_not(numpy.isnan(self.plot.ydata[:,j]))
-            yvalues = self.params['converter'].y(self.plot.ydata[sel,j])
+            sel = numpy.logical_not(numpy.isnan(self.plot.ydata[:, j]))
+            yvalues = self.params['converter'].y(self.plot.ydata[sel, j])
             cr.set_source_rgba(*self.palette(j))
             for i, (x, y) in enumerate(zip(self.xvalues[sel], yvalues)):
-                if i== 0:
+                if i == 0:
                     cr.move_to(x, y)
                     continue
                 cr.line_to(x, y)
