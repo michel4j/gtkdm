@@ -680,7 +680,7 @@ class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
     colors = GObject.Property(type=str, default="K", nick='Value Colors')
     arrow = GObject.Property(type=bool, default=False, nick='Arrow')
     arrow_size = GObject.Property(type=int, minimum=1, maximum=10, default=2, nick='Arrow Size')
-    direction = cheme = GObject.Property(type=Direction, default=Direction.EAST, nick='Direction')
+    direction = GObject.Property(type=Direction, default=Direction.EAST, nick='Direction')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
 
     def __init__(self, *args, **kwargs):
@@ -1101,8 +1101,8 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
     on_state_value = GObject.Property(type=int, default=0, nick='On State')
     off_state_value = GObject.Property(type=int, default=1, nick='Off State')
     # labels
-    on_label = GObject.Property(type=str, default='⏼', nick='On Label')
-    off_label = GObject.Property(type=str, default='⏼', nick='Off Label')
+    on_label = GObject.Property(type=str, default='↑', nick='On Label')
+    off_label = GObject.Property(type=str, default='↓', nick='Off Label')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1878,7 +1878,7 @@ class MessageLog(ActiveMixin, Gtk.EventBox):
         self.tags = {
             gepics.Alarm.MAJOR: self.buffer.create_tag(foreground='Red', wrap_mode=Gtk.WrapMode.WORD),
             gepics.Alarm.MINOR: self.buffer.create_tag(foreground='Orange', wrap_mode=Gtk.WrapMode.WORD),
-            gepics.Alarm.NORMAL: self.buffer.create_tag(foreground='Black', wrap_mode=Gtk.WrapMode.WORD),
+            gepics.Alarm.NORMAL: self.buffer.create_tag(wrap_mode=Gtk.WrapMode.WORD),
             gepics.Alarm.INVALID: self.buffer.create_tag(foreground='Gray', wrap_mode=Gtk.WrapMode.WORD),
         }
         self.active_tag = self.tags[gepics.Alarm.NORMAL]
