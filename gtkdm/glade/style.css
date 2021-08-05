@@ -20,6 +20,23 @@
     border-radius: 3px;
     font-size: 95%;
 }
+.gtkdm switch slider {
+  min-height: 10px;
+  min-width: 14px;
+}
+
+.gtkdm.onoff switch  {
+    background-color: #ef2929;
+    border-color: rgba(0, 0, 0, 0.45);
+}
+.gtkdm.onoff switch:checked {
+    background-color: #73d216;
+    border-color: rgba(0, 0, 0, 0.45);
+}
+.gtkdm.onoff switch:checked slider {
+    border-color: rgba(0, 0, 0, 0.45);
+}
+
 
 .gtkdm textview {
     font-size: 95%;
@@ -105,31 +122,31 @@ label {
 */
 
 .xxs label {
-    font-size: 80%;
+    font-size: 0.7em;
 }
 
 .xs label {
-    font-size: 90%;
+    font-size: 0.8em;
 }
 
 .sm label {
-    font-size: 100%;
+    font-size: 0.9em;
 }
 
 .md label {
-    font-size: 110%;
+    font-size: 1em;
 }
 
 .lg label {
-    font-size: 120%;
+    font-size: 1.2em;
 }
 
 .xl label {
-    font-size: 140%;
+    font-size: 1.3em;
     font-weight: bold;
 }
 .xxl label {
-    font-size: 140%;
+    font-size: 1.4em;
     font-weight: bold;
 }
 
@@ -204,6 +221,9 @@ label {
 
 .shaded {
     background: rgba(128, 128, 128, 0.25);
+}
+.subtitle {
+    opacity: 0.5;
 }
 
 tooltip {

@@ -408,8 +408,6 @@ class DisplayWindow(Gtk.Window):
     def on_edit(self, btn):
         try:
             environ = dict(os.environ)
-            import pprint
-            pprint.pprint(environ)
             environ['GLADE_CATALOG_SEARCH_PATH'] = PLUGIN_DIR
             environ['GLADE_MODULE_SEARCH_PATH'] = PLUGIN_DIR
             subprocess.Popen(['glade', self.path], env=environ)
@@ -1156,6 +1154,70 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
             },
         }
         self.button.set_label(self.on_label)
+        if not EDITOR:
+            self.state_pv = gepics.PV(self.state_channel)
+            self.state_pv.connect('changed', self.on_state_change)
+            self.state_pv.connect('active', self.on_active)
+            for state, spec in self.registry.items():
+                spec['pv'] = gepics.PV(spec['channel'])
+
+
+class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
+    __gtype_name__ = 'OnOffSwitch'
+    # channels
+    on_channel = GObject.Property(type=str, default='', nick='On PV')
+    off_channel = GObject.Property(type=str, default='', nick='Off PV')
+    state_channel = GObject.Property(type=str, default='', nick='State PV')
+    # values
+    on_value = GObject.Property(type=int, default=0, nick='On Value')
+    off_value = GObject.Property(type=int, default=1, nick='Off Value')
+    on_state_value = GObject.Property(type=int, default=0, nick='On State')
+    off_state_value = GObject.Property(type=int, default=1, nick='Off State')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.button = Gtk.Switch()
+        self.state_pv = None
+        self.registry = {}
+
+        self.connect('realize', self.on_realize)
+        self.button.connect('state-set', self.on_change)
+        self.add(self.button)
+        self.show_all()
+        self.set_sensitive(False)
+
+    def on_change(self, button, value):
+        for state, spec in self.registry.items():
+            if value == spec['active']:
+                spec['pv'].put(spec['value'], wait=True)
+                break
+        return True
+
+    def on_state_change(self, obj, value):
+        for state, spec in self.registry.items():
+            if value == spec['state']:
+                self.button.set_state(spec['active'])
+                break
+
+    def on_realize(self, obj):
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
+        ctx.add_class('onoff')
+        ctx.add_class('tiny')
+        self.registry = {
+            'on': {
+                'channel': self.on_channel,
+                'value': self.on_value,
+                'state': self.on_state_value,
+                'active': True,
+            },
+            'off': {
+                'channel': self.off_channel,
+                'value': self.off_value,
+                'state': self.off_state_value,
+                'active': False,
+            },
+        }
         if not EDITOR:
             self.state_pv = gepics.PV(self.state_channel)
             self.state_pv.connect('changed', self.on_state_change)

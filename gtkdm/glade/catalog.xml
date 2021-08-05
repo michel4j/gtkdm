@@ -28,6 +28,7 @@
         <glade-widget-class name="DateLabel" generic-name="datelabel" title="Date Label" icon-name="widget-gtk-label"/>
         <glade-widget-class name="CommandButton" generic-name="commandbutton" title="Command Button" icon-name="widget-gtk-button"/>
         <glade-widget-class name="OnOffButton" generic-name="onoffbutton" title="On/Off Button" icon-name="widget-gtk-button"/>
+        <glade-widget-class name="OnOffSwitch" generic-name="onoffbutton" title="On/Off Button" icon-name="widget-gtk-switch"/>
         <glade-widget-class name="MessageButton" generic-name="messagebutton" title="Message Button" icon-name="widget-gtk-button"/>
         <glade-widget-class name="ShellButton" generic-name="shellbutton" title="Shell Button" icon-name="widget-gtk-button"/>
         <glade-widget-class name="ChoiceButton" generic-name="choicebutton" title="Choice Button" icon-name="widget-gtk-stackswitcher"/>
@@ -116,6 +117,7 @@
         <glade-widget-class-ref name="CheckControl"/>
         <glade-widget-class-ref name="CommandButton"/>
         <glade-widget-class-ref name="OnOffButton"/>
+        <glade-widget-class-ref name="OnOffSwitch"/>
         <glade-widget-class-ref name="MessageButton"/>
         <glade-widget-class-ref name="ShellButton"/>
         <glade-widget-class-ref name="StripPlot"/>
