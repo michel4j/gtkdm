@@ -1,6 +1,5 @@
-.gtkdm-window * {
+.gtkdm-window {
     font-family: "Fira Sans Condensed", Inder, Cantarell, sans-serif;
-    font-size: 10pt;
 }
 
 .gtkdm-window popover, .gtkdm-window menu {
@@ -9,7 +8,7 @@
 
 .gtkdm entry {
     font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
-    font-size: 95%;
+    font-size: 0.9em;
 }
 .gtkdm entry, .gtkdm button, .gtkdm button.combo, .gtkdm button.toggle {
     min-height: 10px;
@@ -18,7 +17,7 @@
 .gtkdm spinbutton {
     min-height: 10px;
     border-radius: 3px;
-    font-size: 95%;
+    font-size: 0.95em;
 }
 .gtkdm switch slider {
   min-height: 10px;
@@ -39,7 +38,7 @@
 
 
 .gtkdm textview {
-    font-size: 95%;
+    font-size: 0.9em;
     margin: 2px;
     font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
 }
@@ -82,7 +81,7 @@
     min-width: 7px;
     padding: 1px;
     border-radius: 3px;
-    font-size: 90%;
+    font-size: 0.9em;
 }
 
 .tiny .linked *:not(:first-child):not(:last-child) > * {
@@ -121,32 +120,37 @@ label {
 }
 */
 
-.xxs label {
-    font-size: 0.7em;
+.gtkdm.xxs {
+    font-size: 0.75em;
 }
 
-.xs label {
-    font-size: 0.8em;
+.gtkdm.xs {
+    font-size: 0.85em;
 }
 
-.sm label {
-    font-size: 0.9em;
+.gtkdm.sm {
+    font-size: 0.95em;
 }
 
-.md label {
+.gtkdm.md {
     font-size: 1em;
 }
 
-.lg label {
+.gtkdm.lg {
     font-size: 1.2em;
 }
 
-.xl label {
+.gtkdm.xl {
     font-size: 1.3em;
-    font-weight: bold;
 }
-.xxl label {
-    font-size: 1.4em;
+.gtkdm.xxl {
+    font-size: 1.5em;
+}
+
+.monospace, .mono-font {
+    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
+}
+.bold-font, .title {
     font-weight: bold;
 }
 
@@ -161,8 +165,17 @@ label {
 }
 
 .dark-panel label.panel-desc{
-    font-size: 6.8pt;
     color: rgba(255, 255, 255, 0.25);
+}
+
+.panel .panel-desc {
+    font-size: 0.9em;
+    color: rgba(0,0,0,0.35);
+    padding: 4px;
+}
+
+.dark .panel-desc {
+    color: rgba(255, 255, 255, 0.35);
 }
 
 .warning button {
@@ -200,23 +213,9 @@ label {
 }
 
 .section label {
-    font-size: 80%;
     font-weight: 200;
     margin-bottom: 4px;
     border-bottom: 1px solid rgba(0,0,0,0.15);
-}
-
-.panel .panel-desc {
-    font-size: 80%;
-    color: rgba(0,0,0,0.35);
-    padding: 4px;
-}
-
-.dark .panel-desc {
-    color: rgba(255,255,255,0.35);
-}
-.monospace label {
-    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
 }
 
 .shaded {

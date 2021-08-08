@@ -50,7 +50,7 @@ ENTRY_CONVERTERS = {
 }
 
 FONT_SIZES = {
-    1: 'xss', 2: 'xs', 3: 'sm', 4: 'md', 5: 'lg', 6: 'xl', 7: 'xxl'
+    -3: 'xxs', -2: 'xs', -1: 'sm', 0: 'md', 1: 'lg', 2: 'xl', 3: 'xxl'
 }
 
 
@@ -274,7 +274,7 @@ class BlankWidget(Gtk.Widget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def do_realize(self):
+    def do_realize(self, *args):
         allocation = self.get_allocation()
         attr = Gdk.WindowAttr()
         attr.window_type = Gdk.WindowType.CHILD
@@ -337,6 +337,27 @@ class ActiveMixin(object):
             )
             if any(valid) and hasattr(self, 'copy_text'):
                 Manager.clipboard.set_text(self.copy_text, -1)
+
+
+class FontMixin(object):
+    # font_size = GObject.Property(type=int, minimum=-3, maximum=3, default=0, nick='Font Size')
+    # monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
+    # bold = GObject.Property(type=bool, default=False, nick='Bold Font')
+
+    def on_realize(self, *args):
+        # adjust style classes
+        style = self.get_style_context()
+        for k, v in FONT_SIZES.items():
+            if k == self.font_size:
+                style.add_class(v)
+            else:
+                style.remove_class(v)
+
+        if self.monospace:
+            style.add_class('mono-font')
+        if self.bold:
+            style.add_class('bold-font')
+
 
 
 class Layout(Gtk.Fixed):
@@ -466,7 +487,7 @@ class DisplayFrame(Gtk.Bin):
             Manager.embed_display(self, self.display, macros_spec=self.macros)
 
 
-class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
+class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'TextMonitor'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -476,9 +497,11 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
     sci = GObject.Property(type=bool, default=False, nick='Sci. Format')
-    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
-    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
+
+    font_size = GObject.Property(type=int, minimum=-3, maximum=3, default=0, nick='Font Size')
+    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
+    bold = GObject.Property(type=bool, default=False, nick='Bold Font')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -494,20 +517,13 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
         style = self.get_style_context()
         self.palette = ColorSequence(self.colors)
 
-        # adjust style classes
-        for k, v in FONT_SIZES.items():
-            if k == self.font_size:
-                style.add_class(v)
-            else:
-                style.remove_class(v)
-        if self.monospace:
-            style.add_class('monospace')
-
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
+
+        super().on_realize(obj)
 
     def on_change(self, pv, value):
         if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
@@ -528,7 +544,7 @@ class TextMonitor(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.label.set_markup(text)
 
 
-class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
+class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'TextPanel'
 
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -539,9 +555,11 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
     sci = GObject.Property(type=bool, default=False, nick='Sci. Format')
-    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
-    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
+
+    font_size = GObject.Property(type=int, minimum=-3, maximum=3, default=0, nick='Font Size')
+    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
+    bold = GObject.Property(type=bool, default=False, nick='Bold Font')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -569,15 +587,6 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
         style.add_class('panel-value')
         desc_style.add_class('panel-desc')
 
-        # adjust style classes
-        for k, v in FONT_SIZES.items():
-            if k == self.font_size:
-                main_style.add_class(v)
-            else:
-                main_style.remove_class(v)
-        if self.monospace:
-            main_style.add_class('monospace')
-
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
@@ -587,6 +596,7 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
             if not self.label:
                 self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
+        super().on_realize(obj)
 
     def on_label_change(self, pv, value):
         self.props.label = value
@@ -610,13 +620,16 @@ class TextPanel(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.value_label.set_markup(text)
 
 
-class TextLabel(Gtk.Bin):
+class TextLabel(FontMixin, Gtk.Bin):
     __gtype_name__ = 'TextLabel'
 
     text = GObject.Property(type=str, default='Label', nick='Label')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
-    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
+
+    font_size = GObject.Property(type=int, minimum=-3, maximum=3, default=0, nick='Font Size')
+    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
+    bold = GObject.Property(type=bool, default=False, nick='Bold Font')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -628,23 +641,20 @@ class TextLabel(Gtk.Bin):
         self.get_style_context().add_class('gtkdm')
 
     def on_realize(self, obj):
-        style = self.get_style_context()
-        # adjust style classes
-        for k, v in FONT_SIZES.items():
-            if k == self.font_size:
-                style.add_class(v)
-            else:
-                style.remove_class(v)
+        super().on_realize(obj)
 
 
-class DateLabel(Gtk.Bin):
+class DateLabel(FontMixin, Gtk.Bin):
     __gtype_name__ = 'DateLabel'
 
     format = GObject.Property(type=str, default='%a %b %d, %X', nick='Date/Time Format')
     refresh = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Redraw Freq (hz)')
     xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
-    font_size = GObject.Property(type=int, minimum=0, maximum=7, default=0, nick='Font Size')
+
+    font_size = GObject.Property(type=int, minimum=-3, maximum=3, default=0, nick='Font Size')
+    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
+    bold = GObject.Property(type=bool, default=False, nick='Bold Font')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -659,15 +669,9 @@ class DateLabel(Gtk.Bin):
         return True
 
     def on_realize(self, obj):
-        style = self.get_style_context()
-        # adjust style classes
-        for k, v in FONT_SIZES.items():
-            if k == self.font_size:
-                style.add_class(v)
-            else:
-                style.remove_class(v)
         self.update()
         GLib.timeout_add(1000. / self.refresh, self.update)
+        super().on_realize(obj)
 
 
 class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
@@ -1911,7 +1915,7 @@ class ShellMenuItem(Gtk.Bin):
                 self.proc = subprocess.Popen(cmds, shell=True, stdout=subprocess.DEVNULL)
 
 
-class MessageLog(ActiveMixin, Gtk.EventBox):
+class MessageLog(FontMixin, ActiveMixin, Gtk.EventBox):
     """
     A rolling log viewer displaying values from the process variable with optional time prefix and alarm colors.
     """
@@ -1920,8 +1924,11 @@ class MessageLog(ActiveMixin, Gtk.EventBox):
     channel = GObject.Property(type=str, default='', nick='PV Name')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     buffer_size = GObject.Property(type=int, default=5000, nick='Buffer Size')
-    font_size = GObject.Property(type=float, minimum=5.0, default=9.0, maximum=20.0, nick='Font Size')
     show_time = GObject.Property(type=bool, default=True, nick='Show Time')
+
+    font_size = GObject.Property(type=int, minimum=-3, maximum=3, default=0, nick='Font Size')
+    monospace = GObject.Property(type=bool, default=False, nick='Monospace Font')
+    bold = GObject.Property(type=bool, default=False, nick='Bold Font')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1954,6 +1961,7 @@ class MessageLog(ActiveMixin, Gtk.EventBox):
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
+        super().on_realize(obj)
 
     def on_change(self, pv, value):
         lines = self.buffer.get_line_count()
