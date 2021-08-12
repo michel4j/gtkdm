@@ -530,10 +530,11 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            if self.sci or 'e' in pv.char_value.lower():
-                text = utils.sci_fmt(value, digits=precision, sign=self.monospace)
+            if self.sci:
+                precision += 1
+                text = f'{pv.value:.{precision}g}'
             else:
-                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
+                text = f'{pv.value:.{precision}f}'
         else:
             text = pv.char_value
 
@@ -606,10 +607,11 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            if self.sci or 'e' in pv.char_value.lower():
-                text = utils.sci_fmt(value, digits=precision, sign=self.monospace)
+            if self.sci:
+                precision += 1
+                text = f'{pv.value:.{precision}g}'
             else:
-                text = utils.fix_fmt(value, digits=precision, sign=self.monospace)
+                text = f'{pv.value:.{precision}f}'
         else:
             text = pv.char_value
 
@@ -1025,10 +1027,11 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            if self.sci or 'e' in pv.char_value.lower():
-                text = utils.sci_fmt(value, digits=precision)
+            if self.sci:
+                precision += 1
+                text = f'{pv.value:.{precision}g}'
             else:
-                text = utils.fix_fmt(value, digits=precision)
+                text = f'{pv.value:.{precision}f}'
         else:
             text = pv.char_value
 

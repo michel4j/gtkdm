@@ -69,7 +69,7 @@ def sci_fmt(number, digits=3, sign=False):
 
 
 def fix_fmt(number, digits=3, sign=False):
-    return f'{{:0.{digits}f}}'.format(number)
+    return f'{{:0.{digits}G}}'.format(number)
 
 
 class NullHandler(logging.Handler):
