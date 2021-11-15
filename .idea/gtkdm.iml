@@ -8,7 +8,7 @@
       <excludeFolder url="file://$MODULE_DIR$/dist" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.9 (gtkdm)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.10 (gtkdm)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="gtkdm-displays" />
   </component>
