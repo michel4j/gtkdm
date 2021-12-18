@@ -2,13 +2,18 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/venv" />
-      <excludeFolder url="file://$MODULE_DIR$/build" />
-      <excludeFolder url="file://$MODULE_DIR$/gtkdm.egg-info" />
-      <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <sourceFolder url="file://$MODULE_DIR$/bin" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/glade" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/gtkdm" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/deploy" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/gtkdm.egg-info" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.10 (gtkdm)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (gtkdm)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="gtkdm-displays" />
   </component>

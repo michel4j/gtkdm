@@ -1,5 +1,6 @@
 .gtkdm-window {
     font-family: "Fira Sans Condensed", Inder, Cantarell, sans-serif;
+    font-size: 0.95rem;
 }
 
 .gtkdm-window popover, .gtkdm-window menu {
