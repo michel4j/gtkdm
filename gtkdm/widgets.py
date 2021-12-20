@@ -948,7 +948,10 @@ class ScaleControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_value_set(self, obj):
         if not self.in_progress:
-            self.pv.put(self.adjustment.props.value)
+            if pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+                self.pv.put(self.adjustment.props.value)
+            else:
+                self.pv.put(int(round(self.adjustment.props.value)))
 
 
 class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
