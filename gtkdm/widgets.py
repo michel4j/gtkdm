@@ -530,7 +530,9 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            if self.sci:
+            if precision < 0:
+                text = f'{pv.value:g}'
+            elif self.sci:
                 precision += 1
                 text = f'{pv.value:.{precision}g}'
             else:
@@ -607,7 +609,9 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            if self.sci:
+            if precision < 0:
+                text = f'{pv.value:g}'
+            elif self.sci:
                 precision += 1
                 text = f'{pv.value:.{precision}g}'
             else:
@@ -1027,7 +1031,9 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
             text = pv.enum_strs[value]
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
-            if self.sci:
+            if precision < 0:
+                text = f'{pv.value:g}'
+            elif self.sci:
                 precision += 1
                 text = f'{pv.value:.{precision}g}'
             else:
