@@ -1369,7 +1369,7 @@ class ChoiceMenu(ActiveMixin, Gtk.EventBox):
 
     def on_realize(self, obj):
         if self.labels.strip():
-            self.menu_labels = [v.strip() for v in self.labels.split(',')]
+            self.menu_labels = [v.strip() for v in re.split(r'[,|;]', self.labels)]
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect_after('active', self.on_active)
