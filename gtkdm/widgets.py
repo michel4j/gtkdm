@@ -15,6 +15,8 @@ import numpy
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo
+
+from epics.ca import ChannelAccessGetFailure
 import gepics
 import xml.etree.ElementTree as ET
 
@@ -321,7 +323,10 @@ class ActiveMixin(object):
         self.connect("button-press-event", self.on_mouse_press)
         self.set_tooltip_text(self.copy_text)
         if connected:
-            self.ctrlvars = pv.get_with_metadata(with_ctrlvars=True)
+            try:
+                self.ctrlvars = pv.get_with_metadata(with_ctrlvars=True)
+            except ChannelAccessGetFailure:
+                self.ctrlvars = {}
             self.get_style_context().remove_class('gtkdm-inactive')
             self.set_sensitive(True)
         else:
@@ -531,12 +536,12 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
             if precision < 0:
-                text = f'{pv.value:g}'
+                text = f'{value:g}'
             elif self.sci:
                 precision += 1
-                text = f'{pv.value:.{precision}g}'
+                text = f'{value:.{precision}g}'
             else:
-                text = f'{pv.value:.{precision}f}'
+                text = f'{value:.{precision}f}'
         else:
             text = pv.char_value
 
@@ -545,6 +550,23 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         if self.colors:
             text = '<span color="{}">{}</span>'.format(self.palette[value], text)
         self.label.set_markup(text)
+
+
+class ArrayMonitor(TextMonitor):
+    __gtype_name__ = 'ArrayMonitor'
+
+    index = GObject.Property(type=int, default=0, nick='Show Index')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def on_change(self, pv, value):
+        if pv.count > 1:
+            if self.index < pv.count:
+                value = value[self.index]
+            else:
+                value = value[self.index % pv.count]
+        super().on_change(pv, value)
 
 
 class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
@@ -1324,6 +1346,7 @@ class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
 class ChoiceMenu(ActiveMixin, Gtk.EventBox):
     __gtype_name__ = 'ChoiceMenu'
     channel = GObject.Property(type=str, default='', nick='PV Name')
+    labels = GObject.Property(type=str, default='', nick='Labels')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1332,6 +1355,7 @@ class ChoiceMenu(ActiveMixin, Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.box.connect('changed', self.on_toggled)
         self.in_progress = False
+        self.menu_labels = []
         self.add(self.box)
         self.box.get_style_context().add_class('linked')
         self.get_style_context().add_class('gtkdm')
@@ -1344,6 +1368,8 @@ class ChoiceMenu(ActiveMixin, Gtk.EventBox):
                 self.pv.put(active)
 
     def on_realize(self, obj):
+        if self.labels.strip():
+            self.menu_labels = [v.strip() for v in self.labels.split(',')]
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect_after('active', self.on_active)
@@ -1353,8 +1379,14 @@ class ChoiceMenu(ActiveMixin, Gtk.EventBox):
         super().on_active(pv, connected)
         if connected:
             self.box.remove_all()
-            for i, label in enumerate(pv.enum_strs):
-                self.box.append_text(label)
+            if pv.enum_strs and not self.menu_labels:  # if menu labels are provided, ignore enum strings
+                labels = pv.enum_strs
+            else:
+                labels = self.menu_labels
+
+            for i, label in enumerate(labels):
+                if label:  # only add entry if label is not blank
+                    self.box.append_text(label)
 
     def on_change(self, pv, value):
         self.in_progress = True
@@ -1558,8 +1590,12 @@ class Gauge(ActiveMixin, BlankWidget):
 
     def on_active(self, pv, connected):
         if connected:
-            self.ctrlvars = self.pv.get_ctrlvars()
-            self.units_label = self.pv.units
+            try:
+                self.ctrlvars = self.pv.get_ctrlvars()
+                self.units_label = self.pv.units
+            except ChannelAccessGetFailure as e:
+                self.ctrlvars = {}
+                self.units_label = ''
         super().on_active(pv, connected)
 
 

@@ -11,6 +11,12 @@
                 <property id="color" optional="true"/>
             </properties>
         </glade-widget-class>
+        <glade-widget-class name="ArrayMonitor" generic-name="arraymonitor" title="Array Monitor" icon-name="widget-gtk-label">
+            <properties>
+                <property id="precision" optional="true"/>
+                <property id="color" optional="true"/>
+            </properties>
+        </glade-widget-class>
         <glade-widget-class name="TextPanel" generic-name="textpanel" title="Text Panel"
                             icon-name="widget-gtk-label">
             <properties>
@@ -99,6 +105,7 @@
     </glade-widget-group>
     <glade-widget-group name="gtkdm-monitor" title="GtkDM Monitor">
         <glade-widget-class-ref name="TextMonitor"/>
+        <glade-widget-class-ref name="ArrayMonitor"/>
         <glade-widget-class-ref name="TextPanel"/>
         <glade-widget-class-ref name="MessageLog"/>
         <glade-widget-class-ref name="LineMonitor"/>
