@@ -854,11 +854,11 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        bits = bin(value)[2:].zfill(64)
+        bits = f'{value:064b}'
         if self.big_endian:
             self._view_bits = bits[(self.offset * 8):][:self.count]
         else:
-            self._view_bits = bits[(-(self.offset + 1) * 8):][:self.count]
+            self._view_bits = bits[-((self.offset + 1) * 8):][:self.count]
         self.queue_draw()
 
 
@@ -1216,32 +1216,38 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         super().__init__(*args, **kwargs)
         self.button = Gtk.Switch()
         self.state_pv = None
+        self.updating_state = False
         self.registry = {}
 
         self.connect('realize', self.on_realize)
-        self.button.connect('state-set', self.on_change)
+        self.button.connect('state-set', self.on_switch_change)
         self.add(self.button)
-        self.show_all()
         self.set_sensitive(False)
-
-    def on_change(self, button, value):
-        for state, spec in self.registry.items():
-            if value == spec['active']:
-                spec['pv'].put(spec['value'], wait=True)
-                break
-        return True
-
-    def on_state_change(self, obj, value):
-        for state, spec in self.registry.items():
-            if value == spec['state']:
-                self.button.set_state(spec['active'])
-                break
-
-    def on_realize(self, obj):
         ctx = self.get_style_context()
         ctx.add_class('gtkdm')
         ctx.add_class('onoff')
         ctx.add_class('tiny')
+
+        self.show_all()
+
+    def on_switch_change(self, button, value):
+        if not self.updating_state:
+            active = button.get_active()
+            for state, spec in self.registry.items():
+                if active == spec['active']:
+                    spec['pv'].put(spec['value'], wait=True)
+                    break
+        return True
+
+    def on_state_change(self, obj, value):
+        self.updating_state = True
+        for state, spec in self.registry.items():
+            if value == spec['state']:
+                self.button.set_state(spec['active'])
+                break
+        self.updating_state = False
+
+    def on_realize(self, obj):
         self.registry = {
             'on': {
                 'channel': self.on_channel,
@@ -1838,7 +1844,11 @@ class Shape(ActiveMixin, AlarmMixin, BlankWidget):
         else:
             cr.rectangle(x - width // 2, y - width // 2, width, width)
         if self.filled:
-            color = self.palette(int(self.value))
+
+            try:
+                color = self.palette(int(self.value))
+            except ValueError:
+                color = self.palette(0)
             cr.set_source_rgba(*color)
             cr.fill_preserve()
         cr.set_source_rgba(*self.theme['border'])
