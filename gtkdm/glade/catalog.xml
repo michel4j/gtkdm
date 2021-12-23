@@ -33,7 +33,6 @@
         <glade-widget-class name="TextEntryMonitor" generic-name="textentrymonitor" title="Text Entry Monitor" icon-name="widget-gtk-entry">
             <properties>
                 <property id="orientation" default="horizontal"/>
-                <property id="homogeneous" default="true"/>
             </properties>
         </glade-widget-class>
         <glade-widget-class name="TextLabel" generic-name="textlabel" title="Text Label" icon-name="widget-gtk-label"/>

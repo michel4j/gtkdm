@@ -973,7 +973,7 @@ class ScaleControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_value_set(self, obj):
         if not self.in_progress:
-            if pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+            if self.pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
                 self.pv.put(self.adjustment.props.value)
             else:
                 self.pv.put(int(round(self.adjustment.props.value)))
@@ -1122,7 +1122,7 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
     show_units = GObject.Property(type=bool, default=True, nick='Show Units')
 
     def __init__(self, *args, **kwargs):
-        super().__init__(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True)
+        super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
         self.connect('realize', self.on_realize)
         self.entries = {
             'target': Gtk.Entry(width_chars=5),
@@ -1130,8 +1130,9 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
         }
 
         for name, entry in self.entries.items():
-            self.bind_property('xalign', entry, 'xalign', GObject.BindingFlags.DEFAULT)
             self.pack_start(entry, True, True, 0)
+            self.bind_property('xalign', entry, 'xalign', GObject.BindingFlags.DEFAULT)
+
 
         self.entries['target'].connect('activate', self.on_activate)
         self.entries['target'].connect('focus-out-event', self.on_focus_out)
