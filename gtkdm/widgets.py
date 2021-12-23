@@ -275,6 +275,7 @@ class BlankWidget(Gtk.Widget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
 
     def do_realize(self, *args):
         allocation = self.get_allocation()
@@ -510,16 +511,15 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.label = Gtk.Label('...')
         self.add(self.label)
         self.pv = None
         self.connect('realize', self.on_realize)
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
-        self.get_style_context().add_class('gtkdm')
         self.palette = ColorSequence(self.colors)
 
     def on_realize(self, obj):
-        style = self.get_style_context()
         self.palette = ColorSequence(self.colors)
 
         if self.channel and not EDITOR:
@@ -588,6 +588,7 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.desc_label = Gtk.Label('Description', xalign=0.0)
         self.value_label = Gtk.Label('Value')
@@ -599,7 +600,6 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.bind_property('xalign', self.value_label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.bind_property('label', self.desc_label, 'label', GObject.BindingFlags.DEFAULT)
-        self.get_style_context().add_class('gtkdm')
         self.desc_label.get_style_context().add_class('panel-desc')
         self.palette = ColorSequence(self.colors)
 
@@ -661,12 +661,12 @@ class TextLabel(FontMixin, Gtk.Bin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.label = Gtk.Label(label='Label')
         self.bind_property('text', self.label, 'label', GObject.BindingFlags.DEFAULT)
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.add(self.label)
         self.connect('realize', self.on_realize)
-        self.get_style_context().add_class('gtkdm')
 
     def on_realize(self, obj):
         super().on_realize(obj)
@@ -686,11 +686,11 @@ class DateLabel(FontMixin, Gtk.Bin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.label = Gtk.Label(label='')
         self.bind_property('xalign', self.label, 'xalign', GObject.BindingFlags.DEFAULT)
         self.add(self.label)
         self.connect('realize', self.on_realize)
-        self.get_style_context().add_class('gtkdm')
 
     def update(self):
         self.label.set_text(datetime.now().strftime(self.format))
@@ -715,6 +715,7 @@ class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('line')
         self.set_size_request(40, 40)
         self.pv = None
         self.palette = ColorSequence(self.colors)
@@ -797,6 +798,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('byte')
         self._view_bits = '0' * self.count
         self._view_labels = [''] * self.count
 
@@ -872,6 +874,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('indicator')
         self.set_size_request(20, 20)
         self.pv = None
         self.label_pv = None
@@ -933,6 +936,7 @@ class ScaleControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.pv = None
         self.in_progress = False
         self.adjustment = Gtk.Adjustment(50., 0.0, 100.0, 1.0, .0, 0)
@@ -945,7 +949,6 @@ class ScaleControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.bind_property('maximum', self.adjustment, 'upper', GObject.BindingFlags.DEFAULT)
         self.bind_property('minimum', self.adjustment, 'lower', GObject.BindingFlags.DEFAULT)
         self.bind_property('increment', self.adjustment, 'step-increment', GObject.BindingFlags.DEFAULT)
-        self.get_style_context().add_class('gtkdm')
         self.set_sensitive(False)
 
     def on_realize(self, obj):
@@ -989,6 +992,7 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.pv = None
         self.in_progress = False
         self.adjustment = Gtk.Adjustment(50., 0.0, 100.0, 1.0, .0, 0)
@@ -999,7 +1003,6 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.bind_property('maximum', self.adjustment, 'upper', GObject.BindingFlags.DEFAULT)
         self.bind_property('minimum', self.adjustment, 'lower', GObject.BindingFlags.DEFAULT)
         self.bind_property('increment', self.adjustment, 'step-increment', GObject.BindingFlags.DEFAULT)
-        self.get_style_context().add_class('gtkdm')
 
     def on_realize(self, obj):
         if self.channel and not EDITOR:
@@ -1028,16 +1031,23 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
     sci = GObject.Property(type=bool, default=False, nick='Sci. Format')
+    restore = GObject.Property(type=bool, default=True, nick='Restore Value')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.connect('realize', self.on_realize)
         self.entry = Gtk.Entry(width_chars=5)
         self.bind_property('xalign', self.entry, 'xalign', GObject.BindingFlags.DEFAULT)
         self.bind_property('editable', self.entry, 'editable', GObject.BindingFlags.DEFAULT)
+        self.bind_property('editable', self.entry, 'sensitive', GObject.BindingFlags.DEFAULT)
         self.bind_property('editable', self.entry, 'can-focus', GObject.BindingFlags.DEFAULT)
         self.entry.connect('activate', self.on_activate)
+        self.entry.connect('focus-out-event', self.on_focus_out)
+        self.entry.connect('focus-in-event', self.disable_restore)
+
         self.in_progress = False
+        self.restore_src = None
         self.pv = None
         self.add(self.entry)
         self.get_style_context().add_class('gtkdm')
@@ -1049,6 +1059,21 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
+
+    def disable_restore(self, *args, **kwargs):
+        if self.restore_src:
+            GLib.source_remove(self.restore_src)  #
+        self.restore_src = None
+
+    def on_focus_out(self, obj, event):
+        # update value 5 seconds after losing focus
+        if self.restore:
+            self.restore_src = GLib.timeout_add(5000, self.restore_value)
+
+    def restore_value(self):
+        if self.pv:
+            self.on_change(self.pv, self.pv.value)
+        self.disable_restore()
 
     def on_change(self, pv, value):
         self.in_progress = True
@@ -1082,6 +1107,132 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
             logger.warn("Invalid Value: {}".format(e))
 
 
+class TextEntryMonitor(ActiveMixin, Gtk.Box):
+    __gtype_name__ = 'TextEntryMonitor'
+    PV_COPY_BUTTON = 1
+    tgt_channel = GObject.Property(type=str, default='', nick='Target PV')
+    fbk_channel = GObject.Property(type=str, default='', nick='Feedback PV')
+    color = GObject.Property(type=Gdk.RGBA, nick='Color')
+    colors = GObject.Property(type=str, default="", nick='Value Colors')
+    xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
+    alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
+    prec = GObject.Property(type=int, default=-1, minimum=-1, maximum=10, nick='Precision')
+    sci = GObject.Property(type=bool, default=False, nick='Sci. Format')
+    restore = GObject.Property(type=bool, default=True, nick='Restore Value')
+    show_units = GObject.Property(type=bool, default=True, nick='Show Units')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True)
+        self.connect('realize', self.on_realize)
+        self.entries = {
+            'target': Gtk.Entry(width_chars=5),
+            'feedback': Gtk.Entry(width_chars=5, editable=False, can_focus=False)
+        }
+
+        for name, entry in self.entries.items():
+            self.bind_property('xalign', entry, 'xalign', GObject.BindingFlags.DEFAULT)
+            self.pack_start(entry, True, True, 0)
+
+        self.entries['target'].connect('activate', self.on_activate)
+        self.entries['target'].connect('focus-out-event', self.on_focus_out)
+        self.entries['target'].connect('focus-in-event', self.disable_restore)
+        self.pv = {
+            'target': None,
+            'feedback': None,
+        }
+        self.progress = {
+            'target': False,
+            'feedback': False,
+        }
+        self.restore_src = None
+
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
+        ctx.add_class('linked')
+        self.entries['feedback'].get_style_context().add_class('feedback')
+        self.show_all()
+        self.set_sensitive(False)
+
+    def on_alarm(self, pv, alarm, name):
+        if self.alarm:
+            widget = self.entries[name]
+            if alarm == gepics.Alarm.MAJOR:
+                widget.get_style_context().remove_class('gtkdm-warning')
+                widget.get_style_context().add_class('gtkdm-critical')
+            elif alarm == gepics.Alarm.MINOR:
+                widget.get_style_context().add_class('gtkdm-warning')
+                widget.get_style_context().remove_class('gtkdm-critical')
+            else:
+                widget.get_style_context().remove_class('gtkdm-warning')
+                widget.get_style_context().remove_class('gtkdm-critical')
+            widget.queue_draw()
+
+    def on_realize(self, obj):
+        if not EDITOR:
+            if self.tgt_channel and (not self.fbk_channel or self.tgt_channel == self.fbk_channel):
+                pv = gepics.PV(self.tgt_channel)
+                self.pv['target'] = pv
+                self.pv['feedback'] = pv
+            elif self.tgt_channel and self.fbk_channel:
+                self.pv['target'] = gepics.PV(self.tgt_channel)
+                self.pv['feedback'] = gepics.PV(self.fbk_channel)
+            else:
+                return
+
+            for name, pv in self.pv.items():
+                pv.connect('changed', self.on_change, name)
+                pv.connect('alarm', self.on_alarm, name)
+                pv.connect('active', self.on_active)
+
+    def disable_restore(self, *args, **kwargs):
+        if self.restore_src:
+            GLib.source_remove(self.restore_src)  #
+        self.restore_src = None
+
+    def on_focus_out(self, obj, event):
+        # update value 5 seconds after losing focus
+        if self.restore:
+            self.restore_src = GLib.timeout_add(5000, self.restore_value)
+
+    def restore_value(self):
+        if self.pv['target']:
+            self.on_change(self.pv['target'], self.pv['target'].value, 'target')
+        self.disable_restore()
+
+    def on_change(self, pv, value, name):
+        self.progress[name] = True
+        entry = self.entries[name]
+        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
+            text = pv.enum_strs[value]
+        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+            precision = self.prec if self.prec >= 0 else pv.precision
+            if precision < 0:
+                text = f'{pv.value:g}'
+            elif self.sci:
+                precision += 1
+                text = f'{pv.value:.{precision}g}'
+            else:
+                text = f'{pv.value:.{precision}f}'
+        else:
+            text = pv.char_value
+
+        entry.set_text(text)
+        self.progress[name] = False
+
+    def on_activate(self, entry):
+        text = self.entries['target'].get_text()
+        pv = self.pv['target']
+        if pv.type in ['char', 'time_char', 'ctrl_char'] and pv.count > 1:
+            converter = str
+        else:
+            converter = ENTRY_CONVERTERS[pv.type]
+        try:
+            value = converter(text)
+            pv.put(value)
+        except ValueError as e:
+            logger.warn("Invalid Value: {}".format(e))
+
+
 class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'CommandButton'
     channel = GObject.Property(type=str, default='', nick='PV Name')
@@ -1091,6 +1242,7 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.get_style_context().add_class('gtkdm')
         self.button = Gtk.Button()
         self.pv = None
         self.label_pv = None
@@ -1105,7 +1257,6 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
             self.pv.put(1)
 
     def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('active', self.on_active)
@@ -1142,6 +1293,9 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
+        ctx.add_class('tiny')
         self.button = Gtk.Button()
         self.state_pv = None
         self.state = None
@@ -1174,9 +1328,7 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
                 ctx.add_class(f'{self.state}-btn')
 
     def on_realize(self, obj):
-        ctx = self.get_style_context()
-        ctx.add_class('gtkdm')
-        ctx.add_class('tiny')
+
         self.registry = {
             'on': {
                 'channel': self.off_channel,
@@ -1215,6 +1367,10 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.button = Gtk.Switch()
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
+        ctx.add_class('onoff')
+        ctx.add_class('tiny')
         self.state_pv = None
         self.updating_state = False
         self.registry = {}
@@ -1223,10 +1379,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.button.connect('state-set', self.on_switch_change)
         self.add(self.button)
         self.set_sensitive(False)
-        ctx = self.get_style_context()
-        ctx.add_class('gtkdm')
-        ctx.add_class('onoff')
-        ctx.add_class('tiny')
+
 
         self.show_all()
 
@@ -1409,8 +1562,10 @@ class ShellButton(Gtk.Bin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
+        ctx.add_class('tiny')
         self.button = Gtk.Button()
-        self.connect('realize', self.on_realize)
         self.button.connect('clicked', self.on_clicked)
         self.add(self.button)
         self.proc = None
@@ -1424,9 +1579,6 @@ class ShellButton(Gtk.Bin):
             if self.multiple or self.proc is None or self.proc.returncode is not None:
                 cmds = self.command.split()
                 self.proc = subprocess.Popen(cmds, shell=True, stdout=subprocess.DEVNULL)
-
-    def on_realize(self, obj):
-        self.get_style_context().add_class('gtkdm')
 
 
 class Gauge(ActiveMixin, BlankWidget):
@@ -1796,7 +1948,9 @@ class DisplayButton(Gtk.Bin):
         self.button.connect('clicked', self.on_clicked)
         self.bind_property('label', self.button, 'label', GObject.BindingFlags.DEFAULT)
         self.add(self.button)
-        self.get_style_context().add_class('gtkdm')
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
+        ctx.add_class('tiny')
 
     def on_clicked(self, button):
         if self.display and not EDITOR:
@@ -1894,6 +2048,8 @@ class MenuButton(Gtk.Bin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        ctx = self.get_style_context()
+        ctx.add_class('gtkdm')
         self.btn = Gtk.MenuButton(use_popover=True)
         self.icon = Gtk.Image.new_from_icon_name('view-paged-symbolic', Gtk.IconSize.MENU)
         self.text = Gtk.Label(label=self.label)
@@ -1904,7 +2060,6 @@ class MenuButton(Gtk.Bin):
         self.add(self.btn)
         self.bind_property('label', self.text, 'label', GObject.BindingFlags.DEFAULT)
         self.bind_property('menu', self.btn, 'popover', GObject.BindingFlags.DEFAULT)
-        self.get_style_context().add_class('gtkdm')
 
 
 class DisplayMenu(Gtk.Popover):
@@ -2114,22 +2269,32 @@ class ChartPair(GObject.GObject):
         self.size = size
         self.array_mode = False
         self.data = numpy.empty((self.size, 2))
-        self.xpv = gepics.PV(xname)
+
         self.ypv = gepics.PV(yname)
-        self.xpv.connect('changed', self.on_change)
         self.ypv.connect('changed', self.on_change)
-        self.xpv.connect('active', self.on_active)
         self.ypv.connect('active', self.on_active)
+
+        if xname.strip() == '#':
+            self.xpv = None
+        else:
+            self.xpv = gepics.PV(xname)
+            self.xpv.connect('changed', self.on_change)
+            self.xpv.connect('active', self.on_active)
+
         self.min_update = update
         self.last_change = time.time()
 
     def on_change(self, pv, value):
         if time.time() - self.last_change >= self.min_update:
-            x = self.xpv.get()
             y = self.ypv.get()
+            if self.xpv:
+                x = self.xpv.get()
+            else:
+                x = numpy.arange(0, len(y))
+
             if self.array_mode:
-                cx = self.data.shape[0] if self.xpv.count == 1 else x.shape[0]
-                cy = self.data.shape[0] if self.ypv.count == 1 else y.shape[0]
+                cx = self.data.shape[0] if len(x) == 1 else x.shape[0]
+                cy = self.data.shape[0] if len(y) == 1 else y.shape[0]
                 self.data[:cx, 0] = x
                 self.data[:cy, 1] = y
             else:
@@ -2141,8 +2306,13 @@ class ChartPair(GObject.GObject):
 
     def on_active(self, pv, active):
         # prepare data array according to pv sizes
-        if self.xpv.is_active() and self.ypv.is_active():
-            sizes = (self.xpv.count, self.ypv.count)
+        if self.ypv.is_active():
+            if self.xpv is None:
+                sizes = (self.ypv.count, self.ypv.count)
+            elif self.xpv.is_active():
+                sizes = (self.ypv.count, self.ypv.count)
+            else:
+                return
             if sizes == (1, 1):
                 self.data = numpy.empty((self.size, 2))
                 self.array_mode = False
@@ -2238,8 +2408,16 @@ class XYScatter(Gtk.DrawingArea):
                 if m:
                     xname, yname = m.groups()
                     pair = ChartPair(xname, yname, self.buffer, update=1 / self.sample)
-                    pair.connect('changed', lambda x: self.queue_draw())
+                    pair.connect('changed', self.on_values_changed)
                     self.plots.append(pair)
+
+    def on_values_changed(self, pair):
+        self.props.ymin = min(pair.data[:, 1].min(), self.ymin)
+        self.props.ymax = max(pair.data[:, 1].max(), self.ymax)
+        self.props.ystep = 10**numpy.int(numpy.log10(self.ymax))
+
+        self.calculate_parameters()
+        self.queue_draw()
 
     def do_draw(self, cr):
         if self.color_bg:
@@ -2249,7 +2427,9 @@ class XYScatter(Gtk.DrawingArea):
         if self.color_fg:
             cr.set_source_rgba(*self.color_fg)
         else:
-            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            style = self.get_style_context()
+            color = style.get_color(style.get_state())
+            cr.set_source_rgba(*color)
 
         # draw axes
         cr.set_line_width(0.75)
@@ -2271,10 +2451,6 @@ class XYScatter(Gtk.DrawingArea):
             cr.move_to(*xframe[0])
             cr.line_to(*xframe[1])
             cr.stroke()
-            # if self.show_yaxis:
-            #     cr.move_to(*xframe[2])
-            #     cr.line_to(*xframe[3])
-            #     cr.stroke()
 
             major = self.params['converter'].xy(self.params['xmajor'], yoff=5)
             for i, tick in enumerate(major):
@@ -2308,10 +2484,6 @@ class XYScatter(Gtk.DrawingArea):
             cr.move_to(*yframe[0])
             cr.line_to(*yframe[1])
             cr.stroke()
-            # if self.show_xaxis:
-            #     cr.move_to(*yframe[2])
-            #     cr.line_to(*yframe[3])
-            #     cr.stroke()
 
             major = self.params['converter'].xy(self.params['ymajor'], xoff=-5)
             for i, tick in enumerate(major):
@@ -2341,14 +2513,14 @@ class XYScatter(Gtk.DrawingArea):
                 cr.set_source_rgba(*self.palette(i))
                 for j, mark in enumerate(pos):
                     if j == 0:
-                        cr.arc(*mark, 2, 0, 2 * pi)
+                        cr.arc(*mark, 0.5, 0, 2 * pi)
                         cr.fill_preserve()
                         cr.stroke()
                         cr.move_to(*mark)
                         continue
                     else:
                         cr.save()
-                        cr.arc(*mark, 2, 0, 2 * pi)
+                        cr.arc(*mark, 0.5, 0, 2 * pi)
                         cr.fill_preserve()
                         cr.stroke()
                         cr.restore()
@@ -2358,7 +2530,7 @@ class XYScatter(Gtk.DrawingArea):
                 cr.set_line_width(1.0)
                 for j, mark in enumerate(pos):
                     cr.set_source_rgba(*alpha(self.palette(i), (j + 1.) / (self.buffer + 1.)))
-                    cr.arc(*mark, 2, 0, 2 * pi)
+                    cr.arc(*mark, 0.5, 0, 2 * pi)
                     cr.fill_preserve()
                     cr.stroke()
 
@@ -2372,7 +2544,7 @@ class StripData(GObject.GObject):
         super().__init__()
         self.size = int(period * sample_freq)
         self.count = len(names)
-        self.ydata = numpy.empty((self.size, self.count))
+        self.ydata = numpy.zeros((self.size, self.count))
         self.xdata = numpy.linspace(-period, 0, self.size)
         self.ydata.fill(numpy.nan)
         self.pvs = [
@@ -2550,10 +2722,6 @@ class StripPlot(Gtk.DrawingArea):
             cr.move_to(*yframe[0])
             cr.line_to(*yframe[1])
             cr.stroke()
-            # if self.show_xaxis:
-            #     cr.move_to(*yframe[2])
-            #     cr.line_to(*yframe[3])
-            #     cr.stroke()
 
             major = self.params['converter'].xy(self.params['ymajor'], xoff=-5)
             for i, tick in enumerate(major):

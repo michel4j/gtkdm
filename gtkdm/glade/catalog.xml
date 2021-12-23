@@ -30,6 +30,12 @@
         <glade-widget-class name="ScaleControl" generic-name="scalecontrol" title="Scale Control" icon-name="widget-gtk-scale"/>
         <glade-widget-class name="TweakControl" generic-name="tweakcontrol" title="Tweak Control" icon-name="widget-gtk-spinbutton"/>
         <glade-widget-class name="TextControl" generic-name="textcontrol" title="Text Control" icon-name="widget-gtk-entry"/>
+        <glade-widget-class name="TextEntryMonitor" generic-name="textentrymonitor" title="Text Entry Monitor" icon-name="widget-gtk-entry">
+            <properties>
+                <property id="orientation" default="horizontal"/>
+                <property id="homogeneous" default="true"/>
+            </properties>
+        </glade-widget-class>
         <glade-widget-class name="TextLabel" generic-name="textlabel" title="Text Label" icon-name="widget-gtk-label"/>
         <glade-widget-class name="DateLabel" generic-name="datelabel" title="Date Label" icon-name="widget-gtk-label"/>
         <glade-widget-class name="CommandButton" generic-name="commandbutton" title="Command Button" icon-name="widget-gtk-button"/>
@@ -119,6 +125,7 @@
     </glade-widget-group>
     <glade-widget-group name="gtkdm-control" title="GtkDM Control">
         <glade-widget-class-ref name="TextControl"/>
+        <glade-widget-class-ref name="TextEntryMonitor"/>
         <glade-widget-class-ref name="ScaleControl"/>
         <glade-widget-class-ref name="TweakControl"/>
         <glade-widget-class-ref name="CheckControl"/>

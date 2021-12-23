@@ -1,236 +1,233 @@
 .gtkdm-window {
-    font-family: "Fira Sans Condensed", Inder, Cantarell, sans-serif;
-    font-size: 0.95rem;
-}
+  font-family: "Fira Sans Condensed", sans-serif;
+  font-size: 0.95rem; }
 
-.gtkdm-window popover, .gtkdm-window menu {
-    border-radius: 3px;
-}
+.tiny button {
+  min-height: 7px;
+  min-width: 7px;
+  padding: 1px;
+  font-size: 0.9em; }
+
+.tiny entry {
+  min-height: 7px;
+  min-width: 7px;
+  padding: 1px;
+  font-size: 0.9em; }
+
+.tiny entry.combo {
+  min-height: 7px;
+  min-width: 7px;
+  padding: 1px;
+  font-size: 0.9em; }
+
+.tiny button.combo {
+  min-height: 7px;
+  min-width: 7px;
+  padding: 1px 4px;
+  font-size: 0.9em; }
 
 .gtkdm entry {
-    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
-    font-size: 0.9em;
-}
-.gtkdm entry, .gtkdm button, .gtkdm button.combo, .gtkdm button.toggle {
-    min-height: 10px;
-    border-radius: 3px;
-}
+  font-family: "Fira Code", monospace;
+  font-size: 0.9em;
+  min-height: 10px;
+  border-radius: 3px; }
+  .gtkdm entry.feedback {
+    background-color: rgba(0, 0, 0, 0.15); }
+
+.gtkdm entry.combo {
+  font-family: "Fira Code", monospace;
+  font-size: 0.9em;
+  min-height: 10px;
+  border-radius: 3px; }
+  .gtkdm entry.combo.feedback {
+    background-color: rgba(0, 0, 0, 0.15); }
+
+.gtkdm button {
+  min-height: 10px;
+  border-radius: 3px; }
+
+.gtkdm button.combo {
+  min-height: 10px;
+  border-radius: 3px;
+  padding-left: 6px;
+  padding-right: 6px; }
+
+.gtkdm button.toggle {
+  min-height: 10px;
+  border-radius: 3px; }
+
 .gtkdm spinbutton {
-    min-height: 10px;
-    border-radius: 3px;
-    font-size: 0.95em;
-}
+  min-height: 10px;
+  border-radius: 3px;
+  font-size: 0.95em; }
+
+.gtkdm.indicator {
+  font-size: 90%; }
 
 .gtkdm switch slider {
   min-height: 10px;
-  min-width: 14px;
-}
-
-.gtkdm.onoff switch  {
-    background-color: #ef2929;
-    border-color: rgba(0, 0, 0, 0.45);
-}
-.gtkdm.onoff switch:checked {
-    background-color: #73d216;
-    border-color: rgba(0, 0, 0, 0.45);
-}
-.gtkdm.onoff switch:checked slider {
-    border-color: rgba(0, 0, 0, 0.45);
-}
-
+  min-width: 14px; }
 
 .gtkdm textview {
-    font-size: 0.9em;
-    margin: 2px;
-    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
-}
+  font-size: 0.9em;
+  margin: 2px;
+  font-family: "Fira Code", monospace; }
 
-.gtkdm .linked button:not(:first-child):not(:last-child):not(.combo) {
-    border-radius: 0px;
-}
-.gtkdm .linked.horizontal button:first-child:not(.combo) {
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
+.gtkdm.linked *:not(:first-child):not(:last-child) {
+  border-radius: 0px; }
 
-.gtkdm .linked.horizontal button:last-child:not(.combo) {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-.gtkdm .linked.vertical button:last-child:not(.combo) {
-    border-top-right-radius: 0px;
-    border-top-left-radius: 0px;
-}
+.gtkdm.linked.horizontal *:first-child {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px; }
 
-.gtkdm .linked.vertical button:first-child:not(.combo) {
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-.gtkdm-inactive, .gtkdm-inactive * {
-    opacity: 0.5;
-}
+.gtkdm.linked.horizontal *:last-child {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px; }
+
+.gtkdm.linked.vertical *:last-child {
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px; }
+
+.gtkdm.linked.vertical *:first-child {
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0px; }
+
+.gtkdm .linked.horizontal entry.combo:first-child {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px; }
+
+.gtkdm .linked.horizontal button.combo:not(:first-child) {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px; }
+
+.gtkdm.onoff switch {
+  background-color: #ef4d29;
+  border-color: rgba(0, 0, 0, 0.45); }
+  .gtkdm.onoff switch:checked {
+    background-color: #73d216;
+    border-color: rgba(0, 0, 0, 0.45); }
+    .gtkdm.onoff switch:checked slider {
+      border-color: rgba(0, 0, 0, 0.45); }
+
+.gtkdm-inactive {
+  opacity: 0.5; }
+  .gtkdm-inactive * {
+    opacity: 0.5; }
 
 .gtkdm-warning {
-    color: #ffcb00;
-}
+  color: #ffcb00; }
 
 .gtkdm-critical {
-    color: #ef2929;
-}
-
-.tiny button, .tiny entry {
-    min-height: 7px;
-    min-width: 7px;
-    padding: 1px;
-    border-radius: 3px;
-    font-size: 0.9em;
-}
-
-.tiny .linked *:not(:first-child):not(:last-child) > * {
-    border-radius: 0px;
-}
-
-.tiny .linked.horizontal *:not(:first-child) > * {
-    border-left: none;
-}
-
-.tiny .linked.horizontal *:first-child > * {
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-.tiny .linked.horizontal *:last-child > * {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-
-.tiny .linked.vertical *:first-child > * {
-    border-bottom-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-.tiny .linked.vertical *:last-child > * {
-    border-top-left-radius: 0px;
-    border-top-left-radius: 0px;
-}
+  color: #ef4d29; }
 
 .dark entry {
-    border: 0.25px solid rgba(0, 0, 0, 0.85)
-}
+  border: 0.2px solid rgba(0, 0, 0, 0.85);
+  background: #555753;
+  color: #73d216; }
 
-/*
-label {
-    padding: 2px 6px;
-}
-*/
-
-.gtkdm.xxs {
-    font-size: 0.75em;
-}
-
-.gtkdm.xs {
-    font-size: 0.85em;
-}
-
-.gtkdm.sm {
-    font-size: 0.95em;
-}
-
-.gtkdm.md {
-    font-size: 1em;
-}
-
-.gtkdm.lg {
-    font-size: 1.2em;
-}
-
-.gtkdm.xl {
-    font-size: 1.3em;
-}
-.gtkdm.xxl {
-    font-size: 1.5em;
-}
-
-.monospace, .mono-font {
-    font-family: "Fira Code", "Ubuntu Mono", "TheSansMonoCd Office", "Monaco", monospace;
-}
-.bold-font, .title {
-    font-weight: bold;
-}
-
-.dark entry, .dark label {
-    background: #555753;
-    color: #73d216;
-}
-
-.dark-panel {
-    background: rgb(85,87,83);
-    border: 1px solid rgba(0, 0, 0, 0.5);
-}
-
-.dark-panel label.panel-desc{
-    color: rgba(255, 255, 255, 0.25);
-}
-
-.panel .panel-desc {
-    font-size: 0.9em;
-    color: rgba(0,0,0,0.35);
-    padding: 4px;
-}
+.dark label {
+  background: #555753;
+  color: #73d216; }
 
 .dark .panel-desc {
-    color: rgba(255, 255, 255, 0.35);
-}
+  color: rgba(255, 255, 255, 0.35); }
+
+.gtkdm.xxs {
+  font-size: 0.75em; }
+
+.gtkdm.xs {
+  font-size: 0.85em; }
+
+.gtkdm.sm {
+  font-size: 0.95em; }
+
+.gtkdm.md {
+  font-size: 1em; }
+
+.gtkdm.lg {
+  font-size: 1.2em; }
+
+.gtkdm.xl {
+  font-size: 1.3em; }
+
+.gtkdm.xxl {
+  font-size: 1.5em; }
+
+.monospace {
+  font-family: "Fira Code", monospace; }
+
+.mono-font {
+  font-family: "Fira Code", monospace; }
+
+.bold-font {
+  font-weight: bold; }
+
+.title {
+  font-weight: bold; }
+
+.dark-panel {
+  background: #555753;
+  border: 1px solid rgba(0, 0, 0, 0.5); }
+  .dark-panel label.panel-desc {
+    color: rgba(255, 255, 255, 0.25); }
+
+.panel .panel-desc {
+  font-size: 0.9em;
+  color: rgba(0, 0, 0, 0.35);
+  padding: 4px; }
 
 .warning button {
-    background: rgba(255, 0.0, 0.0, 0.15);
-}
+  background: rgba(255, 0, 0, 0.15); }
 
 .red button {
-    color: red;
-}
+  color: #ef4d29; }
+
 .green button {
-    color: green;
-}
-.on-btn button, .red-bg button {
-    background: rgba(255, 0, 0, 0.25);
-}
-.off-btn button, .green-bg button {
-    background: rgba(0, 255, 0, 0.25);
-}
+  color: green; }
+
+.on-btn button {
+  background: rgba(255, 0, 0, 0.25); }
+
+.red-bg button {
+  background: rgba(255, 0, 0, 0.25); }
+
+.off-btn button {
+  background: rgba(0, 255, 0, 0.25); }
+
+.green-bg button {
+  background: rgba(0, 255, 0, 0.25); }
 
 .vara-bg button {
-    background: rgba(255, 128, 0, 0.25);
-}
+  background: rgba(255, 128, 0, 0.25); }
+
 .varb-bg button {
-    background: rgba(128, 255, 0, 0.25);
-}
-.varc-bg button, .command button {
-    background: rgba(0, 128, 128, 0.25);
-}
+  background: rgba(128, 255, 0, 0.25); }
+
+.varc-bg button {
+  background: rgba(0, 128, 128, 0.25); }
+
+.command button {
+  background: rgba(0, 128, 128, 0.25); }
 
 .gtkdm-table entry {
-    border-radius: 0px;
-}
-.gtkdm-table *:not(.dark) > entry{
-    background: rgba(0.0, 255, 255, 0.05);
-}
+  border-radius: 0px; }
+
+.gtkdm-table *:not(.dark) > entry {
+  background: rgba(0, 255, 255, 0.05); }
 
 .section label {
-    font-weight: 200;
-    margin-bottom: 4px;
-    border-bottom: 1px solid rgba(0,0,0,0.15);
-}
+  font-weight: 200;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15); }
 
 .shaded {
-    background: rgba(128, 128, 128, 0.25);
-}
+  background: rgba(128, 128, 128, 0.25); }
+
 .subtitle {
-    opacity: 0.5;
-}
+  opacity: 0.5; }
 
 tooltip {
-    border-radius: 4px;
-}
-tooltip * {
+  border-radius: 3px; }
+  tooltip * {
     font-size: 90%;
-    padding: 1px;
-}
+    padding: 1px; }
