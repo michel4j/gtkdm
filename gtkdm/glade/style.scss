@@ -8,26 +8,26 @@ $base-monospace-font: "Fira Code";
 
 .tiny {
 	button {
-		min-height: 7px;
-		min-width: 7px;
+		min-height: 8px;
+		min-width: 8px;
 		padding: 1px;
 		font-size: 0.9em;
 	}
 	entry {
-		min-height: 7px;
-		min-width: 7px;
+		min-height: 8px;
+		min-width: 8px;
 		padding: 1px;
 		font-size: 0.9em;
 	}
 	entry.combo {
-		min-height: 7px;
-		min-width: 7px;
+		min-height: 8px;
+		min-width: 8px;
 		padding: 1px;
 		font-size: 0.9em;
 	}
 	button.combo {
-		min-height: 7px;
-		min-width: 7px;
+		min-height: 8px;
+		min-width: 8px;
 		padding: 1px 4px;
 		font-size: 0.9em;
 	}
@@ -38,10 +38,11 @@ $base-monospace-font: "Fira Code";
 	entry {
 		font-family: $base-monospace-font, monospace;
 		font-size: 0.9em;
-		min-height: 10px;
+		min-height: 12px;
 		border-radius: 3px;
 		&.feedback {
 			background-color: rgba(0, 0, 0, 0.15);
+			font-size: 0.85em;
 		}
 	}
 	entry.combo {
@@ -54,21 +55,21 @@ $base-monospace-font: "Fira Code";
 		}
 	}
 	button {
-		min-height: 10px;
+		min-height: 12px;
 		border-radius: 3px;
 	}
 	button.combo {
-		min-height: 10px;
+		min-height: 12px;
 		border-radius: 3px;
 		padding-left: 6px;
 		padding-right: 6px;
 	}
 	button.toggle {
-		min-height: 10px;
+		min-height: 12px;
 		border-radius: 3px;
 	}
 	spinbutton {
-		min-height: 10px;
+		min-height: 12px;
 		border-radius: 3px;
 		font-size: 0.95em;
 	}
@@ -77,7 +78,7 @@ $base-monospace-font: "Fira Code";
 	}
 	switch {
 		slider {
-			min-height: 10px;
+			min-height: 12px;
 			min-width: 14px;
 		}
 	}
@@ -96,7 +97,7 @@ $base-monospace-font: "Fira Code";
 		}
 	}
 	&.linked.horizontal {
-		* {
+		> * {
 			&:first-child {
 				border-top-right-radius: 0px;
 				border-bottom-right-radius: 0px;
@@ -108,7 +109,7 @@ $base-monospace-font: "Fira Code";
 		}
 	}
 	&.linked.vertical {
-		* {
+		> * {
 			&:last-child {
 				border-top-right-radius: 0px;
 				border-top-left-radius: 0px;
@@ -130,6 +131,67 @@ $base-monospace-font: "Fira Code";
 		}
 	}
 }
+.linked {
+	.gtkdm {
+		&> button, &> entry{
+			border-radius: 3px;
+		}
+	}
+	.gtkdm {
+		&:not(:first-child) {
+			&:not(:last-child) {
+				&> button, &> entry{
+					border-radius: 0px;
+				}
+			}
+		}
+	}
+	&.horizontal {
+		.gtkdm  {
+			&:first-child {
+				&> button, &> entry {
+					border-top-right-radius: 0px;
+					border-bottom-right-radius: 0px;
+				}
+			}
+			&:last-child {
+				&> button, &> entry {
+					border-top-left-radius: 0px;
+					border-bottom-left-radius: 0px;
+				}
+			}
+		}
+	}
+	&.vertical {
+		.gtkdm  {
+			&:last-child {
+				&> button, &> entry {
+					border-top-right-radius: 0px;
+					border-top-left-radius: 0px;
+				}
+			}
+			&:first-child {
+				&> button, &> entry {
+					border-bottom-right-radius: 0px;
+					border-bottom-left-radius: 0px;
+				}
+			}
+		}
+	}
+}
+
+
+.linked.horizontal {
+	entry.combo:first-child {
+		border-top-right-radius: 0px;
+		border-bottom-right-radius: 0px;
+	}
+	button.combo:not(:first-child) {
+		border-top-left-radius: 0px;
+		border-bottom-left-radius: 0px;
+	}
+}
+
 .gtkdm.onoff {
 	switch {
 		background-color: #ef4d29;
@@ -166,9 +228,7 @@ $base-monospace-font: "Fira Code";
 		background: #555753;
 		color: #73d216;
 	}
-	.panel-desc {
-		color: rgba(255, 255, 255, 0.35);
-	}
+
 }
 .gtkdm.xxs {
 	font-size: 0.75em;
@@ -206,15 +266,16 @@ $base-monospace-font: "Fira Code";
 .dark-panel {
 	background: rgb(85,87,83);
 	border: 1px solid rgba(0, 0, 0, 0.5);
-	label.panel-desc {
-		color: rgba(255, 255, 255, 0.25);
-	}
 }
 .panel {
 	.panel-desc {
 		font-size: 0.9em;
-		color: rgba(0,0,0,0.35);
-		padding: 4px;
+		color: rgba(128, 128, 128, 0.75);
+		padding: 2px;
+	}
+	.panel-value {
+		padding-top: 2px;
+		padding-bottom: 4px;
 	}
 }
 .warning {

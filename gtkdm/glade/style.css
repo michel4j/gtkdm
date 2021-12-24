@@ -3,36 +3,37 @@
   font-size: 0.95rem; }
 
 .tiny button {
-  min-height: 7px;
-  min-width: 7px;
+  min-height: 8px;
+  min-width: 8px;
   padding: 1px;
   font-size: 0.9em; }
 
 .tiny entry {
-  min-height: 7px;
-  min-width: 7px;
+  min-height: 8px;
+  min-width: 8px;
   padding: 1px;
   font-size: 0.9em; }
 
 .tiny entry.combo {
-  min-height: 7px;
-  min-width: 7px;
+  min-height: 8px;
+  min-width: 8px;
   padding: 1px;
   font-size: 0.9em; }
 
 .tiny button.combo {
-  min-height: 7px;
-  min-width: 7px;
+  min-height: 8px;
+  min-width: 8px;
   padding: 1px 4px;
   font-size: 0.9em; }
 
 .gtkdm entry {
   font-family: "Fira Code", monospace;
   font-size: 0.9em;
-  min-height: 10px;
+  min-height: 12px;
   border-radius: 3px; }
   .gtkdm entry.feedback {
-    background-color: rgba(0, 0, 0, 0.15); }
+    background-color: rgba(0, 0, 0, 0.15);
+    font-size: 0.85em; }
 
 .gtkdm entry.combo {
   font-family: "Fira Code", monospace;
@@ -43,21 +44,21 @@
     background-color: rgba(0, 0, 0, 0.15); }
 
 .gtkdm button {
-  min-height: 10px;
+  min-height: 12px;
   border-radius: 3px; }
 
 .gtkdm button.combo {
-  min-height: 10px;
+  min-height: 12px;
   border-radius: 3px;
   padding-left: 6px;
   padding-right: 6px; }
 
 .gtkdm button.toggle {
-  min-height: 10px;
+  min-height: 12px;
   border-radius: 3px; }
 
 .gtkdm spinbutton {
-  min-height: 10px;
+  min-height: 12px;
   border-radius: 3px;
   font-size: 0.95em; }
 
@@ -65,7 +66,7 @@
   font-size: 90%; }
 
 .gtkdm switch slider {
-  min-height: 10px;
+  min-height: 12px;
   min-width: 14px; }
 
 .gtkdm textview {
@@ -76,19 +77,19 @@
 .gtkdm.linked *:not(:first-child):not(:last-child) {
   border-radius: 0px; }
 
-.gtkdm.linked.horizontal *:first-child {
+.gtkdm.linked.horizontal > *:first-child {
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px; }
 
-.gtkdm.linked.horizontal *:last-child {
+.gtkdm.linked.horizontal > *:last-child {
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px; }
 
-.gtkdm.linked.vertical *:last-child {
+.gtkdm.linked.vertical > *:last-child {
   border-top-right-radius: 0px;
   border-top-left-radius: 0px; }
 
-.gtkdm.linked.vertical *:first-child {
+.gtkdm.linked.vertical > *:first-child {
   border-bottom-right-radius: 0px;
   border-bottom-left-radius: 0px; }
 
@@ -97,6 +98,36 @@
   border-bottom-right-radius: 0px; }
 
 .gtkdm .linked.horizontal button.combo:not(:first-child) {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px; }
+
+.linked .gtkdm > button, .linked .gtkdm > entry {
+  border-radius: 3px; }
+
+.linked .gtkdm:not(:first-child):not(:last-child) > button, .linked .gtkdm:not(:first-child):not(:last-child) > entry {
+  border-radius: 0px; }
+
+.linked.horizontal .gtkdm:first-child > button, .linked.horizontal .gtkdm:first-child > entry {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px; }
+
+.linked.horizontal .gtkdm:last-child > button, .linked.horizontal .gtkdm:last-child > entry {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px; }
+
+.linked.vertical .gtkdm:last-child > button, .linked.vertical .gtkdm:last-child > entry {
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px; }
+
+.linked.vertical .gtkdm:first-child > button, .linked.vertical .gtkdm:first-child > entry {
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0px; }
+
+.linked.horizontal entry.combo:first-child {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px; }
+
+.linked.horizontal button.combo:not(:first-child) {
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px; }
 
@@ -128,9 +159,6 @@
 .dark label {
   background: #555753;
   color: #73d216; }
-
-.dark .panel-desc {
-  color: rgba(255, 255, 255, 0.35); }
 
 .gtkdm.xxs {
   font-size: 0.75em; }
@@ -168,13 +196,15 @@
 .dark-panel {
   background: #555753;
   border: 1px solid rgba(0, 0, 0, 0.5); }
-  .dark-panel label.panel-desc {
-    color: rgba(255, 255, 255, 0.25); }
 
 .panel .panel-desc {
   font-size: 0.9em;
-  color: rgba(0, 0, 0, 0.35);
-  padding: 4px; }
+  color: rgba(128, 128, 128, 0.75);
+  padding: 2px; }
+
+.panel .panel-value {
+  padding-top: 2px;
+  padding-bottom: 4px; }
 
 .warning button {
   background: rgba(255, 0, 0, 0.15); }

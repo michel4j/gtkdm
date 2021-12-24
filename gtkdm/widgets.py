@@ -589,6 +589,7 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.get_style_context().add_class('gtkdm')
+
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.desc_label = Gtk.Label('Description', xalign=0.0)
         self.value_label = Gtk.Label('Value')
@@ -602,16 +603,15 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.bind_property('label', self.desc_label, 'label', GObject.BindingFlags.DEFAULT)
         self.desc_label.get_style_context().add_class('panel-desc')
         self.palette = ColorSequence(self.colors)
-
-    def on_realize(self, obj):
         main_style = self.get_style_context()
         style = self.value_label.get_style_context()
         desc_style = self.desc_label.get_style_context()
-        self.palette = ColorSequence(self.colors)
         main_style.add_class('panel')
         style.add_class('panel-value')
         desc_style.add_class('panel-desc')
 
+    def on_realize(self, obj):
+        self.palette = ColorSequence(self.colors)
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)
