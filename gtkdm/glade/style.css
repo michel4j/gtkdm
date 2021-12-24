@@ -140,10 +140,8 @@
     .gtkdm.onoff switch:checked slider {
       border-color: rgba(0, 0, 0, 0.45); }
 
-.gtkdm-inactive {
-  opacity: 0.5; }
-  .gtkdm-inactive * {
-    opacity: 0.5; }
+.gtkdm-inactive > * {
+  border-color: white; }
 
 .gtkdm-warning {
   color: #ffcb00; }

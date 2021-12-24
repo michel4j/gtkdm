@@ -1125,8 +1125,8 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
         self.connect('realize', self.on_realize)
         self.entries = {
-            'target': Gtk.Entry(width_chars=5),
-            'feedback': Gtk.Entry(width_chars=5, editable=False, can_focus=False)
+            'target': Gtk.Entry(width_chars=6),
+            'feedback': Gtk.Entry(width_chars=6, editable=False, can_focus=False)
         }
 
         for name, entry in self.entries.items():
@@ -1216,6 +1216,9 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
                 text = f'{pv.value:.{precision}f}'
         else:
             text = pv.char_value
+
+        if name == 'feedback' and self.pv[name].units and self.show_units:
+            text = '{} {}'.format(text, pv.units)
 
         entry.set_text(text)
         self.progress[name] = False
@@ -1467,7 +1470,7 @@ class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.add(self.box)
         self.set_sensitive(False)
         self.box.get_style_context().add_class('linked')
-        self.get_style_context().add_class('gtkdm')
+        self.box.get_style_context().add_class('gtkdm')
 
     def on_toggled(self, button, i):
         if not self.in_progress:
