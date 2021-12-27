@@ -2,6 +2,13 @@
   font-family: "Fira Sans Condensed", sans-serif;
   font-size: 0.95rem; }
 
+.gtkdm.textmonitor > label {
+  padding-left: 4px;
+  padding-right: 4px; }
+
+.gtkdm scale > marks > mark > label {
+  padding: 0 4px; }
+
 .tiny button {
   min-height: 8px;
   min-width: 8px;

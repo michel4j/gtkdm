@@ -5,6 +5,14 @@ $base-monospace-font: "Fira Code";
 	font-family: $base-font, sans-serif;
 	font-size: 0.95rem;
 }
+.gtkdm.textmonitor > label {
+	padding-left: 4px;
+	padding-right: 4px;
+}
+
+.gtkdm scale > marks > mark > label {
+    padding: 0 4px
+}
 
 .tiny {
 	button {
