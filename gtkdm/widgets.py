@@ -845,8 +845,6 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
                 # cr.stroke()
 
     def on_realize(self, widget):
-        v = (self.size + 5) * int(round(self.count / self.columns))
-        # self.set_size_request(100, v)
         self.palette = ColorSequence(self.colors)
         labels = [v.strip() for v in self.labels.split(',')]
         self._view_labels = labels + (self.count - len(labels)) * ['']
@@ -1655,7 +1653,6 @@ class Gauge(ActiveMixin, BlankWidget):
         r = 4 * x / 6
 
         style = self.get_style_context()
-        font_desc = style.get_font(style.get_state())
         color = style.get_color(style.get_state())
         cr.set_source_rgba(*color)
         cr.set_line_width(0.75)
@@ -2233,8 +2230,6 @@ class MessageLog(FontMixin, ActiveMixin, Gtk.EventBox):
         else:
             text = "{}\n".format(value)
         self.buffer.insert_with_tags(_iter, text, self.active_tag)
-        _iter = self.buffer.get_end_iter()
-
         self.adj.set_value(self.adj.get_upper() - self.adj.get_page_size())
 
     def on_alarm(self, pv, alarm):
