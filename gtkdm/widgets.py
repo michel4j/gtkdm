@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import subprocess
 import textwrap
 import time
@@ -325,9 +326,9 @@ class ActiveMixin(object):
         self.set_tooltip_text(self.copy_text)
         if connected:
             try:
-                self.ctrlvars = pv.get_with_metadata(with_ctrlvars=True)
+                pv.ctrlvars = pv.get_with_metadata(with_ctrlvars=True)
             except ChannelAccessGetFailure:
-                self.ctrlvars = {}
+                pv.ctrlvars = {}
             self.get_style_context().remove_class('gtkdm-inactive')
             self.set_sensitive(True)
         else:
@@ -1159,7 +1160,6 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
             self.pack_start(entry, True, True, 0)
             self.bind_property('xalign', entry, 'xalign', GObject.BindingFlags.DEFAULT|GObject.BindingFlags.SYNC_CREATE)
 
-
         self.entries['target'].connect('activate', self.on_activate)
         self.entries['target'].connect('focus-out-event', self.on_focus_out)
         self.entries['target'].connect('focus-in-event', self.disable_restore)
@@ -1209,7 +1209,8 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
             for name, pv in self.pv.items():
                 pv.connect('changed', self.on_change, name)
                 pv.connect('alarm', self.on_alarm, name)
-                pv.connect('active', self.on_active)
+
+            self.pv['target'].connect('active', self.on_active)
 
     def disable_restore(self, *args, **kwargs):
         if self.restore_src:
@@ -1242,8 +1243,7 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
                 text = f'{pv.value:.{precision}f}'
         else:
             text = pv.char_value
-
-        if name == 'feedback' and self.pv[name].units and self.show_units:
+        if name == 'feedback' and pv.units and self.show_units:
             text = '{} {}'.format(text, pv.units)
 
         entry.set_text(text)
@@ -1389,10 +1389,10 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
     off_channel = GObject.Property(type=str, default='', nick='Off PV')
     state_channel = GObject.Property(type=str, default='', nick='State PV')
     # values
-    on_value = GObject.Property(type=int, default=0, nick='On Value')
-    off_value = GObject.Property(type=int, default=1, nick='Off Value')
-    on_state_value = GObject.Property(type=int, default=0, nick='On State')
-    off_state_value = GObject.Property(type=int, default=1, nick='Off State')
+    on_value = GObject.Property(type=int, default=1, nick='On Value')
+    off_value = GObject.Property(type=int, default=0, nick='Off Value')
+    on_state_value = GObject.Property(type=int, default=1, nick='On State')
+    off_state_value = GObject.Property(type=int, default=0, nick='Off State')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1418,15 +1418,18 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
                 if active == spec['active']:
                     spec['pv'].put(spec['value'], wait=True)
                     break
+            return False
+        else:
+            self.updating = False
         return True
 
     def on_state_change(self, obj, value):
-        self.updating_state = True
         for state, spec in self.registry.items():
             if value == spec['state']:
-                self.button.set_state(spec['active'])
+                if self.button.get_state() != spec['active']:
+                    self.updating_state = True
+                    self.button.set_state(spec['active'])
                 break
-        self.updating_state = False
 
     def on_realize(self, obj):
         self.registry = {
@@ -1618,8 +1621,8 @@ class ShellButton(Gtk.Bin):
             if self.proc:
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:
-                cmds = self.command.split()
-                self.proc = subprocess.Popen(cmds, shell=True, stdout=subprocess.DEVNULL)
+                cmds = shlex.split(self.command)
+                self.proc = subprocess.Popen(cmds, stdout=subprocess.DEVNULL)
 
 
 class Gauge(ActiveMixin, BlankWidget):
@@ -1640,7 +1643,6 @@ class Gauge(ActiveMixin, BlankWidget):
         self.set_size_request(120, 100)
         self.pv = None
         self.label_pv = None
-        self.ctrlvars = None
         self.value = 0
         self.units_label = 'mA'
         self.connect('realize', self.on_realize)
@@ -1680,11 +1682,11 @@ class Gauge(ActiveMixin, BlankWidget):
         # levels
         cr.set_line_width(2)
         rl = 2 * r / 3
-        if self.levels and self.ctrlvars:
-            lolo = self.ctrlvars['lower_alarm_limit'] * angle_scale + start_angle
-            lo = self.ctrlvars['lower_warning_limit'] * angle_scale + start_angle
-            hi = self.ctrlvars['upper_warning_limit'] * angle_scale + start_angle
-            hihi = self.ctrlvars['upper_alarm_limit'] * angle_scale + start_angle
+        if self.levels and self.pv.ctrlvars:
+            lolo = self.pv.ctrlvars['lower_alarm_limit'] * angle_scale + start_angle
+            lo = self.pv.ctrlvars['lower_warning_limit'] * angle_scale + start_angle
+            hi = self.pv.ctrlvars['upper_warning_limit'] * angle_scale + start_angle
+            hihi = self.pv.ctrlvars['upper_alarm_limit'] * angle_scale + start_angle
 
             if lolo > start_angle:
                 cr.set_source_rgba(*self.palette(2, alpha=0.6))
@@ -1789,10 +1791,10 @@ class Gauge(ActiveMixin, BlankWidget):
     def on_active(self, pv, connected):
         if connected:
             try:
-                self.ctrlvars = self.pv.get_ctrlvars()
+                pv.ctrlvars = pv.get_ctrlvars()
                 self.units_label = self.pv.units
             except ChannelAccessGetFailure as e:
-                self.ctrlvars = {}
+                pv.ctrlvars = {}
                 self.units_label = ''
         super().on_active(pv, connected)
 
@@ -2450,9 +2452,15 @@ class XYScatter(Gtk.DrawingArea):
                     self.plots.append(pair)
 
     def on_values_changed(self, pair):
-        self.props.ymin = min(pair.data[:, 1].min(), self.ymin)
-        self.props.ymax = max(pair.data[:, 1].max(), self.ymax)
-        self.props.ystep = 10**numpy.int(numpy.log10(self.ymax))
+        ysel = ~numpy.isnan(pair.data[:, 1])
+        self.props.ymin = pair.data[ysel, 1].min()
+        self.props.ymax = pair.data[ysel, 1].max()
+        self.props.ystep = (self.props.ymax - self.props.ymin)/10
+
+        xsel = ~numpy.isnan(pair.data[:, 0])
+        self.props.xmin = pair.data[xsel, 0].min()
+        self.props.xmax = pair.data[xsel, 0].max()
+        self.props.xstep = (self.props.xmax - self.props.xmin)/10
 
         self.calculate_parameters()
         self.queue_draw()
