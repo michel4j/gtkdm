@@ -72,6 +72,9 @@
 .gtkdm.indicator {
   font-size: 90%; }
 
+.gtkdm switch {
+  font-size: 0px}
+
 .gtkdm switch slider {
   min-height: 12px;
   min-width: 14px; }
