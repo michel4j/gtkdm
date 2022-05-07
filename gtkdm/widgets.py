@@ -1412,22 +1412,17 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.show_all()
 
     def on_switch_change(self, button, value):
-        if not self.updating_state:
-            active = button.get_active()
-            for state, spec in self.registry.items():
-                if active == spec['active']:
-                    spec['pv'].put(spec['value'], wait=True)
-                    break
-            return False
-        else:
-            self.updating = False
+        for state, spec in self.registry.items():
+            if value == spec['active']:
+                spec['pv'].put(spec['value'])
+                break
+
         return True
 
     def on_state_change(self, obj, value):
         for state, spec in self.registry.items():
             if value == spec['state']:
                 if self.button.get_state() != spec['active']:
-                    self.updating_state = True
                     self.button.set_state(spec['active'])
                 break
 
@@ -1709,7 +1704,7 @@ class Gauge(ActiveMixin, BlankWidget):
                 cr.arc(x, y, rl, hihi, end_angle)
                 cr.stroke()
 
-        # ticks
+        # ticks4
         cr.set_line_width(0.75)
         for tick in set(minor + major):
             is_major = tick in major
