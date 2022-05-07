@@ -73,11 +73,10 @@
   font-size: 90%; }
 
 .gtkdm switch {
-  font-size: 0px}
-
-.gtkdm switch slider {
-  min-height: 12px;
-  min-width: 14px; }
+  font-size: 0px; }
+  .gtkdm switch slider {
+    min-height: 12px;
+    min-width: 14px; }
 
 .gtkdm textview {
   font-size: 0.9em;
@@ -160,7 +159,7 @@
   color: #ef4d29; }
 
 .dark entry {
-  border: 0.2px solid rgba(0, 0, 0, 0.85);
+  border: 0.25px solid rgba(0, 0, 0, 0.85);
   background: #555753;
   color: #73d216; }
 
