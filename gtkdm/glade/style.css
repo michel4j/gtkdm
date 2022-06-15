@@ -1,269 +1,251 @@
-.gtkdm-window {
+window.gtkdm, glade-design-layout > window {
   font-family: "Fira Sans Condensed", sans-serif;
   font-size: 0.95rem; }
 
-.gtkdm.textmonitor > label {
+glade-design-layout display-frame {
+  border: 1px solid rgba(0, 0, 0, 0.15); }
+
+.gtkdm text-monitor > label, glade-design-layout text-monitor > label {
   padding-left: 4px;
   padding-right: 4px; }
 
-.gtkdm scale > marks > mark > label {
+.gtkdm scale > marks > mark > label, glade-design-layout scale > marks > mark > label {
   padding: 0 4px; }
 
-.tiny button {
+.gtkdm .tiny button, glade-design-layout .tiny button {
   min-height: 8px;
   min-width: 8px;
   padding: 1px;
   font-size: 0.9em; }
 
-.tiny entry {
+.gtkdm .tiny entry, glade-design-layout .tiny entry {
   min-height: 8px;
   min-width: 8px;
   padding: 1px;
   font-size: 0.9em; }
 
-.tiny entry.combo {
+.gtkdm .tiny entry.combo, glade-design-layout .tiny entry.combo {
   min-height: 8px;
   min-width: 8px;
   padding: 1px;
   font-size: 0.9em; }
 
-.tiny button.combo {
+.gtkdm .tiny button.combo, glade-design-layout .tiny button.combo {
   min-height: 8px;
   min-width: 8px;
   padding: 1px 4px;
   font-size: 0.9em; }
 
-.gtkdm entry {
+.gtkdm entry, glade-design-layout entry {
   font-family: "Fira Code", monospace;
   font-size: 0.9em;
   min-height: 12px;
   border-radius: 3px; }
-  .gtkdm entry.feedback {
+  .gtkdm entry.feedback, glade-design-layout entry.feedback {
     background-color: rgba(0, 0, 0, 0.15);
     font-size: 0.85em; }
 
-.gtkdm entry.combo {
+.gtkdm entry.combo, glade-design-layout entry.combo {
   font-family: "Fira Code", monospace;
   font-size: 0.9em;
-  min-height: 10px;
+  min-height: 12px;
   border-radius: 3px; }
-  .gtkdm entry.combo.feedback {
+  .gtkdm entry.combo.feedback, glade-design-layout entry.combo.feedback {
     background-color: rgba(0, 0, 0, 0.15); }
 
-.gtkdm button {
+.gtkdm button, glade-design-layout button {
   min-height: 12px;
   border-radius: 3px; }
 
-.gtkdm button.combo {
+.gtkdm button.combo, glade-design-layout button.combo {
   min-height: 12px;
   border-radius: 3px;
   padding-left: 6px;
   padding-right: 6px; }
 
-.gtkdm button.toggle {
+.gtkdm button.toggle, glade-design-layout button.toggle {
   min-height: 12px;
   border-radius: 3px; }
 
-.gtkdm spinbutton {
+.gtkdm spinbutton, glade-design-layout spinbutton {
   min-height: 12px;
   border-radius: 3px;
   font-size: 0.95em; }
 
-.gtkdm.indicator {
+.gtkdm indicator, glade-design-layout indicator {
   font-size: 90%; }
 
-.gtkdm switch {
+.gtkdm switch, glade-design-layout switch {
   font-size: 0px; }
-  .gtkdm switch slider {
+  .gtkdm switch slider, glade-design-layout switch slider {
     min-height: 12px;
     min-width: 14px; }
 
-.gtkdm textview {
+.gtkdm textview, glade-design-layout textview {
   font-size: 0.9em;
   margin: 2px;
   font-family: "Fira Code", monospace; }
 
-.gtkdm.linked *:not(:first-child):not(:last-child) {
+.gtkdm .linked > *:not(:first-child):not(:last-child), glade-design-layout .linked > *:not(:first-child):not(:last-child) {
   border-radius: 0px; }
+  .gtkdm .linked > *:not(:first-child):not(:last-child) > button, .gtkdm .linked > *:not(:first-child):not(:last-child) > entry, glade-design-layout .linked > *:not(:first-child):not(:last-child) > button, glade-design-layout .linked > *:not(:first-child):not(:last-child) > entry {
+    border-radius: 0px; }
 
-.gtkdm.linked.horizontal > *:first-child {
+.gtkdm .linked.horizontal > *:first-child, glade-design-layout .linked.horizontal > *:first-child {
   border-top-right-radius: 0px;
   border-bottom-right-radius: 0px; }
+  .gtkdm .linked.horizontal > *:first-child > button, .gtkdm .linked.horizontal > *:first-child > entry, glade-design-layout .linked.horizontal > *:first-child > button, glade-design-layout .linked.horizontal > *:first-child > entry {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px; }
 
-.gtkdm.linked.horizontal > *:last-child {
+.gtkdm .linked.horizontal > *:last-child, glade-design-layout .linked.horizontal > *:last-child {
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px; }
+  .gtkdm .linked.horizontal > *:last-child > button, .gtkdm .linked.horizontal > *:last-child > entry, glade-design-layout .linked.horizontal > *:last-child > button, glade-design-layout .linked.horizontal > *:last-child > entry {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px; }
 
-.gtkdm.linked.vertical > *:last-child {
-  border-top-right-radius: 0px;
-  border-top-left-radius: 0px; }
-
-.gtkdm.linked.vertical > *:first-child {
-  border-bottom-right-radius: 0px;
-  border-bottom-left-radius: 0px; }
-
-.gtkdm .linked.horizontal entry.combo:first-child {
-  border-top-right-radius: 0px;
+.gtkdm .linked.vertical > *:first-child, glade-design-layout .linked.vertical > *:first-child {
+  border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px; }
+  .gtkdm .linked.vertical > *:first-child > button, .gtkdm .linked.vertical > *:first-child > entry, glade-design-layout .linked.vertical > *:first-child > button, glade-design-layout .linked.vertical > *:first-child > entry {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px; }
 
-.gtkdm .linked.horizontal button.combo:not(:first-child) {
+.gtkdm .linked.vertical > *:last-child, glade-design-layout .linked.vertical > *:last-child {
   border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px; }
+  border-top-right-radius: 0px; }
+  .gtkdm .linked.vertical > *:last-child > button, .gtkdm .linked.vertical > *:last-child > entry, glade-design-layout .linked.vertical > *:last-child > button, glade-design-layout .linked.vertical > *:last-child > entry {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px; }
 
-.linked .gtkdm > button, .linked .gtkdm > entry {
+.gtkdm .linked > *:first-child:last-child, glade-design-layout .linked > *:first-child:last-child {
   border-radius: 3px; }
 
-.linked .gtkdm:not(:first-child):not(:last-child) > button, .linked .gtkdm:not(:first-child):not(:last-child) > entry {
-  border-radius: 0px; }
-
-.linked.horizontal .gtkdm:first-child > button, .linked.horizontal .gtkdm:first-child > entry {
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px; }
-
-.linked.horizontal .gtkdm:last-child > button, .linked.horizontal .gtkdm:last-child > entry {
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px; }
-
-.linked.vertical .gtkdm:last-child > button, .linked.vertical .gtkdm:last-child > entry {
-  border-top-right-radius: 0px;
-  border-top-left-radius: 0px; }
-
-.linked.vertical .gtkdm:first-child > button, .linked.vertical .gtkdm:first-child > entry {
-  border-bottom-right-radius: 0px;
-  border-bottom-left-radius: 0px; }
-
-.linked.horizontal entry.combo:first-child {
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px; }
-
-.linked.horizontal button.combo:not(:first-child) {
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px; }
-
-.gtkdm.onoff switch {
+.gtkdm on-off switch, glade-design-layout on-off switch {
   border-color: rgba(0, 0, 0, 0.45); }
-  .gtkdm.onoff switch:checked {
+  .gtkdm on-off switch:checked, glade-design-layout on-off switch:checked {
     background-color: #73d216;
     border-color: rgba(0, 0, 0, 0.45); }
-    .gtkdm.onoff switch:checked slider {
+    .gtkdm on-off switch:checked slider, glade-design-layout on-off switch:checked slider {
       border-color: rgba(0, 0, 0, 0.45); }
 
-.gtkdm-inactive > * {
+.gtkdm .gtkdm-inactive > *, glade-design-layout .gtkdm-inactive > * {
   border-color: white; }
 
-.gtkdm-warning {
+.gtkdm .gtkdm-warning, glade-design-layout .gtkdm-warning {
   color: #ffcb00; }
 
-.gtkdm-critical {
+.gtkdm .gtkdm-critical, glade-design-layout .gtkdm-critical {
   color: #ef4d29; }
 
-.dark entry {
+.gtkdm .dark entry, glade-design-layout .dark entry {
   border: 0.25px solid rgba(0, 0, 0, 0.85);
   background: #555753;
   color: #73d216; }
 
-.dark label {
+.gtkdm .dark label, glade-design-layout .dark label {
   background: #555753;
   color: #73d216; }
 
-.gtkdm.xxs {
+.gtkdm .xxs, glade-design-layout .xxs {
   font-size: 0.75em; }
 
-.gtkdm.xs {
+.gtkdm .xs, glade-design-layout .xs {
   font-size: 0.85em; }
 
-.gtkdm.sm {
+.gtkdm .sm, glade-design-layout .sm {
   font-size: 0.95em; }
 
-.gtkdm.md {
+.gtkdm .md, glade-design-layout .md {
   font-size: 1em; }
 
-.gtkdm.lg {
+.gtkdm .lg, glade-design-layout .lg {
   font-size: 1.2em; }
 
-.gtkdm.xl {
+.gtkdm .xl, glade-design-layout .xl {
   font-size: 1.3em; }
 
-.gtkdm.xxl {
+.gtkdm .xxl, glade-design-layout .xxl {
   font-size: 1.5em; }
 
-.monospace {
+.gtkdm .monospace, glade-design-layout .monospace {
   font-family: "Fira Code", monospace; }
 
-.mono-font {
+.gtkdm .mono-font, glade-design-layout .mono-font {
   font-family: "Fira Code", monospace; }
 
-.bold-font {
+.gtkdm .bold-font, glade-design-layout .bold-font {
   font-weight: bold; }
 
-.title {
+.gtkdm .title, glade-design-layout .title {
   font-weight: bold; }
 
-.dark-panel {
-  background: #555753;
-  border: 1px solid rgba(0, 0, 0, 0.5); }
-
-.panel .panel-desc {
+.gtkdm text-panel .desc, .gtkdm .text-panel .desc, glade-design-layout text-panel .desc, glade-design-layout .text-panel .desc {
   font-size: 0.9em;
-  color: rgba(128, 128, 128, 0.75);
+  color: rgba(179, 179, 179, 0.8);
   padding: 2px; }
 
-.panel .panel-value {
+.gtkdm text-panel .value, .gtkdm .text-panel .value, glade-design-layout text-panel .value, glade-design-layout .text-panel .value {
   padding-top: 2px;
   padding-bottom: 4px; }
 
-.warning button {
+.gtkdm text-panel.dark-panel, .gtkdm .text-panel.dark-panel, glade-design-layout text-panel.dark-panel, glade-design-layout .text-panel.dark-panel {
+  background: #555753;
+  border: 1px solid rgba(0, 0, 0, 0.5); }
+
+.gtkdm .warning button, glade-design-layout .warning button {
   background: rgba(255, 0, 0, 0.15); }
 
-.red button {
+.gtkdm .red button, glade-design-layout .red button {
   color: #ef4d29; }
 
-.green button {
+.gtkdm .green button, glade-design-layout .green button {
   color: green; }
 
-.on-btn button {
+.gtkdm .on-btn button, glade-design-layout .on-btn button {
   background: rgba(255, 0, 0, 0.25); }
 
-.red-bg button {
+.gtkdm .red-bg button, glade-design-layout .red-bg button {
   background: rgba(255, 0, 0, 0.25); }
 
-.off-btn button {
+.gtkdm .off-btn button, glade-design-layout .off-btn button {
   background: rgba(0, 255, 0, 0.25); }
 
-.green-bg button {
+.gtkdm .green-bg, glade-design-layout .green-bg {
   background: rgba(0, 255, 0, 0.25); }
 
-.vara-bg button {
+.gtkdm .vara-bg, glade-design-layout .vara-bg {
   background: rgba(255, 128, 0, 0.25); }
 
-.varb-bg button {
+.gtkdm .varb-bg, glade-design-layout .varb-bg {
   background: rgba(128, 255, 0, 0.25); }
 
-.varc-bg button {
+.gtkdm .varc-bg, glade-design-layout .varc-bg {
   background: rgba(0, 128, 128, 0.25); }
 
-.command button {
+.gtkdm .command button, glade-design-layout .command button {
   background: rgba(0, 128, 128, 0.25); }
 
-.gtkdm-table entry {
+.gtkdm .gtkdm-table entry, glade-design-layout .gtkdm-table entry {
   border-radius: 0px; }
 
-.gtkdm-table *:not(.dark) > entry {
+.gtkdm .gtkdm-table *:not(.dark) > entry, glade-design-layout .gtkdm-table *:not(.dark) > entry {
   background: rgba(0, 255, 255, 0.05); }
 
-.section label {
+.gtkdm .section label, glade-design-layout .section label {
   font-weight: 200;
   margin-bottom: 4px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.15); }
 
-.shaded {
+.gtkdm .shaded, glade-design-layout .shaded {
   background: rgba(128, 128, 128, 0.25); }
 
-.subtitle {
+.gtkdm .subtitle, glade-design-layout .subtitle {
   opacity: 0.5; }
 
-tooltip {
+.gtkdm tooltip, glade-design-layout tooltip {
   border-radius: 3px; }
-  tooltip * {
+  .gtkdm tooltip *, glade-design-layout tooltip * {
     font-size: 90%;
     padding: 1px; }
