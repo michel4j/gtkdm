@@ -5,6 +5,7 @@ import math
 import logging
 import colors
 
+
 def parse_macro_spec(macro_spec):
     """
     Parse a macro specification and return a dictionary of key-value pairs

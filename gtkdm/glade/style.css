@@ -2,10 +2,11 @@ window.gtkdm, glade-design-layout > window {
   font-family: "Fira Sans Condensed", sans-serif;
   font-size: 0.95rem; }
 
-glade-design-layout display-frame {
-  border: 1px solid rgba(0, 0, 0, 0.15); }
+glade-design-layout .display-frame {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.15); }
 
-.gtkdm text-monitor > label, glade-design-layout text-monitor > label {
+.gtkdm text-monitor.dark > label, glade-design-layout text-monitor.dark > label {
   padding-left: 4px;
   padding-right: 4px; }
 
@@ -71,9 +72,6 @@ glade-design-layout display-frame {
   min-height: 12px;
   border-radius: 3px;
   font-size: 0.95em; }
-
-.gtkdm indicator, glade-design-layout indicator {
-  font-size: 90%; }
 
 .gtkdm switch, glade-design-layout switch {
   font-size: 0px; }
@@ -215,13 +213,13 @@ glade-design-layout display-frame {
 .gtkdm .green-bg, glade-design-layout .green-bg {
   background: rgba(0, 255, 0, 0.25); }
 
-.gtkdm .vara-bg, glade-design-layout .vara-bg {
+.gtkdm .vara-bg, .gtkdm .gtkdm-button.vara-bg > .button, glade-design-layout .vara-bg, glade-design-layout .gtkdm-button.vara-bg > .button {
   background: rgba(255, 128, 0, 0.25); }
 
-.gtkdm .varb-bg, glade-design-layout .varb-bg {
+.gtkdm .varb-bg, .gtkdm .gtkdm-button.varb-bg > .button, glade-design-layout .varb-bg, glade-design-layout .gtkdm-button.varb-bg > .button {
   background: rgba(128, 255, 0, 0.25); }
 
-.gtkdm .varc-bg, glade-design-layout .varc-bg {
+.gtkdm .varc-bg, .gtkdm .gtkdm-button.varc-bg > .button, glade-design-layout .varc-bg, glade-design-layout .gtkdm-button.varc-bg > .button {
   background: rgba(0, 128, 128, 0.25); }
 
 .gtkdm .command button, glade-design-layout .command button {

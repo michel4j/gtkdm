@@ -3,4 +3,5 @@ pyepics
 numpy
 pip-chill
 pygobject
-ansicolors
+matplotlib
+PyYAML

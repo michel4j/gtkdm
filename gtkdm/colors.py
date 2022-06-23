@@ -93,3 +93,61 @@ SOLAR = {
     'w': '#ffffff',
     'm': '#88419d',
 }
+
+
+def is_string(obj):
+    """
+    Is the given object a string?
+    """
+    return isinstance(obj, str)
+
+def _join(*values):
+    """
+    Join a series of values with semicolons. The values
+    are either integers or strings, so stringify each for
+    good measure. Worth breaking out as its own function
+    because semicolon-joined lists are core to ANSI coding.
+    """
+    return ';'.join(str(v) for v in values)
+
+
+def color_code(spec, base):
+    """
+    Encode a color.
+    :param str|int spec: Color specification
+    :param int base: Either 30 or 40, signifying the base value
+        for color encoding (foreground and background respectively).
+        Low values are added directly to the base. Higher values use `
+        base + 8` (i.e. 38 or 48) then extended codes.
+    :returns: ANSI color encoding.
+    :rtype: str
+    """
+
+    if isinstance(spec, int) and 0 <= spec <= 255:
+        return ';'.join(str(v) for v in [base + 8, 5, spec])
+    else:
+        return ';'.join(str(v) for v in [base + 9])
+
+
+def color(s, fg=None, bg=None):
+    """
+    Add ANSI colors and styles to a string.
+    :param str s: String to format.
+    :param str|int|tuple fg: Foreground color specification.
+    :param str|int|tuple bg: Background color specification.
+    :param str: Style names, separated by '+'
+    :returns: Formatted string.
+    :rtype: str (or unicode in Python 2, if s is unicode)
+    """
+    codes = []
+
+    if fg:
+        codes.append(color_code(fg, 30))
+    if bg:
+        codes.append(color_code(bg, 40))
+
+    if codes:
+        template = '\x1b[{0}m{1}\x1b[0m'
+        return template.format(';'.join(codes), s)
+    else:
+        return s

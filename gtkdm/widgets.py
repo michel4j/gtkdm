@@ -1,21 +1,31 @@
 import hashlib
 import json
 import os
+import time
+from threading import Thread
 import re
 import shlex
 import subprocess
 import textwrap
-import time
 import zipfile
 from datetime import datetime
 from math import atan2, pi, cos, sin, ceil
+from pathlib import Path
 
+import cairo
 import gi
 import numpy
+import yaml
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo
+
+
+from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.style import context as style_context
+from matplotlib import pyplot as plt
 
 from epics.ca import ChannelAccessGetFailure
 import gepics
@@ -25,6 +35,7 @@ from . import utils, colors, version, PLUGIN_DIR
 from .utils import logger
 
 EDITOR = True
+
 
 ENTRY_CONVERTERS = {
     'string': str,
@@ -94,6 +105,17 @@ class DisplayManager(object):
 
         return full_path
 
+    def destroy_window(self, key):
+        """
+        Destroy all objects in the Window
+
+        :param key: registry key
+        """
+        window = self.registry.pop(key)
+        for obj in window.builder.get_objects():
+            if hasattr(obj, 'destroy'):
+                obj.destroy()
+
     def show_display(self, path, macros_spec="", main=False, multiple=False):
         """
         Show a display file
@@ -146,7 +168,7 @@ class DisplayManager(object):
                     window.connect('destroy', lambda x: Gtk.main_quit())
                 elif not multiple:
                     self.registry[key] = window
-                    window.connect('destroy', lambda x: self.registry.pop(key))
+                    window.connect('destroy', lambda x: self.destroy_window(key))
                 window.show_all()
         else:
             window = self.registry[key]
@@ -471,6 +493,7 @@ class DisplayFrame(Gtk.EventBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_css_name('display-frame')
+        self.get_style_context().add_class('display-frame')
         self.frame = Gtk.Alignment()
         self.add(self.frame)
         for prop in ['xalign', 'yalign', 'xscale', 'yscale']:
@@ -507,7 +530,7 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_css_name('text-monitor')
-
+        self.get_style_context().add_class('text-monitor')
         self.label = Gtk.Label('...')
         self.add(self.label)
         self.pv = None
@@ -528,7 +551,10 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_change(self, pv, value):
         if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
-            text = pv.enum_strs[value]
+            try:
+                text = pv.enum_strs[value]
+            except IndexError:
+                text = "Invalid"
         elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
             precision = self.prec if self.prec >= 0 else pv.precision
             if precision < 0:
@@ -585,6 +611,7 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_css_name('text-panel')
+        self.get_style_context().add_class('text-panel')
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.desc_label = Gtk.Label('<descr>', xalign=0.0)
         self.value_label = Gtk.Label('<value>')
@@ -599,7 +626,7 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.bind_property('label', self.desc_label, 'label',
                            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
         self.palette = ColorSequence(self.colors)
-        self.get_style_context().add_class('text-panel')
+
         self.value_label.get_style_context().add_class('value')
         self.desc_label.get_style_context().add_class('desc')
 
@@ -796,6 +823,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_css_name('byte')
+        self.get_style_context().add_class('byte')
         self._view_bits = '0' * self.count
         self._view_labels = [''] * self.count
 
@@ -869,7 +897,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_css_name('indicator')
-
+        self.get_style_context().add_class('indicator')
         self.pv = None
         self.label_pv = None
         self.palette = ColorSequence(self.colors)
@@ -882,7 +910,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
 
     def do_draw(self, cr):
         style = self.get_style_context()
-        cr.set_line_width(0.75)
+        cr.set_line_width(0.5)
         self.theme['label'] = style.get_color(style.get_state())
         cr.set_source_rgba(*self.theme['fill'])
         x = y = pix(self.spacing)
@@ -893,9 +921,16 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         cr.stroke()
         cr.set_source_rgba(*self.theme['label'])
         label = '<label>' if EDITOR and not self.label else self.label
+
+        opts = cairo.FontOptions()
+        opts.set_antialias(cairo.Antialias.SUBPIXEL)
+        opts.set_hint_style(cairo.HintStyle.FULL)
+        opts.set_hint_metrics(cairo.HintMetrics.ON)
+        self.set_font_options(opts)
+
         layout = self.create_pango_layout(label)
         ink, logical = layout.get_pixel_extents()
-        cr.move_to(self.spacing + x + self.size, pix(y + self.size / 2 - logical.height / 2))
+        cr.move_to(pix(self.spacing + x + self.size), pix(y + self.size / 2 - logical.height / 2))
         PangoCairo.show_layout(cr, layout)
 
     def on_realize(self, widget):
@@ -1281,7 +1316,6 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.button = Gtk.Button()
         self.pv = None
         self.label_pv = None
@@ -1291,6 +1325,8 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
                            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
         self.add(self.button)
         self.set_sensitive(False)
+        self.get_style_context().add_class('gtkdm-button')
+        self.button.get_style_context().add_class('button')
 
     def on_clicked(self, button):
         if self.pv:
@@ -1348,6 +1384,8 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
                            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
         self.add(self.button)
         self.set_sensitive(False)
+        self.get_style_context().add_class('gtkdm-button')
+        self.button.get_style_context().add_class('button')
 
     def on_clicked(self, button):
         if self.state:
@@ -1370,7 +1408,6 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
                 ctx.add_class(f'{self.state}-btn')
 
     def on_realize(self, obj):
-
         self.registry = {
             'on': {
                 'channel': self.off_channel,
@@ -1409,6 +1446,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_css_name('on-off')
+        self.get_style_context().add_class('on-off')
         self.button = Gtk.Switch()
         ctx = self.get_style_context()
         ctx.add_class('tiny')
@@ -1479,7 +1517,7 @@ class MessageButton(CommandButton):
                 value = converter(self.value)
                 self.pv.put(value)
             except ValueError as e:
-                print('Invalid Value: {}'.format(e))
+                logger.error('Invalid Value: {}'.format(e))
 
 
 class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
@@ -1621,6 +1659,8 @@ class ShellButton(Gtk.Bin):
         self.bind_property('label', self.button, 'label',
                            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
         self.show_all()
+        self.get_style_context().add_class('gtkdm-button')
+        self.button.get_style_context().add_class('button')
 
     def on_clicked(self, button):
         if self.command:
@@ -1647,6 +1687,7 @@ class Gauge(ActiveMixin, BlankWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_css_name('gauge')
+        self.get_style_context().add_class('gauge')
         self.set_size_request(120, 100)
         self.pv = None
         self.label_pv = None
@@ -1654,6 +1695,7 @@ class Gauge(ActiveMixin, BlankWidget):
         self.units_label = 'mA'
         self.connect('realize', self.on_realize)
         self.palette = ColorSequence(self.colors)
+        self.ctrl_vars = {}
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
@@ -1689,11 +1731,11 @@ class Gauge(ActiveMixin, BlankWidget):
         # levels
         cr.set_line_width(2)
         rl = 2 * r / 3
-        if self.levels and self.pv.ctrlvars:
-            lolo = self.pv.ctrlvars['lower_alarm_limit'] * angle_scale + start_angle
-            lo = self.pv.ctrlvars['lower_warning_limit'] * angle_scale + start_angle
-            hi = self.pv.ctrlvars['upper_warning_limit'] * angle_scale + start_angle
-            hihi = self.pv.ctrlvars['upper_alarm_limit'] * angle_scale + start_angle
+        if self.levels and self.ctrl_vars:
+            lolo = self.ctrl_vars['lower_alarm_limit'] * angle_scale + start_angle
+            lo = self.ctrl_vars['lower_warning_limit'] * angle_scale + start_angle
+            hi = self.ctrl_vars['upper_warning_limit'] * angle_scale + start_angle
+            hihi = self.ctrl_vars['upper_alarm_limit'] * angle_scale + start_angle
 
             if lolo > start_angle:
                 cr.set_source_rgba(*self.palette(2, alpha=0.6))
@@ -1798,10 +1840,9 @@ class Gauge(ActiveMixin, BlankWidget):
     def on_active(self, pv, connected):
         if connected:
             try:
-                pv.ctrlvars = pv.get_ctrlvars()
+                self.ctrl_vars = pv.get_ctrlvars()
                 self.units_label = self.pv.units
             except ChannelAccessGetFailure as e:
-                pv.ctrlvars = {}
                 self.units_label = ''
         super().on_active(pv, connected)
 
@@ -2003,6 +2044,8 @@ class DisplayButton(Gtk.Bin):
         self.add(self.button)
         ctx = self.get_style_context()
         ctx.add_class('tiny')
+        self.get_style_context().add_class('gtkdm-button')
+        self.button.get_style_context().add_class('button')
 
     def on_clicked(self, button):
         if self.display and not EDITOR:
@@ -2271,539 +2314,315 @@ class HideSwitch(Gtk.Bin):
         # self.btn.set_active(self.default)
 
 
-class ChartCoord(object):
-    def __init__(self, xlimits=(-1.0, 1.0), ylimits=(-1.0, 1.0), size=(400, 300), margins=(0, 0), xoffset=0.0,
-                 yoffset=0.0):
-        self.xmin, self.xmax = xlimits
-        self.ymin, self.ymax = ylimits
-        self.width, self.height = size
-
-        xmargin = margins[0] + 10
-        ymargin = margins[1] + 10
-
-        self.width = (size[0] - 2 * xmargin) - xoffset
-        self.height = (size[1] - 2 * ymargin) - yoffset
-
-        self.orgx = xmargin + xoffset
-        self.orgy = size[1] - (ymargin + yoffset)
-        self.xscale = self.width / (self.xmax - self.xmin)
-        self.yscale = self.height / (self.ymax - self.ymin)
-
-    def xy(self, points, xoff=0.0, yoff=0.0):
-        points = numpy.asarray(points)
-        out = numpy.zeros_like(points)
-        out[:, 0] = (points[:, 0] - self.xmin) * self.xscale + self.orgx + xoff
-        out[:, 1] = self.orgy - (points[:, 1] - self.ymin) * self.yscale + yoff
-        return out
-
-    def x(self, points, offset=0.0):
-        points = numpy.asarray(points)
-        return (points - self.xmin) * self.xscale + self.orgx + offset
-
-    def y(self, points, offset=0.0):
-        points = numpy.asarray(points)
-        return self.orgy - (points - self.ymin) * self.yscale + offset
-
-
-class ChartPair(GObject.GObject):
+class PlotData(GObject.GObject):
     __gsignals__ = {
         'changed': (GObject.SIGNAL_RUN_FIRST, None, [])
     }
 
-    def __init__(self, xname, yname, size=1, update=0.01):
+    def __init__(self, count, size=1, sample_freq=1, refresh_freq=1):
         super().__init__()
+        self.count = count
         self.size = size
-        self.array_mode = False
-        self.data = numpy.empty((self.size, 2))
+        self.data = None
+        self.arrays = False
+        self.sample_freq = sample_freq
+        self.refresh_freq = refresh_freq
+        self.alive = True
 
-        self.ypv = gepics.PV(yname)
-        self.ypv.connect('changed', self.on_change)
-        self.ypv.connect('active', self.on_active)
+        Thread(target=self.monitor, daemon=True).start()
 
-        if xname.strip() == '#':
-            self.xpv = None
-        else:
-            self.xpv = gepics.PV(xname)
-            self.xpv.connect('changed', self.on_change)
-            self.xpv.connect('active', self.on_active)
+    def monitor(self):
+        gepics.threads_init()
+        last_sample = time.time()
+        last_refresh = time.time()
+        if self.sample_freq:
+            sample_every = 1/self.sample_freq
+            refresh_every = 1/self.refresh_freq
+            sleep_for = min(sample_every, refresh_every)/2
+            while self.alive:
+                if time.time() - last_sample > sample_every:
+                    self.sample_data()
+                    last_sample = time.time()
+                if time.time() - last_refresh > refresh_every:
+                    GLib.idle_add(self.refresh)
+                    last_refresh = time.time()
+                time.sleep(sleep_for)
 
-        self.min_update = update
-        self.last_change = time.time()
+    def destroy(self):
+        self.alive = False
 
-    def on_change(self, pv, value):
-        if time.time() - self.last_change >= self.min_update:
-            y = self.ypv.get()
-            if self.xpv:
-                x = self.xpv.get()
+    def sample_data(self):
+        raise NotImplementedError()
+
+    def refresh(self):
+        if self.data is not None:
+            self.emit("changed")
+
+
+class XYData(PlotData):
+    def __init__(self, *names, buffer=1, sample_freq=1, refresh_freq=1):
+        count = len(names)
+        super().__init__(count, size=buffer, sample_freq=sample_freq, refresh_freq=refresh_freq)
+        self.names = names
+        self.updating = False
+        self.offset = 0
+        if names[0] == '#':
+            self.offset = 1
+
+        self.pvs = [
+            gepics.PV(name) for name in names[self.offset:]
+        ]
+        for i, pv in enumerate(self.pvs):
+            pv.connect('active', self.activate)
+            if sample_freq == 0:
+                pv.connect('changed', self.update, i)
+
+    def update(self, pv, data, index):
+        if not self.updating:
+            self.updating = True
+            self.update_column(index, data)
+            self.refresh()
+            self.updating = False
+
+    def activate(self, obj, state):
+        if state and self.data is None:
+            if obj.count == 1:
+                self.arrays = False
             else:
-                x = numpy.arange(0, len(y))
+                self.size = obj.count
+                self.arrays = True
+            self.data = numpy.empty((self.size, self.count))
+            self.data.fill(numpy.nan)
+            if self.names[0] == '#':
+                self.data[:, 0] = numpy.arange(self.size)
 
-            if self.array_mode:
-                cx = self.data.shape[0] if len(x) == 1 else x.shape[0]
-                cy = self.data.shape[0] if len(y) == 1 else y.shape[0]
-                self.data[:cx, 0] = x
-                self.data[:cy, 1] = y
-            else:
-                self.data[:-1] = self.data[1:]
-                self.data[-1] = (x, y)
+    def update_column(self, index, vals):
+        if isinstance(vals, (float, int)):
+            vals = [vals]
+        n = min(len(vals), self.size)
+        self.data[:n, index + self.offset] = vals[:n]
 
-            self.emit('changed')
-            self.last_change = time.time()
-
-    def on_active(self, pv, active):
-        # prepare data array according to pv sizes
-        if self.ypv.is_active():
-            if self.xpv is None:
-                sizes = (self.ypv.count, self.ypv.count)
-            elif self.xpv.is_active():
-                sizes = (self.ypv.count, self.ypv.count)
-            else:
-                return
-            if sizes == (1, 1):
-                self.data = numpy.empty((self.size, 2))
-                self.array_mode = False
-            else:
-                self.data = numpy.empty((max(sizes), 2))
-                self.array_mode = True
-
-
-class XYScatter(Gtk.DrawingArea):
-    __gtype_name__ = 'XYScatter'
-    buffer = GObject.Property(type=int, default=1, minimum=1, maximum=100, nick='Buffer Size')
-    sample = GObject.Property(type=float, default=10, minimum=.1, maximum=50, nick='Update Freq (hz)')
-    color_bg = GObject.Property(type=Gdk.RGBA, nick='Background Color')
-    color_fg = GObject.Property(type=Gdk.RGBA, nick='Foreground Color')
-    colors = GObject.Property(type=str, default='RGYOPB', nick='Plot Colors')
-    fade = GObject.Property(type=bool, default=True, nick='Fade Old Values')
-    fontsize = GObject.Property(type=int, minimum=5, default=9, maximum=30, nick='Font Size')
-    digits = GObject.Property(type=int, minimum=0, default=3, maximum=8, nick='Significant Digits')
-
-    xmin = GObject.Property(type=float, default=-1.0, nick='X min')
-    xmax = GObject.Property(type=float, default=1.0, nick='X max')
-    ymin = GObject.Property(type=float, default=-1.0, nick='Y min')
-    ymax = GObject.Property(type=float, default=1.0, nick='Y max')
-
-    marginx = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='X margin')
-    marginy = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='Y margin')
-
-    plot0 = GObject.Property(type=str, default='', nick='Plot {i} PVs'.format(i=0))
-    plot1 = GObject.Property(type=str, default='', nick='Plot {i} PVs'.format(i=1))
-    plot2 = GObject.Property(type=str, default='', nick='Plot {i} PVs'.format(i=2))
-    plot3 = GObject.Property(type=str, default='', nick='Plot {i} PVs'.format(i=3))
-    plot4 = GObject.Property(type=str, default='', nick='Plot {i} PVs'.format(i=4))
-
-    show_xaxis = GObject.Property(type=bool, default=True, nick='Show X-axis')
-    show_yaxis = GObject.Property(type=bool, default=True, nick='Show Y-axis')
-
-    xstep = GObject.Property(type=float, default=.1, nick='X Step Size')
-    xticks = GObject.Property(type=int, default=5, nick='X Ticks/Step')
-    ystep = GObject.Property(type=float, default=.1, nick='Y Step Size')
-    yticks = GObject.Property(type=int, default=5, nick='Y Ticks/Step')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.params = {}
-        self.plots = []
-        self.palette = None
-
-        self.connect('realize', self.on_realize)
-
-    def calculate_parameters(self):
-        xminimum, xmaximum, xmajor, xminor = tick_points(self.xmin, self.xmax, self.xstep, self.xticks)
-        yminimum, ymaximum, ymajor, yminor = tick_points(self.ymin, self.ymax, self.ystep, self.yticks)
-
-        xmajor_points = list(zip(xmajor, (yminimum,) * len(xmajor)))
-        xminor_points = list(zip(xminor, (yminimum,) * len(xminor)))
-
-        ymajor_points = list(zip((xminimum,) * len(ymajor), ymajor))
-        yminor_points = list(zip((xminimum,) * len(yminor), yminor))
-
-        alloc = self.get_allocation()
-
-        yoffset = 0.0 if not self.show_xaxis else self.fontsize * 2
-        xoffset = 0.0 if not self.show_yaxis else self.fontsize * 3
-
-        self.params = {
-            'alloc': alloc,
-            'xmin': xminimum,
-            'xmax': xmaximum,
-            'xmajor': xmajor_points,
-            'xminor': xminor_points,
-            'ymin': yminimum,
-            'ymax': ymaximum,
-            'ymajor': ymajor_points,
-            'yminor': yminor_points,
-            'converter': ChartCoord(
-                xlimits=(xminimum, xmaximum),
-                ylimits=(yminimum, ymaximum),
-                size=(alloc.width, alloc.height),
-                margins=(self.marginx, self.marginy),
-                xoffset=xoffset, yoffset=yoffset
-            )
-        }
-
-    def on_realize(self, widget):
-
-        self.palette = ColorSequence(self.colors)
-
-        if not EDITOR:
-            # extract pairs of pv names
-            for i in range(5):
-                m = re.match('^\s*([^\s,|;]+)[\s,|;]*([^\s,|;]+)\s*$', getattr(self, 'plot{}'.format(i), ''))
-                if m:
-                    xname, yname = m.groups()
-                    pair = ChartPair(xname, yname, self.buffer, update=1 / self.sample)
-                    pair.connect('changed', self.on_values_changed)
-                    self.plots.append(pair)
-
-    def on_values_changed(self, pair):
-        ysel = ~numpy.isnan(pair.data[:, 1])
-        self.props.ymin = pair.data[ysel, 1].min()
-        self.props.ymax = pair.data[ysel, 1].max()
-        self.props.ystep = (self.props.ymax - self.props.ymin) / 10
-
-        xsel = ~numpy.isnan(pair.data[:, 0])
-        self.props.xmin = pair.data[xsel, 0].min()
-        self.props.xmax = pair.data[xsel, 0].max()
-        self.props.xstep = (self.props.xmax - self.props.xmin) / 10
-
-        self.calculate_parameters()
-        self.queue_draw()
-
-    def do_draw(self, cr):
-        if self.color_bg:
-            cr.set_source_rgba(*self.color_bg)
-            cr.paint()
-
-        if self.color_fg:
-            cr.set_source_rgba(*self.color_fg)
-        else:
-            style = self.get_style_context()
-            color = style.get_color(style.get_state())
-            cr.set_source_rgba(*color)
-
-        # draw axes
-        cr.set_line_width(0.75)
-        cr.set_font_size(self.fontsize)
-        alloc = self.get_allocation()
-        if not self.params or (alloc.width, alloc.height) != (self.params['alloc'].width, self.params['alloc'].height):
-            self.calculate_parameters()
-
-        if self.show_xaxis:
-            xframe = self.params['converter'].xy(
-                [
-                    (self.params['xmin'], self.params['ymin']),
-                    (self.params['xmax'], self.params['ymin']),
-                    (self.params['xmin'], self.params['ymax']),
-                    (self.params['xmax'], self.params['ymax'])
-                ],
-                yoff=5
-            )
-            cr.move_to(*xframe[0])
-            cr.line_to(*xframe[1])
-            cr.stroke()
-
-            major = self.params['converter'].xy(self.params['xmajor'], yoff=5)
-            for i, tick in enumerate(major):
-                vtick = self.params['xmajor'][i]
-                cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0], tick[1] + 5)
-                cr.stroke()
-                text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[0])
-                xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] - xb - w / 2, tick[1] + 7 - yb)
-                cr.show_text(text)
-
-            if self.xticks:
-                minor = self.params['converter'].xy(self.params['xminor'], yoff=5)
-                for tick in minor:
-                    cr.move_to(tick[0], tick[1])
-                    cr.line_to(tick[0], tick[1] + 3)
-                    cr.stroke()
-
-        if self.show_yaxis:
-            yframe = self.params['converter'].xy(
-                [
-                    (self.params['xmin'], self.params['ymin']),
-                    (self.params['xmin'], self.params['ymax']),
-                    (self.params['xmax'], self.params['ymin']),
-                    (self.params['xmax'], self.params['ymax'])
-                ],
-                xoff=-5
-            )
-
-            cr.move_to(*yframe[0])
-            cr.line_to(*yframe[1])
-            cr.stroke()
-
-            major = self.params['converter'].xy(self.params['ymajor'], xoff=-5)
-            for i, tick in enumerate(major):
-                vtick = self.params['ymajor'][i]
-                cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0] - 5, tick[1])
-                cr.stroke()
-                text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[1])
-                xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] - 7 - w - xb, tick[1] - yb - h / 2)
-                cr.show_text(text)
-
-            if self.yticks:
-                minor = self.params['converter'].xy(self.params['yminor'], xoff=-5)
-                for tick in minor:
-                    cr.move_to(tick[0], tick[1])
-                    cr.line_to(tick[0] - 2, tick[1])
-                    cr.stroke()
-
-        if not self.plots:
-            return
-
-        for i, plot in enumerate(self.plots):
-            pos = self.params['converter'].xy(plot.data)
-            if plot.array_mode:
-                cr.set_line_width(0.75)
-                cr.set_source_rgba(*self.palette(i))
-                for j, mark in enumerate(pos):
-                    if j == 0:
-                        cr.arc(*mark, 0.5, 0, 2 * pi)
-                        cr.fill_preserve()
-                        cr.stroke()
-                        cr.move_to(*mark)
-                        continue
+    def sample_data(self):
+        if self.data is not None:
+            if self.arrays:
+                for i, pv in enumerate(self.pvs):
+                    if pv.is_active():
+                        vals = pv.get()
+                        if pv.count == 1:
+                            vals = [vals]
                     else:
-                        cr.save()
-                        cr.arc(*mark, 0.5, 0, 2 * pi)
-                        cr.fill_preserve()
-                        cr.stroke()
-                        cr.restore()
-                        cr.line_to(*mark)
-                cr.stroke()
+                        vals = [numpy.nan] * self.size
+                    n = min(len(vals), self.size)
+                    self.update_column(i, vals)
             else:
-                cr.set_line_width(1.0)
-                for j, mark in enumerate(pos):
-                    cr.set_source_rgba(*alpha(self.palette(i), (j + 1.) / (self.buffer + 1.)))
-                    cr.arc(*mark, 0.5, 0, 2 * pi)
-                    cr.fill_preserve()
-                    cr.stroke()
+                if self.size > 1:
+                    self.data[:-1, self.offset:] = self.data[1:, self.offset:]
+                for i, pv in enumerate(self.pvs):
+                    self.data[-1, i+self.offset] = numpy.nan if not pv.is_active() else pv.get()
 
 
-class StripData(GObject.GObject):
-    __gsignals__ = {
-        'changed': (GObject.SIGNAL_RUN_FIRST, None, [])
-    }
-
-    def __init__(self, names, period=60.0, sample_freq=1, refresh_freq=1):
-        super().__init__()
-        self.size = int(period * sample_freq)
-        self.count = len(names)
-        self.ydata = numpy.zeros((self.size, self.count))
-        self.xdata = numpy.linspace(-period, 0, self.size)
-        self.ydata.fill(numpy.nan)
+class StripData(PlotData):
+    def __init__(self, *names, period=60.0, sample_freq=1, refresh_freq=1):
+        sample_freq = max(0.1, sample_freq)     # Strip charts can't use auto-update.
+        refresh_freq = max(0.1, refresh_freq)
+        size = int(period * sample_freq)
+        count = len(names) + 1
+        super().__init__(count, size=size, sample_freq=sample_freq, refresh_freq=refresh_freq)
+        self.period = period
+        self.names = ('time',) + names
         self.pvs = [
             gepics.PV(name) for name in names
         ]
-        self.sample_time = 1000. / sample_freq
-        self.refresh_time = 1000. / refresh_freq
-        GLib.timeout_add(self.sample_time, self.sample_data)
-        GLib.timeout_add(self.refresh_time, self.refresh)
+        for pv in self.pvs:
+            pv.connect('active', self.activate)
+
+    def activate(self, obj, state):
+        if state and self.data is None:
+            self.data = numpy.empty((self.size, self.count))
+            self.data.fill(numpy.nan)
+            self.data[:, 0] = numpy.linspace(-self.period, 0, self.size)
 
     def sample_data(self):
-        self.ydata[:-1] = self.ydata[1:]
-        for i, pv in enumerate(self.pvs):
-            self.ydata[-1, i] = numpy.nan if not pv.is_active() else pv.get()
-        return True
-
-    def refresh(self):
-        self.emit("changed")
-        return True
+        if self.data is not None:
+            self.data[:-1, 1:] = self.data[1:, 1:]  # preserve time axis
+            for i, pv in enumerate(self.pvs):
+                self.data[-1, i+1] = numpy.nan if not pv.is_active() else pv.get()
 
 
-class StripPlot(Gtk.DrawingArea):
-    __gtype_name__ = 'StripPlot'
-    period = GObject.Property(type=int, default=60, minimum=5, maximum=1440, nick='Time Window (s)')
-    refresh = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Redraw Freq (hz)')
-    sample = GObject.Property(type=float, default=1, minimum=.1, maximum=10, nick='Sample Freq (hz)')
+Y_AXIS_OFFSET = 60
+AXIS_SPACE = 0.92
 
-    color_bg = GObject.Property(type=Gdk.RGBA, nick='Background Color')
-    color_fg = GObject.Property(type=Gdk.RGBA, nick='Foreground Color')
-    colors = GObject.Property(type=str, default='RGYOPB', nick='Plot Colors')
-    fontsize = GObject.Property(type=int, minimum=5, default=9, maximum=30, nick='Font Size')
-    digits = GObject.Property(type=int, minimum=0, default=3, maximum=8, nick='Significant Digits')
 
-    ymin = GObject.Property(type=float, default=-1.0, nick='Y min')
-    ymax = GObject.Property(type=float, default=1.0, nick='Y max')
-    marginx = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='X margin')
-    marginy = GObject.Property(type=int, minimum=0, maximum=50, default=0, nick='Y margin')
+class Plot(Gtk.Bin):
+    __gtype_name__ = 'Plot'
 
-    plot0 = GObject.Property(type=str, default='', nick='Plot 1 PV')
-    plot1 = GObject.Property(type=str, default='', nick='Plot 2 PV')
-    plot2 = GObject.Property(type=str, default='', nick='Plot 3 PV')
-    plot3 = GObject.Property(type=str, default='', nick='Plot 4 PV')
-    plot4 = GObject.Property(type=str, default='', nick='Plot 5 PV')
+    scheme = GObject.Property(type=str, default="default", nick='Plot Style')
+    dpi = GObject.Property(type=int, default=72, minimum=50, maximum=500, nick='DPI')
+    legend = GObject.Property(type=bool, default=False, nick='Show Legend')
+    marker_size =  GObject.Property(type=float, default=5, minimum=0, maximum=50, nick='Marker Size')
+    strip_plot = GObject.Property(type=bool, default=False, nick='Strip Plot')
+    specs = GObject.Property(type=str, nick='Specification File')
+    macros = GObject.Property(type=str, default='', nick='Macros')
 
-    show_xaxis = GObject.Property(type=bool, default=True, nick='Show X-axis')
-    show_yaxis = GObject.Property(type=bool, default=True, nick='Show Y-axis')
+    refresh = GObject.Property(type=float, default=1, minimum=0, maximum=10, nick='Redraw Freq (hz)')
+    sample = GObject.Property(type=float, default=1, minimum=0, maximum=10, nick='Sample Freq (hz)')
+    period = GObject.Property(type=int, default=60, minimum=1, nick='Display Period (s)')
+    buffer = GObject.Property(type=int, default=1, minimum=1, nick='Buffer Size')
+    y_margin = GObject.Property(type=float, default=2, minimum=0, maximum=5, nick='Y-margin (std)')
 
-    xstep = GObject.Property(type=float, default=.1, nick='X Step Size')
-    xticks = GObject.Property(type=int, default=5, nick='X Ticks/Step')
-    ystep = GObject.Property(type=float, default=.1, nick='Y Step Size')
-    yticks = GObject.Property(type=int, default=5, nick='Y Ticks/Step')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.params = {}
-        self.plot = None
-        self.palette = None
+    def __init__(self):
+        super().__init__()
         self.connect('realize', self.on_realize)
-
-    def calculate_parameters(self):
-        self.xmin = - self.period
-        self.xmax = 0.0
-
-        xminimum, xmaximum, xmajor, xminor = tick_points(self.xmin, self.xmax, self.xstep, self.xticks)
-        yminimum, ymaximum, ymajor, yminor = tick_points(self.ymin, self.ymax, self.ystep, self.yticks)
-
-        xmajor_points = list(zip(xmajor, (yminimum,) * len(xmajor)))
-        xminor_points = list(zip(xminor, (yminimum,) * len(xminor)))
-
-        ymajor_points = list(zip((xminimum,) * len(ymajor), ymajor))
-        yminor_points = list(zip((xminimum,) * len(yminor), yminor))
-
-        alloc = self.get_allocation()
-
-        yoffset = 0.0 if not self.show_xaxis else self.fontsize * 2
-        xoffset = 0.0 if not self.show_yaxis else self.fontsize * 3
-
-        self.params = {
-            'alloc': alloc,
-            'xmin': xminimum,
-            'xmax': xmaximum,
-            'xmajor': xmajor_points,
-            'xminor': xminor_points,
-            'ymin': yminimum,
-            'ymax': ymaximum,
-            'ymajor': ymajor_points,
-            'yminor': yminor_points,
-            'converter': ChartCoord(
-                xlimits=(xminimum, xmaximum),
-                ylimits=(yminimum, ymaximum),
-                size=(alloc.width, alloc.height),
-                margins=(self.marginx, self.marginy),
-                xoffset=xoffset, yoffset=yoffset
-            )
+        self.figure = None
+        self.canvas = None
+        self.info = {
+            'specs': {},
+            'data': [],
+            'plots': [],
+            'axes': {},
+            'selectors': []
         }
-        if self.plot:
-            self.xvalues = self.params['converter'].x(self.plot.xdata)
+        self.show_all()
 
-    def on_realize(self, widget):
+    def destroy(self):
+        for data in self.info['data']:
+            data.destroy()
+        super().destroy()
 
-        self.palette = ColorSequence(self.colors)
-        # extract pairs of pv names
-        pv_names = filter(None, [getattr(self, 'plot{}'.format(i), '').strip() for i in range(5)])
-        xminimum, xmaximum, xmajor, xminor = tick_points(-self.period, 0, self.xstep, self.xticks)
+    def load_specs(self):
+        if not self.specs.strip():
+            return {}
 
-        if not EDITOR:
-            self.plot = StripData(list(pv_names), period=-xminimum, sample_freq=self.sample, refresh_freq=self.refresh)
-            self.plot.connect('changed', lambda x: self.queue_draw())
-
-    def do_draw(self, cr):
-        if self.color_bg:
-            cr.set_source_rgba(*self.color_bg)
-            cr.paint()
-
-        if self.color_fg:
-            cr.set_source_rgba(*self.color_fg)
+        full_spec_path = Manager.find_display(self.specs)
+        spec_file = Path(full_spec_path)
+        if spec_file.exists():
+            with open(spec_file, 'r') as fobj:
+                try:
+                    specs = yaml.safe_load(fobj)
+                except yaml.YAMLError as err:
+                    logger.error('Invalid File Format')
+                    specs = {}
         else:
-            cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+            specs = {}
 
-        # draw axes
-        cr.set_line_width(0.75)
-        cr.set_font_size(self.fontsize)
-        alloc = self.get_allocation()
-        if not self.params or (alloc.width, alloc.height) != (self.params['alloc'].width, self.params['alloc'].height):
-            self.calculate_parameters()
+        macros = utils.parse_macro_spec(self.macros)
+        if macros:
 
-        if self.show_xaxis:
-            xframe = self.params['converter'].xy(
-                [
-                    (self.params['xmin'], self.params['ymin']),
-                    (self.params['xmax'], self.params['ymin']),
-                    (self.params['xmin'], self.params['ymax']),
-                    (self.params['xmax'], self.params['ymax'])
-                ],
-                yoff=5
-            )
-            cr.move_to(*xframe[0])
-            cr.line_to(*xframe[1])
-            cr.stroke()
-            # if self.show_yaxis:
-            #     cr.move_to(*xframe[2])
-            #     cr.line_to(*xframe[3])
-            #     cr.stroke()
+            for field in ['x-label', 'y-label', 'y1-label', 'y2-label']:
+                if field in specs:
+                    specs[field] = specs[field].format(**macros)
+            for group in specs.get('series', []):
+                if 'x-data' in group:
+                    group['x-data'] = group['x-data'].format(**macros)
 
-            major = self.params['converter'].xy(self.params['xmajor'], yoff=5)
-            for i, tick in enumerate(major):
-                vtick = self.params['xmajor'][i]
-                cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0], tick[1] + 5)
-                cr.stroke()
-                text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[0])
-                xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] - xb - w / 2, tick[1] + 7 - yb)
-                cr.show_text(text)
+                for item in group['y-data']:
+                    for field in ['y', 'style', 'label', 'y1', 'y2']:
+                        if field in item:
+                            item[field] = item[field].format(**macros)
+        return specs
 
-            if self.xticks:
-                minor = self.params['converter'].xy(self.params['xminor'], yoff=5)
-                for tick in minor:
-                    cr.move_to(tick[0], tick[1])
-                    cr.line_to(tick[0], tick[1] + 3)
-                    cr.stroke()
+    def setup_axes(self, count):
+        specs = self.info['specs']
 
-        if self.show_yaxis:
-            yframe = self.params['converter'].xy(
-                [
-                    (self.params['xmin'], self.params['ymin']),
-                    (self.params['xmin'], self.params['ymax']),
-                    (self.params['xmax'], self.params['ymin']),
-                    (self.params['xmax'], self.params['ymax'])
-                ],
-                xoff=-5
-            )
+        host = self.figure.add_subplot()
+        host.set_xlim(*specs.get('x-limits', (None, None)))
+        self.info['axes']['y'] = host
 
-            cr.move_to(*yframe[0])
-            cr.line_to(*yframe[1])
-            cr.stroke()
+        for i in range(1, min(count, 3)):
+            axis = host.twinx()
+            axis.spines["right"].set_position(("outward", Y_AXIS_OFFSET * (i-1)))
+            axis.xaxis.set_ticks([])
+            self.info['axes'][f'y{i}'] = axis
 
-            major = self.params['converter'].xy(self.params['ymajor'], xoff=-5)
-            for i, tick in enumerate(major):
-                vtick = self.params['ymajor'][i]
-                cr.move_to(tick[0], tick[1])
-                cr.line_to(tick[0] - 5, tick[1])
-                cr.stroke()
-                text = ('{{:0.{}g}}'.format(self.digits)).format(vtick[1])
-                xb, yb, w, h = cr.text_extents(text)[:4]
-                cr.move_to(tick[0] - 7 - w - xb, tick[1] - yb - h / 2)
-                cr.show_text(text)
+        for key in ["y", "y1", "y2"]:
+            axis = self.info['axes'].get(key)
+            if not axis: continue
+            self.info['axes'][key].set_ylabel(specs.get(f'{key}-label', None))
+            axis.set_ylim(*specs.get(f'{key}-limits', (None, None)))
 
-            if self.yticks:
-                minor = self.params['converter'].xy(self.params['yminor'], xoff=-5)
-                for tick in minor:
-                    cr.move_to(tick[0], tick[1])
-                    cr.line_to(tick[0] - 2, tick[1])
-                    cr.stroke()
+        if self.strip_plot:
+            host.set_xlabel(datetime.now().strftime("%b %d, %H:%M:%S"), loc='right')
+        elif self.info['specs'].get('x-label'):
+            host.set_xlabel(self.info['specs'].get('x-label'), loc='center')
 
-        if not self.plot:
-            return
+    def on_realize(self, obj):
+        self.info['specs'] = self.load_specs()
+        specs = self.info['specs']
+        y_axes = {item.get('axis', 'y') for group in specs['series'] for item in group['y-data']}
 
-        cr.set_line_width(0.75)
-        for j in range(self.plot.count):
-            sel = numpy.logical_not(numpy.isnan(self.plot.ydata[:, j]))
-            yvalues = self.params['converter'].y(self.plot.ydata[sel, j])
-            cr.set_source_rgba(*self.palette(j))
-            for i, (x, y) in enumerate(zip(self.xvalues[sel], yvalues)):
-                if i == 0:
-                    cr.move_to(x, y)
-                    continue
-                cr.line_to(x, y)
-            cr.stroke()
+        # with plt.xkcd():
+        with style_context(self.scheme):
+            self.figure = Figure(dpi=self.dpi, layout="tight")
+            self.canvas = FigureCanvas(self.figure)
+            self.setup_axes(len(y_axes))
+
+        self.add(self.canvas)
+        self.show_all()
+
+        if specs:
+            if self.strip_plot:
+                data_class = StripData
+                data_args = {'period': self.period}
+            else:
+                data_class = XYData
+                data_args = {'buffer': self.buffer}
+
+            handles = []
+            for i, group in enumerate(specs['series']):
+                data_names = [] if self.strip_plot else [group.get('x-data', "#")]
+                artists = []
+                selectors = [-1]  # Y-axis selectors. -1 represents X-axis.
+                for item in group['y-data']:
+                    data_names.append(item['y'])
+                    axis = self.info['axes'][item.get('axis', 'y')]
+                    item.get("style", "-")
+
+                    ln, = axis.plot(
+                        [], [], item.get("style", "-"), ms=self.marker_size, label=item.get('label', item["y"])
+                    )
+                    artists.append(ln)
+                    selectors.append({'y': 0, 'y1':  1, 'y2': 2}[item.get('axis', 'y')])
+                self.info['plots'].append(artists)
+                self.info['selectors'].append(numpy.array(selectors))
+                handles.extend(artists)
+                if not EDITOR:
+                    data = data_class(*data_names, **data_args, sample_freq=self.sample, refresh_freq=self.refresh)
+                    self.info['data'].append(data)
+                    data.connect('changed', self.on_data_changed, i)
+
+            if self.legend:
+                self.info['axes']["y"].legend(
+                    handles=handles, frameon=False, loc="center",
+                    bbox_to_anchor=(0., -0.4, 1., .2), ncol=3, mode="expand", borderaxespad=0,
+                )
+
+    def on_data_changed(self, plot, i):
+        artists = self.info['plots'][i]
+        selectors = self.info['selectors'][i]
+        for j in range(plot.count-1):
+            ln = artists[j]
+            ln.set_data(plot.data[:, 0], plot.data[:, j+1])
+
+        # update x-limits if not explicitly set
+        if not self.info['specs'].get('x-limits') and not numpy.isnan(plot.data[:, 0]).all():
+            vx_min, vx_max = numpy.nanmin(plot.data[:, 0]), numpy.nanmax(plot.data[:, 0])
+            if vx_min != vx_max:
+                self.info['axes']['y'].set_xlim(vx_min, vx_max)
+
+        # y-limits are special, update them based on all children
+        axis_names = ["y", "y1", "y2"]
+        for k in numpy.unique(selectors[1:]):
+            axis = self.info['axes'][axis_names[k]]
+            sel = (selectors == k)
+            if not self.info['specs'].get('y-limits') and not numpy.isnan(plot.data[:, sel]).all():
+                vy_min, vy_max = numpy.nanmin(plot.data[:, sel]), numpy.nanmax(plot.data[:, sel])
+                dev = numpy.nanstd(plot.data[:, sel])
+                if vy_min != vy_max or dev > 0:
+                    axis.set_ylim(vy_min-self.y_margin*dev, vy_max+self.y_margin*dev)
+
+        if self.strip_plot:
+            self.info['axes']["y"].set_xlabel(datetime.now().strftime("%b %d, %H:%M:%S"), loc='right')
+
+        self.canvas.draw_idle()
+
+

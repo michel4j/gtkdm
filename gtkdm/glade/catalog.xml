@@ -70,19 +70,7 @@
             </properties>
         </glade-widget-class>
 
-        <glade-widget-class name="XYScatter" generic-name="xyscatter" title="XY Scatter Plot" icon-name="widget-gtk-drawingarea">
-            <properties>
-                <property id="color_bg" optional="true"/>
-                <property id="color_fg" optional="true"/>
-            </properties>
-        </glade-widget-class>
-        <glade-widget-class name="StripPlot" generic-name="stripplot" title="Strip Plot" icon-name="widget-gtk-drawingarea">
-            <properties>
-                <property id="color_bg" optional="true"/>
-                <property id="color_fg" optional="true"/>
-            </properties>
-        </glade-widget-class>
-
+        <glade-widget-class name="Plot" generic-name="plot" title="Plot" icon-name="widget-gtk-drawingarea"/>
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl" icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
         <glade-widget-class name="DisplayMenuItem" generic-name="displaymenuitem" title="Display Menu Item" icon-name="widget-gtk-menuitem"/>
@@ -119,8 +107,7 @@
         <glade-widget-class-ref name="Gauge"/>
         <glade-widget-class-ref name="Symbol"/>
         <glade-widget-class-ref name="Shape"/>
-        <glade-widget-class-ref name="XYScatter"/>
-        <glade-widget-class-ref name="StripPlot"/>
+        <glade-widget-class-ref name="Plot"/>
     </glade-widget-group>
     <glade-widget-group name="gtkdm-control" title="GtkDM Control">
         <glade-widget-class-ref name="TextControl"/>
@@ -133,7 +120,6 @@
         <glade-widget-class-ref name="OnOffSwitch"/>
         <glade-widget-class-ref name="MessageButton"/>
         <glade-widget-class-ref name="ShellButton"/>
-        <glade-widget-class-ref name="StripPlot"/>
         <glade-widget-class-ref name="ChoiceButton"/>
         <glade-widget-class-ref name="DisplayButton"/>
         <glade-widget-class-ref name="MenuButton"/>

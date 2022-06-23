@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.36.0 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="gtkdmplugin" version="0.0"/>
   <object class="DisplayMenu" id="displaymenu1">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="DisplayMenuItem">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="file">simple.ui</property>
             <property name="label">Test 1</property>
             <property name="macros">device=michel</property>
@@ -27,7 +27,7 @@
         <child>
           <object class="DisplayMenuItem">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="file">test2.ui</property>
             <property name="label">Test 2</property>
             <property name="macros">device=test2</property>
@@ -41,7 +41,7 @@
         <child>
           <object class="DisplayMenuItem">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="file">test3.ui</property>
             <property name="label">Test 3</property>
             <property name="macros">device=test3</property>
@@ -55,7 +55,7 @@
         <child>
           <object class="GtkSeparator">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -66,7 +66,7 @@
         <child>
           <object class="DisplayMenuItem">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="file">test4.ui</property>
             <property name="label">Test 4</property>
             <property name="macros">device=test4</property>
@@ -81,20 +81,20 @@
     </child>
   </object>
   <object class="GtkWindow">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <child>
       <object class="Layout">
-        <property name="width_request">1050</property>
-        <property name="height_request">600</property>
+        <property name="width-request">1050</property>
+        <property name="height-request">600</property>
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <child>
           <object class="Diagram" id="diagram1">
-            <property name="width_request">304</property>
-            <property name="height_request">208</property>
+            <property name="width-request">304</property>
+            <property name="height-request">208</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="pixbuf">cmcfid.svg</property>
           </object>
           <packing>
@@ -104,10 +104,10 @@
         </child>
         <child>
           <object class="TextMonitor" id="textmonitor1">
-            <property name="width_request">100</property>
-            <property name="height_request">28</property>
+            <property name="width-request">100</property>
+            <property name="height-request">28</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:PM1:intensityM</property>
             <property name="color">rgb(32,74,135)</property>
             <property name="xalign">0.5</property>
@@ -119,13 +119,13 @@
         </child>
         <child>
           <object class="TextMonitor" id="textmonitor2">
-            <property name="width_request">100</property>
-            <property name="height_request">25</property>
+            <property name="width-request">100</property>
+            <property name="height-request">25</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:PM2:X:positionM</property>
             <property name="color">rgb(115,210,22)</property>
-            <property name="font_size">3</property>
+            <property name="font-size">3</property>
             <property name="monospace">True</property>
             <property name="xalign">0.5</property>
             <style>
@@ -139,10 +139,10 @@
         </child>
         <child>
           <object class="LineMonitor" id="linemonitor2">
-            <property name="width_request">124</property>
-            <property name="height_request">90</property>
+            <property name="width-request">124</property>
+            <property name="height-request">90</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="arrow">True</property>
             <property name="direction">south-east</property>
           </object>
@@ -153,10 +153,10 @@
         </child>
         <child>
           <object class="Byte" id="byte1">
-            <property name="width_request">224</property>
-            <property name="height_request">79</property>
+            <property name="width-request">224</property>
+            <property name="height-request">79</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
             <property name="columns">3</property>
             <property name="labels">Byte 0, Byte 1, Byte 2, Byte 3, Byte 4, Byte 5, Byte 6, Byte 7</property>
@@ -169,28 +169,28 @@
         </child>
         <child>
           <object class="ScaleControl" id="scalecontrol1">
-            <property name="width_request">80</property>
-            <property name="height_request">128</property>
+            <property name="width-request">80</property>
+            <property name="height-request">128</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:H1:setCurrentC</property>
-            <property name="increment">0.1</property>
+            <property name="increment">0.10</property>
             <property name="inverted">True</property>
             <property name="maximum">5</property>
             <property name="minimum">-5</property>
             <property name="orientation">vertical</property>
           </object>
           <packing>
-            <property name="x">761</property>
-            <property name="y">7</property>
+            <property name="x">366</property>
+            <property name="y">196</property>
           </packing>
         </child>
         <child>
           <object class="TextControl" id="textcontrol1">
-            <property name="width_request">67</property>
-            <property name="height_request">28</property>
+            <property name="width-request">67</property>
+            <property name="height-request">28</property>
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
+            <property name="can-focus">True</property>
             <property name="channel">michel:H1:setCurrentC</property>
             <property name="xalign">1</property>
           </object>
@@ -201,10 +201,10 @@
         </child>
         <child>
           <object class="TextLabel" id="textlabel1">
-            <property name="width_request">100</property>
-            <property name="height_request">20</property>
+            <property name="width-request">100</property>
+            <property name="height-request">20</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="text">Beam Transport</property>
           </object>
           <packing>
@@ -214,13 +214,13 @@
         </child>
         <child>
           <object class="LineMonitor" id="linemonitor3">
-            <property name="width_request">519</property>
-            <property name="height_request">20</property>
+            <property name="width-request">519</property>
+            <property name="height-request">20</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:cathodeTempM</property>
             <property name="color">rgb(78,154,6)</property>
-            <property name="line_width">10</property>
+            <property name="line-width">10</property>
           </object>
           <packing>
             <property name="x">11</property>
@@ -229,13 +229,13 @@
         </child>
         <child>
           <object class="LineMonitor" id="linemonitor1">
-            <property name="width_request">31</property>
-            <property name="height_request">36</property>
+            <property name="width-request">31</property>
+            <property name="height-request">36</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="arrow">True</property>
             <property name="direction">north-east</property>
-            <property name="line_width">0.7</property>
+            <property name="line-width">0.69999999999999996</property>
           </object>
           <packing>
             <property name="x">204</property>
@@ -244,10 +244,10 @@
         </child>
         <child>
           <object class="Indicator" id="indicator1">
-            <property name="width_request">162</property>
-            <property name="height_request">21</property>
+            <property name="width-request">162</property>
+            <property name="height-request">21</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
             <property name="colors">YGRO</property>
             <property name="size">12</property>
@@ -259,10 +259,10 @@
         </child>
         <child>
           <object class="CommandButton" id="commandbutton1">
-            <property name="width_request">62</property>
-            <property name="height_request">28</property>
+            <property name="width-request">62</property>
+            <property name="height-request">28</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:initAllSQ</property>
             <property name="label">Reset</property>
           </object>
@@ -273,10 +273,10 @@
         </child>
         <child>
           <object class="ScaleControl">
-            <property name="width_request">149</property>
-            <property name="height_request">61</property>
+            <property name="width-request">149</property>
+            <property name="height-request">61</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">{device}:cathodeCurrentC</property>
             <property name="maximum">20</property>
           </object>
@@ -287,10 +287,10 @@
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">129</property>
-            <property name="height_request">55</property>
+            <property name="width-request">129</property>
+            <property name="height-request">55</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:autoC</property>
           </object>
           <packing>
@@ -300,10 +300,10 @@
         </child>
         <child>
           <object class="Gauge">
-            <property name="width_request">151</property>
-            <property name="height_request">133</property>
+            <property name="width-request">151</property>
+            <property name="height-request">133</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="angle">190</property>
             <property name="channel">michel:cathodeTempM</property>
             <property name="levels">True</property>
@@ -318,10 +318,10 @@
         </child>
         <child>
           <object class="Gauge">
-            <property name="width_request">171</property>
-            <property name="height_request">118</property>
+            <property name="width-request">171</property>
+            <property name="height-request">118</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="angle">100</property>
             <property name="channel">michel:CM1:intensityM</property>
             <property name="levels">True</property>
@@ -336,10 +336,10 @@
         </child>
         <child>
           <object class="ChoiceButton">
-            <property name="width_request">180</property>
-            <property name="height_request">29</property>
+            <property name="width-request">180</property>
+            <property name="height-request">29</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:gunOnC</property>
             <property name="orientation">horizontal</property>
           </object>
@@ -350,10 +350,10 @@
         </child>
         <child>
           <object class="Symbol">
-            <property name="width_request">29</property>
-            <property name="height_request">52</property>
+            <property name="width-request">29</property>
+            <property name="height-request">52</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
             <property name="file">shutters.sym</property>
           </object>
@@ -364,10 +364,10 @@
         </child>
         <child>
           <object class="CheckControl">
-            <property name="width_request">100</property>
-            <property name="height_request">20</property>
+            <property name="width-request">100</property>
+            <property name="height-request">20</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="alarm">True</property>
             <property name="channel">michel:GV1:positionC</property>
           </object>
@@ -378,12 +378,11 @@
         </child>
         <child>
           <object class="DisplayButton">
-            <property name="width_request">41</property>
-            <property name="height_request">27</property>
+            <property name="width-request">41</property>
+            <property name="height-request">27</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="display">pseudoMtr.ui</property>
-            <property name="frame">displayframe1</property>
             <property name="label">VFM</property>
             <property name="macros">motor=PSL1608-4-B10-03:gap,units=mm</property>
           </object>
@@ -393,25 +392,11 @@
           </packing>
         </child>
         <child>
-          <object class="DisplayFrame" id="displayframe1">
-            <property name="width_request">382</property>
-            <property name="height_request">184</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="display">embed.ui</property>
-            <property name="macros">device=michel</property>
-          </object>
-          <packing>
-            <property name="x">653</property>
-            <property name="y">170</property>
-          </packing>
-        </child>
-        <child>
           <object class="Shape">
-            <property name="width_request">24</property>
-            <property name="height_request">28</property>
+            <property name="width-request">24</property>
+            <property name="height-request">28</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
             <property name="colors">AC</property>
             <property name="filled">True</property>
@@ -426,10 +411,10 @@
         </child>
         <child>
           <object class="MenuButton">
-            <property name="width_request">122</property>
-            <property name="height_request">25</property>
+            <property name="width-request">122</property>
+            <property name="height-request">25</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="label">Extras</property>
             <property name="menu">displaymenu1</property>
           </object>
@@ -440,10 +425,10 @@
         </child>
         <child>
           <object class="ChoiceMenu">
-            <property name="width_request">122</property>
-            <property name="height_request">29</property>
+            <property name="width-request">122</property>
+            <property name="height-request">29</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:GV1:positionM</property>
           </object>
           <packing>
@@ -453,10 +438,10 @@
         </child>
         <child>
           <object class="TweakControl">
-            <property name="width_request">122</property>
-            <property name="height_request">29</property>
+            <property name="width-request">122</property>
+            <property name="height-request">29</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:cathodeCurrentC</property>
           </object>
           <packing>
@@ -466,10 +451,10 @@
         </child>
         <child>
           <object class="MessageLog">
-            <property name="width_request">517</property>
-            <property name="height_request">66</property>
+            <property name="width-request">517</property>
+            <property name="height-request">66</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="alarm">True</property>
             <property name="channel">michel:OP:autoMsg</property>
           </object>
@@ -480,12 +465,11 @@
         </child>
         <child>
           <object class="DisplayButton">
-            <property name="width_request">65</property>
-            <property name="height_request">27</property>
+            <property name="width-request">65</property>
+            <property name="height-request">27</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="display">embed.ui</property>
-            <property name="frame">displayframe1</property>
             <property name="label">DCM</property>
           </object>
           <packing>
@@ -495,10 +479,10 @@
         </child>
         <child>
           <object class="HideSwitch">
-            <property name="width_request">50</property>
-            <property name="height_request">26</property>
+            <property name="width-request">50</property>
+            <property name="height-request">26</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="widgets">scalecontrol1, textcontrol1</property>
           </object>
           <packing>
@@ -507,64 +491,11 @@
           </packing>
         </child>
         <child>
-          <object class="XYScatter">
-            <property name="width_request">143</property>
-            <property name="height_request">119</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="buffer">100</property>
-            <property name="color_bg">rgb(85,87,83)</property>
-            <property name="color_fg">rgb(211,215,207)</property>
-            <property name="fontsize">8</property>
-            <property name="plot0">michel:PM1:X:positionM, michel:PM1:Y:positionM</property>
-            <property name="plot1">michel:PM2:X:positionM, michel:PM2:Y:positionM</property>
-            <property name="plot2">michel:PM3:X:positionM, michel:PM3:Y:positionM</property>
-            <property name="plot3">michel:PM4:X:positionM, michel:PM4:Y:positionM</property>
-            <property name="plot4">michel:PM5:X:positionM, michel:PM5:Y:positionM</property>
-            <property name="xmax">0.2</property>
-            <property name="xmin">-0.2</property>
-            <property name="xstep">0.05</property>
-            <property name="xticks">0</property>
-            <property name="ymax">0.2</property>
-            <property name="ymin">-0.2</property>
-            <property name="ystep">0.05</property>
-            <property name="yticks">3</property>
-          </object>
-          <packing>
-            <property name="x">548</property>
-            <property name="y">391</property>
-          </packing>
-        </child>
-        <child>
-          <object class="StripPlot">
-            <property name="width_request">204</property>
-            <property name="height_request">104</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="colors">RGBOC</property>
-            <property name="period">30</property>
-            <property name="plot0">michel:CM1:intensityM</property>
-            <property name="plot1">michel:FC1:intensityM</property>
-            <property name="plot2">michel:FC2:intensityM</property>
-            <property name="refresh">2</property>
-            <property name="sample">2</property>
-            <property name="xstep">20</property>
-            <property name="xticks">4</property>
-            <property name="ymax">20</property>
-            <property name="ystep">10</property>
-            <property name="yticks">4</property>
-          </object>
-          <packing>
-            <property name="x">318</property>
-            <property name="y">211</property>
-          </packing>
-        </child>
-        <child>
           <object class="Symbol">
-            <property name="width_request">34</property>
-            <property name="height_request">34</property>
+            <property name="width-request">34</property>
+            <property name="height-request">34</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">michel:GV1:positionC</property>
             <property name="file">iop.sym</property>
           </object>
@@ -575,10 +506,10 @@
         </child>
         <child>
           <object class="Symbol">
-            <property name="width_request">34</property>
-            <property name="height_request">34</property>
+            <property name="width-request">34</property>
+            <property name="height-request">34</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="angle">180</property>
             <property name="file">tmp.sym</property>
           </object>
@@ -589,10 +520,10 @@
         </child>
         <child>
           <object class="ShellButton">
-            <property name="width_request">40</property>
-            <property name="height_request">20</property>
+            <property name="width-request">40</property>
+            <property name="height-request">20</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="command">gedit</property>
             <property name="label">Editor</property>
           </object>
@@ -603,50 +534,49 @@
         </child>
         <child>
           <object class="TextMonitor">
-            <property name="width_request">100</property>
-            <property name="height_request">80</property>
+            <property name="width-request">100</property>
+            <property name="height-request">80</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="channel">TST001:floatout</property>
           </object>
           <packing>
-            <property name="x">527</property>
-            <property name="y">226</property>
+            <property name="x">455</property>
+            <property name="y">216</property>
           </packing>
         </child>
         <child>
-          <object class="XYScatter">
-            <property name="width_request">337</property>
-            <property name="height_request">191</property>
+          <object class="DisplayFrame" id="displayframe1">
+            <property name="width-request">311</property>
+            <property name="height-request">182</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="buffer">4</property>
-            <property name="color_bg">rgb(85,87,83)</property>
-            <property name="color_fg">rgb(211,215,207)</property>
-            <property name="fontsize">8</property>
-            <property name="plot0">michel:PM:distancesWF, michel:PM:iTrajectoryWF</property>
-            <property name="plot1">michel:PM:distancesWF, michel:PM:xTrajectoryWF</property>
-            <property name="plot2">michel:PM:distancesWF, michel:PM:yTrajectoryWF</property>
-            <property name="plot3">michel:PM:refLocationsWF, michel:PM:referenceHiWF</property>
-            <property name="plot4">michel:PM:refLocationsWF, michel:PM:referenceLoWF</property>
-            <property name="xmax">60</property>
-            <property name="xmin">0</property>
-            <property name="xstep">5</property>
-            <property name="xticks">0</property>
-            <property name="ymax">20</property>
-            <property name="ymin">-5</property>
-            <property name="ystep">5</property>
-            <property name="yticks">3</property>
+            <property name="can-focus">False</property>
+            <property name="display">embed.ui</property>
+            <property name="macros">device=michel</property>
           </object>
           <packing>
-            <property name="x">702</property>
-            <property name="y">391</property>
+            <property name="x">724</property>
+            <property name="y">18</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Plot">
+            <property name="width-request">454</property>
+            <property name="height-request">291</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="buffer">100</property>
+            <property name="legend">True</property>
+            <property name="specs">test.plot</property>
+            <property name="strip-plot">True</property>
+            <property name="y-margin">0.5</property>
+          </object>
+          <packing>
+            <property name="x">581</property>
+            <property name="y">240</property>
           </packing>
         </child>
       </object>
-    </child>
-    <child type="titlebar">
-      <placeholder/>
     </child>
   </object>
 </interface>
