@@ -4,6 +4,18 @@ $border-radius: 3px;
 $btn-size: 12px;
 $tiny-btn-size: 8px;
 
+$colors: (
+	"blue": (rgba(153, 193, 241, 0.25), rgba(98, 160, 234, 0.25), rgba(53, 132, 228, 0.25), rgba(28, 113, 216, 0.25), rgba(26, 95, 180, 0.25)),
+	"green": (rgba(143, 240, 164, 0.25), rgba(87, 227, 137, 0.25), rgba(51, 209, 122, 0.25), rgba(46, 194, 126, 0.25), rgba(38, 162, 105, 0.25)),
+	"yellow": (rgba(249, 240, 107, 0.25), rgba(248, 228, 92, 0.25), rgba(246, 211, 45, 0.25), rgba(245, 194, 17, 0.25), rgba(229, 165, 10, 0.25)),
+	"orange": (rgba(255, 190, 111, 0.25), rgba(255, 163, 72, 0.25), rgba(255, 120, 0, 0.25), rgba(230, 97, 0, 0.25), rgba(198, 70, 0, 0.25)),
+	"red": (rgba(246, 97, 81, 0.25), rgba(237, 51, 59, 0.25), rgba(224, 27, 36, 0.25), rgba(192, 28, 40, 0.25), rgba(165, 29, 45, 0.25)),
+	"purple": (rgba(220, 138, 221, 0.25), rgba(192, 97, 203, 0.25), rgba(145, 65, 172, 0.25), rgba(129, 61, 156, 0.25), rgba(97, 53, 131, 0.25)),
+	"brown": (rgba(205, 171, 143, 0.25), rgba(181, 131, 90, 0.25), rgba(152, 106, 68, 0.25), rgba(134, 94, 60, 0.25), rgba(99, 69, 44, 0.25)),
+	"light": (rgba(255, 255, 255, 0.25), rgba(246, 245, 244, 0.25), rgba(222, 221, 218, 0.25), rgba(192, 191, 188, 0.25), rgba(154, 153, 150, 0.25)),
+	"dark": (rgba(119, 118, 123, 0.25), rgba(94, 92, 100, 0.25), rgba(61, 56, 70, 0.25), rgba(36, 31, 49, 0.25), rgba(0, 0, 0, 0.25)),
+);
+
 window.gtkdm, glade-design-layout > window {
 	font-family: $base-font, sans-serif;
 	font-size: 0.95rem;
@@ -263,28 +275,21 @@ glade-design-layout .display-frame {
 			background: rgba(255, 0, 0, 0.25);
 		}
 	}
-	.red-bg {
-		button {
-			background: rgba(255, 0, 0, 0.25);
-		}
-	}
 	.off-btn {
 		button {
 			background: rgba(0, 255, 0, 0.25);
 		}
 	}
-	.green-bg {
-		background: rgba(0, 255, 0, 0.25);
+
+	@each $name, $items in $colors {
+		@each $item in $items {
+			$i: index($items, $item);
+			.bg-#{$name}-#{$i}, .bg-#{$name}-#{$i} > .button {
+				background: $item;
+			}
+		}
 	}
-	.vara-bg, .gtkdm-button.vara-bg > .button {
-		background: rgba(255, 128, 0, 0.25);
-	}
-	.varb-bg, .gtkdm-button.varb-bg > .button {
-		background: rgba(128, 255, 0, 0.25);
-	}
-	.varc-bg, .gtkdm-button.varc-bg > .button {
-		background: rgba(0, 128, 128, 0.25);
-	}
+
 	.command {
 		button {
 			background: rgba(0, 128, 128, 0.25);

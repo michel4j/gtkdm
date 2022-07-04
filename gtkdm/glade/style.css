@@ -204,23 +204,143 @@ glade-design-layout .display-frame {
 .gtkdm .on-btn button, glade-design-layout .on-btn button {
   background: rgba(255, 0, 0, 0.25); }
 
-.gtkdm .red-bg button, glade-design-layout .red-bg button {
-  background: rgba(255, 0, 0, 0.25); }
-
 .gtkdm .off-btn button, glade-design-layout .off-btn button {
   background: rgba(0, 255, 0, 0.25); }
 
-.gtkdm .green-bg, glade-design-layout .green-bg {
-  background: rgba(0, 255, 0, 0.25); }
+.gtkdm .bg-blue-1, .gtkdm .bg-blue-1 > .button, glade-design-layout .bg-blue-1, glade-design-layout .bg-blue-1 > .button {
+  background: rgba(153, 193, 241, 0.25); }
 
-.gtkdm .vara-bg, .gtkdm .gtkdm-button.vara-bg > .button, glade-design-layout .vara-bg, glade-design-layout .gtkdm-button.vara-bg > .button {
-  background: rgba(255, 128, 0, 0.25); }
+.gtkdm .bg-blue-2, .gtkdm .bg-blue-2 > .button, glade-design-layout .bg-blue-2, glade-design-layout .bg-blue-2 > .button {
+  background: rgba(98, 160, 234, 0.25); }
 
-.gtkdm .varb-bg, .gtkdm .gtkdm-button.varb-bg > .button, glade-design-layout .varb-bg, glade-design-layout .gtkdm-button.varb-bg > .button {
-  background: rgba(128, 255, 0, 0.25); }
+.gtkdm .bg-blue-3, .gtkdm .bg-blue-3 > .button, glade-design-layout .bg-blue-3, glade-design-layout .bg-blue-3 > .button {
+  background: rgba(53, 132, 228, 0.25); }
 
-.gtkdm .varc-bg, .gtkdm .gtkdm-button.varc-bg > .button, glade-design-layout .varc-bg, glade-design-layout .gtkdm-button.varc-bg > .button {
-  background: rgba(0, 128, 128, 0.25); }
+.gtkdm .bg-blue-4, .gtkdm .bg-blue-4 > .button, glade-design-layout .bg-blue-4, glade-design-layout .bg-blue-4 > .button {
+  background: rgba(28, 113, 216, 0.25); }
+
+.gtkdm .bg-blue-5, .gtkdm .bg-blue-5 > .button, glade-design-layout .bg-blue-5, glade-design-layout .bg-blue-5 > .button {
+  background: rgba(26, 95, 180, 0.25); }
+
+.gtkdm .bg-green-1, .gtkdm .bg-green-1 > .button, glade-design-layout .bg-green-1, glade-design-layout .bg-green-1 > .button {
+  background: rgba(143, 240, 164, 0.25); }
+
+.gtkdm .bg-green-2, .gtkdm .bg-green-2 > .button, glade-design-layout .bg-green-2, glade-design-layout .bg-green-2 > .button {
+  background: rgba(87, 227, 137, 0.25); }
+
+.gtkdm .bg-green-3, .gtkdm .bg-green-3 > .button, glade-design-layout .bg-green-3, glade-design-layout .bg-green-3 > .button {
+  background: rgba(51, 209, 122, 0.25); }
+
+.gtkdm .bg-green-4, .gtkdm .bg-green-4 > .button, glade-design-layout .bg-green-4, glade-design-layout .bg-green-4 > .button {
+  background: rgba(46, 194, 126, 0.25); }
+
+.gtkdm .bg-green-5, .gtkdm .bg-green-5 > .button, glade-design-layout .bg-green-5, glade-design-layout .bg-green-5 > .button {
+  background: rgba(38, 162, 105, 0.25); }
+
+.gtkdm .bg-yellow-1, .gtkdm .bg-yellow-1 > .button, glade-design-layout .bg-yellow-1, glade-design-layout .bg-yellow-1 > .button {
+  background: rgba(249, 240, 107, 0.25); }
+
+.gtkdm .bg-yellow-2, .gtkdm .bg-yellow-2 > .button, glade-design-layout .bg-yellow-2, glade-design-layout .bg-yellow-2 > .button {
+  background: rgba(248, 228, 92, 0.25); }
+
+.gtkdm .bg-yellow-3, .gtkdm .bg-yellow-3 > .button, glade-design-layout .bg-yellow-3, glade-design-layout .bg-yellow-3 > .button {
+  background: rgba(246, 211, 45, 0.25); }
+
+.gtkdm .bg-yellow-4, .gtkdm .bg-yellow-4 > .button, glade-design-layout .bg-yellow-4, glade-design-layout .bg-yellow-4 > .button {
+  background: rgba(245, 194, 17, 0.25); }
+
+.gtkdm .bg-yellow-5, .gtkdm .bg-yellow-5 > .button, glade-design-layout .bg-yellow-5, glade-design-layout .bg-yellow-5 > .button {
+  background: rgba(229, 165, 10, 0.25); }
+
+.gtkdm .bg-orange-1, .gtkdm .bg-orange-1 > .button, glade-design-layout .bg-orange-1, glade-design-layout .bg-orange-1 > .button {
+  background: rgba(255, 190, 111, 0.25); }
+
+.gtkdm .bg-orange-2, .gtkdm .bg-orange-2 > .button, glade-design-layout .bg-orange-2, glade-design-layout .bg-orange-2 > .button {
+  background: rgba(255, 163, 72, 0.25); }
+
+.gtkdm .bg-orange-3, .gtkdm .bg-orange-3 > .button, glade-design-layout .bg-orange-3, glade-design-layout .bg-orange-3 > .button {
+  background: rgba(255, 120, 0, 0.25); }
+
+.gtkdm .bg-orange-4, .gtkdm .bg-orange-4 > .button, glade-design-layout .bg-orange-4, glade-design-layout .bg-orange-4 > .button {
+  background: rgba(230, 97, 0, 0.25); }
+
+.gtkdm .bg-orange-5, .gtkdm .bg-orange-5 > .button, glade-design-layout .bg-orange-5, glade-design-layout .bg-orange-5 > .button {
+  background: rgba(198, 70, 0, 0.25); }
+
+.gtkdm .bg-red-1, .gtkdm .bg-red-1 > .button, glade-design-layout .bg-red-1, glade-design-layout .bg-red-1 > .button {
+  background: rgba(246, 97, 81, 0.25); }
+
+.gtkdm .bg-red-2, .gtkdm .bg-red-2 > .button, glade-design-layout .bg-red-2, glade-design-layout .bg-red-2 > .button {
+  background: rgba(237, 51, 59, 0.25); }
+
+.gtkdm .bg-red-3, .gtkdm .bg-red-3 > .button, glade-design-layout .bg-red-3, glade-design-layout .bg-red-3 > .button {
+  background: rgba(224, 27, 36, 0.25); }
+
+.gtkdm .bg-red-4, .gtkdm .bg-red-4 > .button, glade-design-layout .bg-red-4, glade-design-layout .bg-red-4 > .button {
+  background: rgba(192, 28, 40, 0.25); }
+
+.gtkdm .bg-red-5, .gtkdm .bg-red-5 > .button, glade-design-layout .bg-red-5, glade-design-layout .bg-red-5 > .button {
+  background: rgba(165, 29, 45, 0.25); }
+
+.gtkdm .bg-purple-1, .gtkdm .bg-purple-1 > .button, glade-design-layout .bg-purple-1, glade-design-layout .bg-purple-1 > .button {
+  background: rgba(220, 138, 221, 0.25); }
+
+.gtkdm .bg-purple-2, .gtkdm .bg-purple-2 > .button, glade-design-layout .bg-purple-2, glade-design-layout .bg-purple-2 > .button {
+  background: rgba(192, 97, 203, 0.25); }
+
+.gtkdm .bg-purple-3, .gtkdm .bg-purple-3 > .button, glade-design-layout .bg-purple-3, glade-design-layout .bg-purple-3 > .button {
+  background: rgba(145, 65, 172, 0.25); }
+
+.gtkdm .bg-purple-4, .gtkdm .bg-purple-4 > .button, glade-design-layout .bg-purple-4, glade-design-layout .bg-purple-4 > .button {
+  background: rgba(129, 61, 156, 0.25); }
+
+.gtkdm .bg-purple-5, .gtkdm .bg-purple-5 > .button, glade-design-layout .bg-purple-5, glade-design-layout .bg-purple-5 > .button {
+  background: rgba(97, 53, 131, 0.25); }
+
+.gtkdm .bg-brown-1, .gtkdm .bg-brown-1 > .button, glade-design-layout .bg-brown-1, glade-design-layout .bg-brown-1 > .button {
+  background: rgba(205, 171, 143, 0.25); }
+
+.gtkdm .bg-brown-2, .gtkdm .bg-brown-2 > .button, glade-design-layout .bg-brown-2, glade-design-layout .bg-brown-2 > .button {
+  background: rgba(181, 131, 90, 0.25); }
+
+.gtkdm .bg-brown-3, .gtkdm .bg-brown-3 > .button, glade-design-layout .bg-brown-3, glade-design-layout .bg-brown-3 > .button {
+  background: rgba(152, 106, 68, 0.25); }
+
+.gtkdm .bg-brown-4, .gtkdm .bg-brown-4 > .button, glade-design-layout .bg-brown-4, glade-design-layout .bg-brown-4 > .button {
+  background: rgba(134, 94, 60, 0.25); }
+
+.gtkdm .bg-brown-5, .gtkdm .bg-brown-5 > .button, glade-design-layout .bg-brown-5, glade-design-layout .bg-brown-5 > .button {
+  background: rgba(99, 69, 44, 0.25); }
+
+.gtkdm .bg-light-1, .gtkdm .bg-light-1 > .button, glade-design-layout .bg-light-1, glade-design-layout .bg-light-1 > .button {
+  background: rgba(255, 255, 255, 0.25); }
+
+.gtkdm .bg-light-2, .gtkdm .bg-light-2 > .button, glade-design-layout .bg-light-2, glade-design-layout .bg-light-2 > .button {
+  background: rgba(246, 245, 244, 0.25); }
+
+.gtkdm .bg-light-3, .gtkdm .bg-light-3 > .button, glade-design-layout .bg-light-3, glade-design-layout .bg-light-3 > .button {
+  background: rgba(222, 221, 218, 0.25); }
+
+.gtkdm .bg-light-4, .gtkdm .bg-light-4 > .button, glade-design-layout .bg-light-4, glade-design-layout .bg-light-4 > .button {
+  background: rgba(192, 191, 188, 0.25); }
+
+.gtkdm .bg-light-5, .gtkdm .bg-light-5 > .button, glade-design-layout .bg-light-5, glade-design-layout .bg-light-5 > .button {
+  background: rgba(154, 153, 150, 0.25); }
+
+.gtkdm .bg-dark-1, .gtkdm .bg-dark-1 > .button, glade-design-layout .bg-dark-1, glade-design-layout .bg-dark-1 > .button {
+  background: rgba(119, 118, 123, 0.25); }
+
+.gtkdm .bg-dark-2, .gtkdm .bg-dark-2 > .button, glade-design-layout .bg-dark-2, glade-design-layout .bg-dark-2 > .button {
+  background: rgba(94, 92, 100, 0.25); }
+
+.gtkdm .bg-dark-3, .gtkdm .bg-dark-3 > .button, glade-design-layout .bg-dark-3, glade-design-layout .bg-dark-3 > .button {
+  background: rgba(61, 56, 70, 0.25); }
+
+.gtkdm .bg-dark-4, .gtkdm .bg-dark-4 > .button, glade-design-layout .bg-dark-4, glade-design-layout .bg-dark-4 > .button {
+  background: rgba(36, 31, 49, 0.25); }
+
+.gtkdm .bg-dark-5, .gtkdm .bg-dark-5 > .button, glade-design-layout .bg-dark-5, glade-design-layout .bg-dark-5 > .button {
+  background: rgba(0, 0, 0, 0.25); }
 
 .gtkdm .command button, glade-design-layout .command button {
   background: rgba(0, 128, 128, 0.25); }
