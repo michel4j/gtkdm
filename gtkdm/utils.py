@@ -3,6 +3,16 @@ import os
 import re
 import math
 import logging
+import time
+from threading import Thread
+
+import gepics
+import numpy
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import GObject, GLib
+
 import colors
 
 
@@ -123,3 +133,138 @@ def log_to_console(level=logging.DEBUG):
 
 
 logger = create_logger()
+
+
+class PlotData(GObject.GObject):
+    __gsignals__ = {
+        'changed': (GObject.SIGNAL_RUN_FIRST, None, [])
+    }
+
+    def __init__(self, count, size:int = 1, sample_freq: float = 1, refresh_freq: float = 1):
+        super().__init__()
+        self.count = count
+        self.size = size
+        self.data = None
+        self.arrays = False
+        self.sample_freq = sample_freq
+        self.refresh_freq = refresh_freq
+        self.alive = True
+
+        Thread(target=self.monitor, daemon=True).start()
+
+    def monitor(self):
+        gepics.threads_init()
+        last_sample = time.time()
+        last_refresh = time.time()
+        if self.sample_freq:
+            sample_every = 1/self.sample_freq
+            refresh_every = 1/self.refresh_freq
+            sleep_for = min(sample_every, refresh_every)/2
+            while self.alive:
+                if time.time() - last_sample > sample_every:
+                    self.sample_data()
+                    last_sample = time.time()
+                if time.time() - last_refresh > refresh_every:
+                    GLib.idle_add(self.refresh)
+                    last_refresh = time.time()
+                time.sleep(sleep_for)
+
+    def destroy(self):
+        self.alive = False
+
+    def sample_data(self):
+        raise NotImplementedError()
+
+    def refresh(self):
+        if self.data is not None:
+            self.emit("changed")
+
+
+class XYData(PlotData):
+    def __init__(self, *names, buffer: int = 1, sample_freq: float = 1, refresh_freq: float = 1):
+        count = len(names)
+        super().__init__(count, size=buffer, sample_freq=sample_freq, refresh_freq=refresh_freq)
+        self.names = names
+        self.updating = False
+        self.offset = 0
+        if names[0] == '#':
+            self.offset = 1
+
+        self.pvs = [
+            gepics.PV(name) for name in names[self.offset:]
+        ]
+        for i, pv in enumerate(self.pvs):
+            pv.connect('active', self.activate)
+            if sample_freq == 0:
+                pv.connect('changed', self.update, i)
+
+    def update(self, pv, data, index):
+        if not self.updating:
+            self.updating = True
+            self.update_column(index, data)
+            self.refresh()
+            self.updating = False
+
+    def activate(self, obj, state):
+        if state and self.data is None:
+            if obj.count == 1:
+                self.arrays = False
+            else:
+                self.size = obj.count
+                self.arrays = True
+            self.data = numpy.empty((self.size, self.count))
+            self.data.fill(numpy.nan)
+            if self.names[0] == '#':
+                self.data[:, 0] = numpy.arange(self.size)
+
+    def update_column(self, index, vals):
+        if isinstance(vals, (float, int)):
+            vals = [vals]
+        n = min(len(vals), self.size)
+        self.data[:n, index + self.offset] = vals[:n]
+
+    def sample_data(self):
+        if self.data is not None:
+            if self.arrays:
+                for i, pv in enumerate(self.pvs):
+                    if pv.is_active():
+                        vals = pv.get()
+                        if pv.count == 1:
+                            vals = [vals]
+                    else:
+                        vals = [numpy.nan] * self.size
+                    n = min(len(vals), self.size)
+                    self.update_column(i, vals)
+            else:
+                if self.size > 1:
+                    self.data[:-1, self.offset:] = self.data[1:, self.offset:]
+                for i, pv in enumerate(self.pvs):
+                    self.data[-1, i+self.offset] = numpy.nan if not pv.is_active() else pv.get()
+
+
+class StripData(PlotData):
+    def __init__(self, *names, period=60.0, sample_freq=1.0, refresh_freq=1.0):
+        sample_freq = max(0.1, sample_freq)     # Strip charts can't use auto-update.
+        refresh_freq = max(0.1, refresh_freq)
+        size = int(period * sample_freq)
+        count = len(names) + 1
+        super().__init__(count, size=size, sample_freq=sample_freq, refresh_freq=refresh_freq)
+        self.period = period
+        self.names = ('time',) + names
+        self.pvs = [
+            gepics.PV(name) for name in names
+        ]
+        for pv in self.pvs:
+            pv.connect('active', self.activate)
+
+    def activate(self, obj, state):
+        if state and self.data is None:
+            self.data = numpy.empty((self.size, self.count))
+            self.data.fill(numpy.nan)
+            self.data[:, 0] = numpy.linspace(-self.period, 0, self.size)
+
+    def sample_data(self):
+        if self.data is not None:
+            self.data[:-1, 1:] = self.data[1:, 1:]  # preserve time axis
+            for i, pv in enumerate(self.pvs):
+                self.data[-1, i+1] = numpy.nan if not pv.is_active() else pv.get()
