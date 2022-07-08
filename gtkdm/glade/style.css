@@ -367,3 +367,10 @@ glade-design-layout .display-frame {
   .gtkdm tooltip *, glade-design-layout tooltip * {
     font-size: 90%;
     padding: 1px; }
+
+.gtkdm list.chart-legend, glade-design-layout list.chart-legend {
+  padding: 18px 6px 18px 6px; }
+  .gtkdm list.chart-legend > row + row, glade-design-layout list.chart-legend > row + row {
+    border-top: 1px solid rgba(0, 0, 0, 0.15); }
+  .gtkdm list.chart-legend.finding .text-monitor, glade-design-layout list.chart-legend.finding .text-monitor {
+    font-weight: bold; }

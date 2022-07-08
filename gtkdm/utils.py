@@ -8,6 +8,7 @@ from threading import Thread
 
 import gepics
 import numpy
+from datetime import datetime
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -178,6 +179,7 @@ class PlotData(GObject.GObject):
     def refresh(self):
         if self.data is not None:
             self.emit("changed")
+        return False
 
 
 class XYData(PlotData):
@@ -254,17 +256,25 @@ class StripData(PlotData):
         self.pvs = [
             gepics.PV(name) for name in names
         ]
+        self.now_time = datetime.now()
         for pv in self.pvs:
             pv.connect('active', self.activate)
 
     def activate(self, obj, state):
         if state and self.data is None:
-            self.data = numpy.empty((self.size, self.count))
+            self.data = numpy.empty((self.size, self.count), dtype=numpy.float32)
             self.data.fill(numpy.nan)
             self.data[:, 0] = numpy.linspace(-self.period, 0, self.size)
 
     def sample_data(self):
+        self.now_time = datetime.now()
         if self.data is not None:
             self.data[:-1, 1:] = self.data[1:, 1:]  # preserve time axis
             for i, pv in enumerate(self.pvs):
-                self.data[-1, i+1] = numpy.nan if not pv.is_active() else pv.get()
+                value = numpy.nan
+                if pv.is_active():
+                    value = pv.get()
+                    if isinstance(value, numpy.ndarray):
+                        value = value[-1]
+                self.data[-1, i+1] = value
+

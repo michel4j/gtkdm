@@ -327,4 +327,13 @@ glade-design-layout .display-frame {
 			padding: 1px;
 		}
 	}
+	list.chart-legend {
+		padding: 18px 6px 18px 6px;
+		> row + row {
+			border-top: 1px solid rgba(0,0,0,0.15);
+		}
+		&.finding .text-monitor {
+			font-weight: bold;
+		}
+	}
 }

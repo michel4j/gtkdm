@@ -1,48 +1,105 @@
-import hashlib
-import json
 import os
-import time
-from threading import Thread
 import re
-import shlex
-import subprocess
-import textwrap
-import zipfile
+import bisect
 from datetime import datetime
-from math import atan2, pi, cos, sin, ceil
-from pathlib import Path
 
-import cairo
 import gi
 import numpy
-import yaml
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo
-
+from gi.repository import Gtk, GObject, Gio, Pango, Gdk
 
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
+from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 from matplotlib.figure import Figure
-from matplotlib.style import context as style_context
-from matplotlib import pyplot as plt
+from matplotlib.markers import MarkerStyle
 
-from epics.ca import ChannelAccessGetFailure
-import gepics
-import xml.etree.ElementTree as ET
-
-from . import utils, colors, version, PLUGIN_DIR
+from . import version
 from .utils import logger, StripData
 
 Y_AXIS_OFFSET = 60
 AXIS_SPACE = 0.92
 
+CONVERTERS = {
+    'Min': float,
+    'Max': float,
+    'Scale': int,
+    'Precision': int,
+    'PlotStatus': bool,
+    'Comment': str,
+    'Name': str,
+    'Timespan': int,
+    'NumSamples': int,
+    'SampleInterval': float,
+    'RefreshInterval': float,
+    'GridXOn': bool,
+    'GridYOn': bool,
+    'AxisYcolorStat': bool,
+    'GraphLineWidth': float,
+    'Units': str,
+}
+
+
+def stp_to_spec(filename):
+    color_pattern = re.compile(r'Strip\.Color\.(?P<key>\w+)\s+(?P<r>\d+)\s+(?P<g>\d+)\s+(?P<b>\d+)')
+    curve_pattern = re.compile(r'Strip\.Curve\.(?P<curve>\d+).(?P<key>\w+)\s+(?P<value>[-\w.:_]*?)\n')
+    option_pattern = re.compile(r'Strip\.(?:(Time)|(Option))\.(?P<key>\w+)\s+(?P<value>[-\w.:_]*?)\n')
+    with open(filename, 'r') as fobj:
+        data = fobj.read()
+
+    info = {
+        'options': {
+            item[0].lower(): tuple(map(lambda v: int(v)*255//65535, item[1:]))
+            for item in color_pattern.findall(data)
+        },
+        'plots': [{'axis': i} for i in range(10)]
+    }
+    for m in curve_pattern.finditer(data):
+        item = m.groupdict()
+        info['plots'][int(item['curve'])][item['key'].lower()] = CONVERTERS.get(item['key'], lambda v: v)(item['value'])
+
+    for m in option_pattern.finditer(data):
+        item = m.groupdict()
+        info['options'][item['key'].lower()] = CONVERTERS.get(item['key'], lambda v: v)(item['value'])
+
+    # Transfer colors
+    for i in range(10):
+        info['plots'][i]['color'] = info['options'].pop(f'color{i+1}')
+
+    return info
+
+
+class LegendItem(Gtk.EventBox):
+    def __init__(self, name, color):
+        super().__init__()
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(box)
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self.name = name
+        self.label = Gtk.Label(xalign=0.0)
+        self.value = Gtk.Label(xalign=1.0)
+        self.value.get_style_context().add_class('text-monitor')
+        box.pack_start(self.label, True, True, 0)
+        box.pack_end(self.value, True, True, 0)
+        self.color = color
+        self.label.set_ellipsize(Pango.EllipsizeMode.END)
+        self.label.set_markup(f'<span color="{self.color}">{self.name}</span>')
+        self.value.set_markup(f'<span color="{self.color}"><small><tt>nan</tt></small></span>')
+        self.show_all()
+
+    def set_value(self, value):
+        self.value.set_markup(f'<span color="{self.color}"><small><tt>{value:g}</tt></small></span>')
+
 
 class ChartWindow(Gtk.Window):
     __gtype_name__ = 'ChartWindow'
 
+    paused = GObject.Property(type=bool, default=False, nick='Pause Updates')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_PRIMARY)
         self.header = Gtk.HeaderBar()
         self.header.set_show_close_button(True)
         self.set_titlebar(self.header)
@@ -94,76 +151,167 @@ class ChartWindow(Gtk.Window):
         else:
             self.header.props.title = "GtkDM Charting"
 
-        self.figure = Figure(dpi=72, layout="tight")
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.figure = Figure(dpi=80, layout="tight")
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.set_size_request(800, 500)
+        self.canvas.set_size_request(650, 550)
+        self.canvas.mpl_connect('motion_notify_event', self.on_cursor_motion)
+        self.canvas.mpl_connect('button_release_event', self.on_cursor_click)
+
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        vbox.pack_start(self.canvas, True, True, 0)
+        vbox.pack_end(self.toolbar, False, False, 0)
+
         self.legend = Gtk.ListBox()
+        self.legend.get_style_context().add_class('chart-legend')
         self.legend.set_selection_mode(Gtk.SelectionMode.NONE)
-        self.legend.set_size_request(250, -1)
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        hbox.pack_start(self.canvas, True, True, 0)
+        self.legend.set_size_request(200, -1)
+        self.legend.connect('row-activated', self.on_legend_activated)
+
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        hbox.pack_start(vbox, True, True, 0)
         hbox.pack_end(self.legend, False, False, 0)
         self.add(hbox)
 
         # chart variables
+        self.activated = False
         self.info = {
             'specs': {},
-            'data': [],
+            'data': None,
             'plots': [],
             'axes': [],
             'selectors': [],
             'config': [],
+            'labels': [],
+            'tags': [],
+            'cursor': None,
+            'markers': [],
+            'yaxis': 0,
         }
+
+    def on_mouse_press(self, widget, event):
+        if event.button == Gdk.BUTTON_MIDDLE:
+            self.clipboard.set_text(widget.name, -1)
+
+    def on_cursor_motion(self, event):
+        style = self.legend.get_style_context()
+        if event.inaxes and self.info['data']:
+            x = max(self.info['data'].data[0, 0], min(event.xdata, 0))
+            self.info['cursor'].set_xdata(x)
+            self.info['cursor'].set_linestyle('-')
+            markers = [bisect.bisect_right(self.info['data'].data[:, 0], x) - 1]
+            style.add_class('finding')
+        else:
+            self.info['cursor'].set_linestyle('none')
+            style.remove_class('finding')
+            markers = []
+
+        if markers != self.info['markers']:
+            self.info['markers'] = markers
+            for i, ln in enumerate(self.info['plots']):
+                ln.set_markevery(markers)
+        self.canvas.draw_idle()
+
+    def on_cursor_click(self, event):
+        if event.inaxes:
+            x, y = event.xdata, event.ydata
+            print("CLICK", x, y)
+
+    def on_legend_activated(self, listbox, row):
+        self.info['yaxis'] = row.get_index()
+        for i, axis in enumerate(self.info['axes']):
+            axis.yaxis.set_visible(i == self.info['yaxis'])
 
     def setup_chart(self, specs):
         self.info['specs'] = specs
         host = self.figure.add_subplot()
         host.set_xlabel(datetime.now().strftime("%b %d\n%H:%M:%S"), loc='right')
-
+        self.info['cursor'] = host.axvline(1, ls="none", lw=0.25, color="#000", alpha=0.75)
+        self.info['axes'] = [host]
+        self.info['yaxis'] = 0
         data_names = []
         selectors = [-1]
         artists = []
-        for i, item in enumerate(specs.get('items', [])):
-            data_names.append(item['pv'])
+
+        marker_style = MarkerStyle(marker='o', fillstyle="full")
+        for i, item in enumerate(specs.get('plots', [])):
+            if not item.get('name', '').strip(): continue
+            data_names.append(item['name'])
+            color = '#{:02x}{:02x}{:02x}'.format(*item['color'])
+            label = LegendItem(item['name'], color=color)
+            label.connect("button-press-event", self.on_mouse_press)
+            self.legend.add(label)
+            self.info['labels'].append(label)
             if len(self.info['axes']) > item['axis']:
                 axis = self.info['axes'][item['axis']]
             else:
                 axis = host.twinx()
                 axis.yaxis.tick_left()
                 axis.yaxis.set_label_position('left')
-                axis.yaxis.set_visible(False)
+                axis.yaxis.set_visible(i == self.info['yaxis'])
                 axis.set_frame_on(False)
                 self.info['axes'].append(axis)
 
-            ln, = axis.plot([], [], '-', ms=5)
+            axis.tick_params(axis='y', colors=color)
+
+            ln, = axis.plot([], [], '-', marker=marker_style, markevery=[], color=color, markerfacecolor="white")
+            axis.set_ylim(item['min'], item['max'])
             artists.append(ln)
             selectors.append(item['axis'])
         self.info['plots'] = artists
         self.info['selectors'] = numpy.array(selectors)
-        data = StripData(*data_names, period=60, sample_freq=10, refresh_freq=10)
+
+        if 'options' in specs:
+            s_freq = int(1/specs['options']['sampleinterval'])
+            r_freq = int(1/specs['options']['refreshinterval'])
+            period = specs['options']['numsamples'] * specs['options']['sampleinterval']
+        else:
+            s_freq = 10
+            r_freq = 10
+            period = 60
+
+        data = StripData(
+            *data_names,
+            period=period,
+            sample_freq=s_freq,
+            refresh_freq=r_freq,
+        )
         data.connect('changed', self.on_data_changed)
         self.info['data'] = data
 
     def on_data_changed(self, plot):
-        artists = self.info['plots']
-        selectors = self.info['selectors']
         for j in range(plot.count-1):
-            ln = artists[j]
-            ln.set_data(plot.data[:, 0], plot.data[:, j+1])
+            ln = self.info['plots'][j]
+            finder = -1
+            if self.info['markers']:
+                finder = self.info['markers'][0]
+            #self.info['labels'][j].set_value(plot.data[finder, j+1])
+            if not self.paused:
+                ln.set_data(plot.data[:, 0], plot.data[:, j+1])
 
-        for k in numpy.unique(selectors[1:]):
-            axis = self.info['axes'][k]
-            sel = (selectors == k)
-            if not numpy.isnan(plot.data[:, sel]).all():
-                vy_min, vy_max = numpy.nanmin(plot.data[:, sel]), numpy.nanmax(plot.data[:, sel])
-                dev = numpy.nanstd(plot.data[:, sel])
-                if vy_min != vy_max or dev > 0:
-                    axis.set_ylim(vy_min-2*dev, vy_max+2*dev)
+            value = ln.get_ydata()[finder]
+            self.info['labels'][j].set_value(value)
 
-        self.info['axes'][0].set_xlabel(datetime.now().strftime("%b %d\n%H:%M:%S"), loc='right')
+        if not self.paused:
+            # update x-limits if not explicitly set
+            if not self.activated:
+                vx_min, vx_max = -self.info['specs']['options']['timespan'], 0
+                if vx_min != vx_max:
+                    self.info['axes'][0].set_xlim(vx_min, vx_max)
+                self.activated = True
+
+            # for k in numpy.unique(self.info['selectors'][1:]):
+            #     axis = self.info['axes'][k]
+            #     sel = (selectors == k)
+            #     if not numpy.isnan(plot.data[:, sel]).all():
+            #         vy_min, vy_max = numpy.nanmin(plot.data[:, sel]), numpy.nanmax(plot.data[:, sel])
+            #         dev = numpy.nanstd(plot.data[:, sel])
+
+            self.info['axes'][0].set_xlabel(self.info['data'].now_time.strftime("%b %d\n%H:%M:%S"), loc='right')
         self.canvas.draw_idle()
 
     def on_edit(self, btn):
+        self.props.paused = not(self.props.paused)
         logger.warn("GtkDM Charting configuration not available")
 
     def on_reload(self, btn):
@@ -223,17 +371,19 @@ class ChartManager(object):
 
         :param path: absolute or relative path to display file
         """
+
+        specs = {}
         if path:
             full_path = self.find_chart(path)
             if not full_path:
                 logger.error('Chart File {} not found'.format(path))
-
+            specs = stp_to_spec(full_path)
             logger.info(f"Loading: {full_path}...")
         else:
             full_path = None
 
         window = ChartWindow()
-        window.setup_chart(full_path)
+        window.setup_chart(specs)
         window.connect('destroy', lambda x: Gtk.main_quit())
         window.show_all()
 
