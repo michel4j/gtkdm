@@ -15,8 +15,6 @@ import gi
 import numpy
 import yaml
 
-from utils import XYData, StripData
-
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo
@@ -31,7 +29,8 @@ import gepics
 import xml.etree.ElementTree as ET
 
 from . import utils, colors, version, PLUGIN_DIR
-from .utils import logger
+from .utils import logger,  XYData, StripData
+
 
 EDITOR = True
 
