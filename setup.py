@@ -33,6 +33,7 @@ setup(
         'bin/gtkdm',
         'bin/gtkdm-editor',
         'bin/gtkdm-mksym',
+        'bin/gtkdm-charting'
     ],
     classifiers=[
         'Intended Audience :: Developers',
