@@ -70,6 +70,51 @@ def stp_to_spec(filename):
     return info
 
 
+class ChartToolbar(NavigationToolbar):
+
+    toolitems = (
+        ('Open', 'Open Chart/Data', 'document-open', 'open_chart'),
+        ('Archive', 'Save the Data', 'document-save', 'save_data'),
+        ('Save', 'Save the Figure', 'media-floppy', 'save_figure'),
+        (None, None, None, None),
+        ('Home', 'Reset original view', 'emblem-synchronizing', 'home'),
+        ('Back', 'Back to  previous view', 'go-previous', 'back'),
+        ('Forward', 'Forward to next view', 'go-next', 'forward'),
+        ('Pan', 'Pan axes with left mouse, zoom with right', 'preferences-system-privacy', 'pan'),
+        ('Zoom', 'Zoom to rectangle', 'edit-select-all', 'zoom'),
+        ('Autoscale', 'Auto Scale Plots', 'object-flip-vertical', 'auto_scale'),
+        ('Pause', 'Pause Updates', 'media-playback-pause', 'pause'),
+        (None, None, None, None),
+
+        ('Configure', 'Configure The Chart', 'document-properties', 'configure'),
+    )
+
+    def __init__(self, canvas, window):
+        super().__init__(canvas, window)
+        self.chart = window
+        for i, toolitem in enumerate(self):
+            if isinstance(toolitem, Gtk.ToolButton):
+                icon_name = f'{self.toolitems[i][2]}-symbolic'
+                image = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
+                toolitem.set_icon_widget(image)
+                image.props.icon_size = Gtk.IconSize.SMALL_TOOLBAR
+
+    def configure(self, btn):
+        self.chart.configure()
+
+    def pause(self, btn):
+        self.chart.pause()
+
+    def save_data(self, btn):
+        self.chart.save_data()
+
+    def open_chart(self, btn):
+        self.chart.open_chart()
+
+    def auto_scale(self, btn):
+        self.chart.auto_scale()
+
+
 class LegendItem(Gtk.EventBox):
     def __init__(self, name, color):
         super().__init__()
@@ -158,7 +203,7 @@ class ChartWindow(Gtk.Window):
         self.canvas.mpl_connect('motion_notify_event', self.on_cursor_motion)
         self.canvas.mpl_connect('button_release_event', self.on_cursor_click)
 
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = ChartToolbar(self.canvas, self)
         vbox.pack_start(self.canvas, True, True, 0)
         vbox.pack_end(self.toolbar, False, False, 0)
 
@@ -221,6 +266,21 @@ class ChartWindow(Gtk.Window):
         self.info['yaxis'] = row.get_index()
         for i, axis in enumerate(self.info['axes']):
             axis.yaxis.set_visible(i == self.info['yaxis'])
+
+    def configure(self):
+        print('configure')
+
+    def pause(self):
+        print("pause")
+
+    def save_data(self):
+        print("save data")
+
+    def open_chart(self):
+        print("Open chart")
+
+    def auto_scale(self):
+        print("auto scale")
 
     def setup_chart(self, specs):
         self.info['specs'] = specs

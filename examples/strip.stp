@@ -1,0 +1,102 @@
+StripConfig                   1.2
+Strip.Time.Timespan           200
+Strip.Time.NumSamples         65536
+Strip.Time.SampleInterval     0.100000
+Strip.Time.RefreshInterval    0.100000
+Strip.Color.Background        65535     65535     65535     
+Strip.Color.Foreground        0         0         0         
+Strip.Color.Grid              49087     49087     49087     
+Strip.Color.Color1            8224      40092     54998     
+Strip.Color.Color2            34952     8224      7967      
+Strip.Color.Color3            24672     26214     0         
+Strip.Color.Color4            11308     18504     34695     
+Strip.Color.Color5            20560     45232     5911      
+Strip.Color.Color6            58339     7453      0         
+Strip.Color.Color7            5911      52685     57054     
+Strip.Color.Color8            7196      65535     47545     
+Strip.Color.Color9            57568     18247     45489     
+Strip.Color.Color10           28013     18247     62451     
+Strip.Option.GridXon          1
+Strip.Option.GridYon          1
+Strip.Option.AxisYcolorStat   1
+Strip.Option.GraphLineWidth   0
+Strip.Curve.0.Name            A1608-1-I20-01:QEM:SumAll:MeanValue_RBV
+Strip.Curve.1.Name            A1608-1-I20-01:QEM:PositionYAve
+Strip.Curve.2.Name            A1608-1-I20-01:QEM:PositionXAve
+Strip.Curve.3.Name            A1408-05:QEM:SumAllAve
+Strip.Curve.4.Name            A1408-05:QEM:PositionXAve
+Strip.Curve.5.Name            A1408-05:QEM:PositionYAve
+Strip.Curve.6.Name            A1608-2-I20-01:QEM:SumAllAve
+Strip.Curve.7.Name            A1608-2-I20-01:QEM:PositionXAve
+Strip.Curve.8.Name            A1608-2-I20-01:QEM:PositionYAve
+Strip.Curve.9.Name            BEST1608-I20-001:BPM0:Int
+Strip.Curve.0.Units           
+Strip.Curve.1.Units           
+Strip.Curve.2.Units           
+Strip.Curve.3.Units           
+Strip.Curve.4.Units           
+Strip.Curve.5.Units           
+Strip.Curve.6.Units           
+Strip.Curve.7.Units           
+Strip.Curve.8.Units           
+Strip.Curve.9.Units           Amper
+Strip.Curve.0.Comment         
+Strip.Curve.1.Comment         
+Strip.Curve.2.Comment         
+Strip.Curve.3.Comment         
+Strip.Curve.4.Comment         
+Strip.Curve.5.Comment         
+Strip.Curve.6.Comment         
+Strip.Curve.7.Comment         
+Strip.Curve.8.Comment         
+Strip.Curve.9.Comment         Intensity
+Strip.Curve.0.Precision       0
+Strip.Curve.1.Precision       2
+Strip.Curve.2.Precision       2
+Strip.Curve.3.Precision       0
+Strip.Curve.4.Precision       2
+Strip.Curve.5.Precision       2
+Strip.Curve.6.Precision       0
+Strip.Curve.7.Precision       0
+Strip.Curve.8.Precision       0
+Strip.Curve.9.Precision       12
+Strip.Curve.0.Min              225000
+Strip.Curve.1.Min             -600.00
+Strip.Curve.2.Min              150.00
+Strip.Curve.3.Min              5000000
+Strip.Curve.4.Min             -1669.99
+Strip.Curve.5.Min             -1465.00
+Strip.Curve.6.Min              1000
+Strip.Curve.7.Min             -2899
+Strip.Curve.8.Min             -1200
+Strip.Curve.9.Min              0.000002000000
+Strip.Curve.0.Max              245000
+Strip.Curve.1.Max             -449.84
+Strip.Curve.2.Max              204.99
+Strip.Curve.3.Max              5599999
+Strip.Curve.4.Max             -1600.00
+Strip.Curve.5.Max             -1445.00
+Strip.Curve.6.Max              8000
+Strip.Curve.7.Max             -900
+Strip.Curve.8.Max             -300
+Strip.Curve.9.Max              0.000025000000
+Strip.Curve.0.Scale           0
+Strip.Curve.1.Scale           0
+Strip.Curve.2.Scale           0
+Strip.Curve.3.Scale           0
+Strip.Curve.4.Scale           0
+Strip.Curve.5.Scale           0
+Strip.Curve.6.Scale           0
+Strip.Curve.7.Scale           0
+Strip.Curve.8.Scale           0
+Strip.Curve.9.Scale           0
+Strip.Curve.0.PlotStatus      1
+Strip.Curve.1.PlotStatus      1
+Strip.Curve.2.PlotStatus      1
+Strip.Curve.3.PlotStatus      1
+Strip.Curve.4.PlotStatus      1
+Strip.Curve.5.PlotStatus      1
+Strip.Curve.6.PlotStatus      1
+Strip.Curve.7.PlotStatus      1
+Strip.Curve.8.PlotStatus      1
+Strip.Curve.9.PlotStatus      1
