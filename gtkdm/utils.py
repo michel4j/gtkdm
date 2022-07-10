@@ -149,7 +149,6 @@ class PlotData(GObject.GObject):
         self.arrays = False
         self.sample_freq = sample_freq
         self.refresh_freq = refresh_freq
-        self.refresh_pending = False
         self.alive = True
 
         Thread(target=self.monitor, daemon=True).start()
@@ -162,16 +161,13 @@ class PlotData(GObject.GObject):
             sample_every = 1/self.sample_freq
             refresh_every = 1/self.refresh_freq
             sleep_for = min(sample_every, refresh_every)/2
-            src_id = GLib.timeout_add(int(sleep_for*1000), self.refresh)
             while self.alive:
                 if time.time() - last_sample > sample_every:
                     self.sample_data()
                     last_sample = time.time()
                 if time.time() - last_refresh > refresh_every:
-                    self.refresh_pending = True
-                    last_refresh = time.time()
+                    GLib.idle_add(self.refresh)
                 time.sleep(sleep_for)
-            GLib.source_remove(src_id)
 
     def destroy(self):
         self.alive = False
@@ -180,11 +176,9 @@ class PlotData(GObject.GObject):
         raise NotImplementedError()
 
     def refresh(self):
-        if self.refresh_pending:
-            self.refresh_pending = False
-            if self.data is not None:
-                self.emit("changed")
-        return True
+        if self.data is not None:
+            self.emit("changed")
+        return False
 
 
 class XYData(PlotData):

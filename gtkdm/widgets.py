@@ -2414,7 +2414,8 @@ class Plot(Gtk.Bin):
 
         # with plt.xkcd():
         with style_context(self.scheme):
-            self.figure = Figure(dpi=self.dpi, layout="tight")
+            self.figure = Figure(dpi=self.dpi)
+            self.figure.set_tight_layout(True)
             self.canvas = FigureCanvas(self.figure)
             self.setup_axes(len(y_axes))
 
