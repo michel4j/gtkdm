@@ -74,6 +74,7 @@
         <glade-widget-class name="CheckControl" generic-name="checkcontrol" title="CheckControl" icon-name="widget-gtk-checkbutton"/>
         <glade-widget-class name="Shape" generic-name="shape" title="Shape" icon-name="widget-gtk-drawingarea"/>
         <glade-widget-class name="DisplayMenuItem" generic-name="displaymenuitem" title="Display Menu Item" icon-name="widget-gtk-menuitem"/>
+        <glade-widget-class name="ShellMenuItem" generic-name="shellmenuitem" title="Shell Menu Item" icon-name="widget-gtk-menuitem"/>
         <glade-widget-class name="DisplayMenu" generic-name="displaymenu" title="Display Menu" icon-name="widget-gtk-popover"/>
         <glade-widget-class name="MessageLog" generic-name="MessageLog" title="Message Log" icon-name="widget-gtk-textview"/>
         <glade-widget-class name="MenuButton" generic-name="menubutton" title="Menu Button" icon-name="widget-gtk-menubutton">
@@ -126,6 +127,7 @@
         <glade-widget-class-ref name="ChoiceMenu"/>
         <glade-widget-class-ref name="DisplayMenu"/>
         <glade-widget-class-ref name="DisplayMenuItem"/>
+        <glade-widget-class-ref name="ShellMenuItem"/>
     </glade-widget-group>
 
 </glade-catalog>

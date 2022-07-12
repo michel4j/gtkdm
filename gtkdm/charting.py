@@ -10,7 +10,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
 from gi.repository import Gtk, GObject, Gio, Pango, Gdk
 
-from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
+from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 from matplotlib.figure import Figure
 from matplotlib.markers import MarkerStyle
@@ -42,6 +42,12 @@ CONVERTERS = {
 
 
 def stp_to_spec(filename):
+    """
+    Load a StripTool STP file and return a plot specification
+
+    :param filename:
+    :return:
+    """
     color_pattern = re.compile(r'Strip\.Color\.(?P<key>\w+)\s+(?P<r>\d+)\s+(?P<g>\d+)\s+(?P<b>\d+)')
     curve_pattern = re.compile(r'Strip\.Curve\.(?P<curve>\d+).(?P<key>\w+)\s+(?P<value>[-\w.:_]*?)\n')
     option_pattern = re.compile(r'Strip\.(?:(Time)|(Option))\.(?P<key>\w+)\s+(?P<value>[-\w.:_]*?)\n')
@@ -53,7 +59,7 @@ def stp_to_spec(filename):
             item[0].lower(): tuple(map(lambda v: int(v)*255//65535, item[1:]))
             for item in color_pattern.findall(data)
         },
-        'plots': [{'axis': i} for i in range(10)]
+        'plots': [{} for i in range(10)]
     }
     for m in curve_pattern.finditer(data):
         item = m.groupdict()
@@ -66,8 +72,26 @@ def stp_to_spec(filename):
     # Transfer colors
     for i in range(10):
         info['plots'][i]['color'] = info['options'].pop(f'color{i+1}')
-
+    info['plots'] = list(filter(lambda item: item.get('name', '').strip(), info['plots']))
     return info
+
+
+def get_margins(n, sig=1):
+    """
+    Calculate the margins for the given number of plots
+    :param n: Number of plots
+    :param sig: single number of standard deviations, plots will be offset to avoid overlap.
+    :return: 2D array consisting of pairs of values which are the numbers of standard deviations on each side.
+    """
+    y = numpy.arange(n)
+    step = (sig*2)/(n+1)
+    return step*numpy.column_stack((-(y+1), n-y))
+
+
+PAUSE_ICONS = {
+    False:  "media-playback-pause",
+    True:   "media-playback-start",
+}
 
 
 class ChartToolbar(NavigationToolbar):
@@ -82,7 +106,8 @@ class ChartToolbar(NavigationToolbar):
         ('Forward', 'Forward to next view', 'go-next', 'forward'),
         ('Pan', 'Pan axes with left mouse, zoom with right', 'preferences-system-privacy', 'pan'),
         ('Zoom', 'Zoom to rectangle', 'edit-select-all', 'zoom'),
-        ('Autoscale', 'Auto Scale Plots', 'object-flip-vertical', 'auto_scale'),
+        ('Diverge', 'Zoom Out and Expand plots', 'view-fullscreen', 'scale_diverge'),
+        ('Converge', 'Zoom In and Compress plots', 'view-restore', 'scale_converge'),
         ('Pause', 'Pause Updates', 'media-playback-pause', 'pause'),
         (None, None, None, None),
 
@@ -92,18 +117,26 @@ class ChartToolbar(NavigationToolbar):
     def __init__(self, canvas, window):
         super().__init__(canvas, window)
         self.chart = window
+        self.paused = False
+        self.widgets = {}
+        self.scale = 0
+        self.max_scale = 6
+
         for i, toolitem in enumerate(self):
             if isinstance(toolitem, Gtk.ToolButton):
                 icon_name = f'{self.toolitems[i][2]}-symbolic'
-                image = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
-                toolitem.set_icon_widget(image)
-                image.props.icon_size = Gtk.IconSize.SMALL_TOOLBAR
+                name = self.toolitems[i][0]
+                toolitem.get_icon_widget().set_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
+                self.widgets[name] = toolitem
 
     def configure(self, btn):
         self.chart.configure()
 
     def pause(self, btn):
-        self.chart.pause()
+        self.paused = not(self.paused)
+        icon_name = f'{PAUSE_ICONS[self.paused]}-symbolic'
+        btn.get_icon_widget().set_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
+        self.chart.pause(self.paused)
 
     def save_data(self, btn):
         self.chart.save_data()
@@ -111,8 +144,17 @@ class ChartToolbar(NavigationToolbar):
     def open_chart(self, btn):
         self.chart.open_chart()
 
-    def auto_scale(self, btn):
-        self.chart.auto_scale()
+    def scale_diverge(self, btn):
+        self.scale = min(self.scale + 1, self.max_scale)
+        self.widgets['Diverge'].set_sensitive(self.scale < self.max_scale)
+        self.widgets['Converge'].set_sensitive(self.scale > 0)
+        self.chart.auto_scale(self.scale)
+
+    def scale_converge(self, btn):
+        self.scale = max(self.scale - 1, 0)
+        self.widgets['Diverge'].set_sensitive(self.scale < self.max_scale)
+        self.widgets['Converge'].set_sensitive(self.scale > 0)
+        self.chart.auto_scale(self.scale)
 
 
 class LegendItem(Gtk.EventBox):
@@ -197,15 +239,15 @@ class ChartWindow(Gtk.Window):
             self.header.props.title = "GtkDM Charting"
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.figure = Figure(dpi=80, layout="tight")
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.figure = Figure(dpi=80)
+        self.figure.set_tight_layout(True)
         self.canvas = FigureCanvas(self.figure)
         self.canvas.set_size_request(650, 550)
         self.canvas.mpl_connect('motion_notify_event', self.on_cursor_motion)
         self.canvas.mpl_connect('button_release_event', self.on_cursor_click)
-
         self.toolbar = ChartToolbar(self.canvas, self)
-        vbox.pack_start(self.canvas, True, True, 0)
-        vbox.pack_end(self.toolbar, False, False, 0)
 
         self.legend = Gtk.ListBox()
         self.legend.get_style_context().add_class('chart-legend')
@@ -213,10 +255,11 @@ class ChartWindow(Gtk.Window):
         self.legend.set_size_request(200, -1)
         self.legend.connect('row-activated', self.on_legend_activated)
 
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        hbox.pack_start(vbox, True, True, 0)
+        vbox.pack_start(hbox, True, True, 0)
+        vbox.pack_end(self.toolbar, False, False, 0)
+        hbox.pack_start(self.canvas, True, True, 0)
         hbox.pack_end(self.legend, False, False, 0)
-        self.add(hbox)
+        self.add(vbox)
 
         # chart variables
         self.activated = False
@@ -225,14 +268,16 @@ class ChartWindow(Gtk.Window):
             'data': None,
             'plots': [],
             'axes': [],
-            'selectors': [],
             'config': [],
             'labels': [],
             'tags': [],
             'cursor': None,
             'markers': [],
             'yaxis': 0,
+            'colors': [],
         }
+        self.marker_size = 5
+        self.last_scale = 1
 
     def on_mouse_press(self, widget, event):
         if event.button == Gdk.BUTTON_MIDDLE:
@@ -240,7 +285,7 @@ class ChartWindow(Gtk.Window):
 
     def on_cursor_motion(self, event):
         style = self.legend.get_style_context()
-        if event.inaxes and self.info['data']:
+        if event.inaxes and self.info['data'] and self.activated:
             x = max(self.info['data'].data[0, 0], min(event.xdata, 0))
             self.info['cursor'].set_xdata(x)
             self.info['cursor'].set_linestyle('-')
@@ -266,12 +311,16 @@ class ChartWindow(Gtk.Window):
         self.info['yaxis'] = row.get_index()
         for i, axis in enumerate(self.info['axes']):
             axis.yaxis.set_visible(i == self.info['yaxis'])
+            if i == self.info['yaxis']:
+                self.info['plots'][i].set_markersize(1.5*self.marker_size)
+            else:
+                self.info['plots'][i].set_markersize(self.marker_size)
 
     def configure(self):
         print('configure')
 
-    def pause(self):
-        print("pause")
+    def pause(self, state):
+        self.props.paused = state
 
     def save_data(self):
         print("save data")
@@ -279,8 +328,34 @@ class ChartWindow(Gtk.Window):
     def open_chart(self):
         print("Open chart")
 
-    def auto_scale(self):
-        print("auto scale")
+    def auto_scale(self, scale):
+        plot = self.info['data']
+        sigma = (2**scale)
+        if plot is not None:
+            curves = self.info['specs'].get('plots', [])
+            devs = get_margins(len(curves), sigma)
+            xmin, xmax = self.info['axes'][0].get_xlim()
+            xrange = (xmax - xmin) * self.last_scale / (scale + 1)
+            xmin = xmax - xrange
+            if xmin != xmax :
+                self.info['axes'][0].set_xlim(xmin, xmax)
+            for i, item in enumerate(curves):
+                axis = self.info['axes'][i]
+                dev = devs[i]
+                margin = numpy.array((0.,0.))
+                if scale == 0:
+                    margin[:] = (item['min'], item['max'])
+                else:
+                    if not numpy.isnan(plot.data[:, i+1]).all():
+                        avg = numpy.nanmean(plot.data[:, i+1])
+                        std = numpy.nanstd(plot.data[:, i+1])
+                        if std == 0.0:
+                            std = 1.0
+                        margin[:] = std * dev + avg
+
+                if numpy.diff(margin)[0] != 0.0:
+                    axis.set_ylim(*margin)
+        self.last_scale = scale + 1
 
     def setup_chart(self, specs):
         self.info['specs'] = specs
@@ -290,20 +365,19 @@ class ChartWindow(Gtk.Window):
         self.info['axes'] = [host]
         self.info['yaxis'] = 0
         data_names = []
-        selectors = [-1]
         artists = []
 
         marker_style = MarkerStyle(marker='o', fillstyle="full")
         for i, item in enumerate(specs.get('plots', [])):
-            if not item.get('name', '').strip(): continue
             data_names.append(item['name'])
             color = '#{:02x}{:02x}{:02x}'.format(*item['color'])
+            self.info['colors'].append(color)
             label = LegendItem(item['name'], color=color)
             label.connect("button-press-event", self.on_mouse_press)
             self.legend.add(label)
             self.info['labels'].append(label)
-            if len(self.info['axes']) > item['axis']:
-                axis = self.info['axes'][item['axis']]
+            if i == 0:
+                axis = self.info['axes'][i]
             else:
                 axis = host.twinx()
                 axis.yaxis.tick_left()
@@ -314,12 +388,14 @@ class ChartWindow(Gtk.Window):
 
             axis.tick_params(axis='y', colors=color)
 
-            ln, = axis.plot([], [], '-', marker=marker_style, markevery=[], color=color, markerfacecolor="white")
+            ln, = axis.plot(
+                [], [], '-', marker=marker_style, markevery=[], color=color,
+                markerfacecolor="white", markersize=self.marker_size
+            )
             axis.set_ylim(item['min'], item['max'])
             artists.append(ln)
-            selectors.append(item['axis'])
+
         self.info['plots'] = artists
-        self.info['selectors'] = numpy.array(selectors)
 
         if 'options' in specs:
             s_freq = int(1/specs['options']['sampleinterval'])
@@ -352,20 +428,11 @@ class ChartWindow(Gtk.Window):
             value = ln.get_ydata()[finder]
             self.info['labels'][j].set_value(value)
 
-        if not self.paused:
-            # update x-limits if not explicitly set
-            if not self.activated:
-                vx_min, vx_max = -self.info['specs']['options']['timespan'], 0
-                if vx_min != vx_max:
-                    self.info['axes'][0].set_xlim(vx_min, vx_max)
-                self.activated = True
-
-            # for k in numpy.unique(self.info['selectors'][1:]):
-            #     axis = self.info['axes'][k]
-            #     sel = (selectors == k)
-            #     if not numpy.isnan(plot.data[:, sel]).all():
-            #         vy_min, vy_max = numpy.nanmin(plot.data[:, sel]), numpy.nanmax(plot.data[:, sel])
-            #         dev = numpy.nanstd(plot.data[:, sel])
+        if not self.activated:
+            xmin, xmax = -self.info['specs']['options']['timespan'], 0
+            if xmin != xmax:
+                self.info['axes'][0].set_xlim(xmin, xmax)
+            self.activated = True
 
             self.info['axes'][0].set_xlabel(self.info['data'].now_time.strftime("%b %d\n%H:%M:%S"), loc='right')
         self.canvas.draw_idle()
@@ -398,7 +465,7 @@ class ChartManager(object):
     def __init__(self):
         self.macros = {}
         self.registry = {}
-        self.search_paths = [os.getcwd()] + os.environ.get('GTKDM_CHART_PATH', '').split(':')
+        self.search_paths = [os.getcwd()] + os.environ.get('GTKDM_DISPLAY_PATH', '').split(':')
 
     def find_chart(self, path, root_path=None):
         """
