@@ -13,6 +13,9 @@ glade-design-layout .display-frame {
 .gtkdm scale > marks > mark > label, glade-design-layout scale > marks > mark > label {
   padding: 0 4px; }
 
+.gtkdm label.selected, glade-design-layout label.selected {
+  font-weight: bold; }
+
 .gtkdm .tiny button, glade-design-layout .tiny button {
   min-height: 8px;
   min-width: 8px;

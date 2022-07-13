@@ -18,26 +18,24 @@ from matplotlib.markers import MarkerStyle
 from . import version
 from .utils import logger, StripData
 
-Y_AXIS_OFFSET = 60
-AXIS_SPACE = 0.92
 
-CONVERTERS = {
-    'Min': float,
-    'Max': float,
-    'Scale': int,
-    'Precision': int,
-    'PlotStatus': bool,
-    'Comment': str,
-    'Name': str,
-    'Timespan': int,
-    'NumSamples': int,
-    'SampleInterval': float,
-    'RefreshInterval': float,
-    'GridXOn': bool,
-    'GridYOn': bool,
-    'AxisYcolorStat': bool,
-    'GraphLineWidth': float,
-    'Units': str,
+STP_CONVERTERS = {
+    'Min': ('ymin', float),
+    'Max': ('ymax', float),
+    'Scale': ('log', lambda v: bool(int(v))),
+    'Precision': ('precision', int),
+    'PlotStatus': ('show', bool),
+    'Comment': ('comment', str),
+    'Name': ('name', str),
+    'Timespan': ('period', int),
+    'NumSamples': ('samples', int),
+    'SampleInterval': ('sample_freq', lambda v: int(1/float(v))),
+    'RefreshInterval': ('refresh_freq', lambda v: int(1/float(v))),
+    'GridXOn': ('x_grid', bool),
+    'GridYOn': ('y_grid', bool),
+    'AxisYcolorStat': ('color_axis', bool),
+    'GraphLineWidth': ('line_width', lambda v: numpy.linspace(0, 2, 4)[int(v)+1]),
+    'Units': ('units', str),
 }
 
 
@@ -53,25 +51,28 @@ def stp_to_spec(filename):
     option_pattern = re.compile(r'Strip\.(?:(Time)|(Option))\.(?P<key>\w+)\s+(?P<value>[-\w.:_]*?)\n')
     with open(filename, 'r') as fobj:
         data = fobj.read()
-
+    colors = {
+        item[0].lower(): tuple(map(lambda v: int(v)*255//65535, item[1:]))
+        for item in color_pattern.findall(data)
+    }
     info = {
-        'options': {
-            item[0].lower(): tuple(map(lambda v: int(v)*255//65535, item[1:]))
-            for item in color_pattern.findall(data)
-        },
+        'options': {},
         'plots': [{} for i in range(10)]
     }
     for m in curve_pattern.finditer(data):
         item = m.groupdict()
-        info['plots'][int(item['curve'])][item['key'].lower()] = CONVERTERS.get(item['key'], lambda v: v)(item['value'])
+        key, clean_func = STP_CONVERTERS.get(item['key'])
+        info['plots'][int(item['curve'])][key] = clean_func(item['value'])
 
     for m in option_pattern.finditer(data):
         item = m.groupdict()
-        info['options'][item['key'].lower()] = CONVERTERS.get(item['key'], lambda v: v)(item['value'])
+        if not item['key'] in STP_CONVERTERS: continue
+        key, clean_func = STP_CONVERTERS.get(item['key'])
+        info['options'][key] = clean_func(item['value'])
 
-    # Transfer colors
+    # Transfer colors from to curves
     for i in range(10):
-        info['plots'][i]['color'] = info['options'].pop(f'color{i+1}')
+        info['plots'][i]['color'] = colors[f'color{i+1}']
     info['plots'] = list(filter(lambda item: item.get('name', '').strip(), info['plots']))
     return info
 
@@ -164,6 +165,7 @@ class LegendItem(Gtk.EventBox):
         self.add(box)
         self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.name = name
+        self.selected = False
         self.label = Gtk.Label(xalign=0.0)
         self.value = Gtk.Label(xalign=1.0)
         self.value.get_style_context().add_class('text-monitor')
@@ -178,11 +180,21 @@ class LegendItem(Gtk.EventBox):
     def set_value(self, value):
         self.value.set_markup(f'<span color="{self.color}"><small><tt>{value:g}</tt></small></span>')
 
+    def select(self, state):
+        self.selected = state
+        if self.selected:
+            self.label.get_style_context().add_class('selected')
+        else:
+            self.label.get_style_context().remove_class('selected')
+
 
 class ChartWindow(Gtk.Window):
     __gtype_name__ = 'ChartWindow'
 
     paused = GObject.Property(type=bool, default=False, nick='Pause Updates')
+    line_width = GObject.Property(type=float, default=0.5, nick='Line Width')
+    x_grid = GObject.Property(type=bool, default=False, nick='Show X-Grid Lines')
+    y_grid = GObject.Property(type=bool, default=False, nick='Show Y-Grid Lines')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -273,7 +285,7 @@ class ChartWindow(Gtk.Window):
             'tags': [],
             'cursor': None,
             'markers': [],
-            'yaxis': 0,
+            'yaxis': None,         # Which y-axis to show, defaults to the first curve
             'colors': [],
         }
         self.marker_size = 5
@@ -286,10 +298,12 @@ class ChartWindow(Gtk.Window):
     def on_cursor_motion(self, event):
         style = self.legend.get_style_context()
         if event.inaxes and self.info['data'] and self.activated:
-            x = max(self.info['data'].data[0, 0], min(event.xdata, 0))
-            self.info['cursor'].set_xdata(x)
+            x_data = self.info['data'].x_data()
+            x = max(numpy.nanmin(x_data), min(event.xdata, numpy.nanmax(x_data)))
             self.info['cursor'].set_linestyle('-')
-            markers = [bisect.bisect_right(self.info['data'].data[:, 0], x) - 1]
+            finder = len(x_data) - bisect.bisect_right(x_data[::-1], x) - 1
+            self.info['cursor'].set_xdata(x_data[finder])
+            markers = [finder]
             style.add_class('finding')
         else:
             self.info['cursor'].set_linestyle('none')
@@ -308,13 +322,17 @@ class ChartWindow(Gtk.Window):
             print("CLICK", x, y)
 
     def on_legend_activated(self, listbox, row):
-        self.info['yaxis'] = row.get_index()
+        index = row.get_index()
+
+        self.info['yaxis'] = None if self.info['yaxis'] == index else index
         for i, axis in enumerate(self.info['axes']):
-            axis.yaxis.set_visible(i == self.info['yaxis'])
-            if i == self.info['yaxis']:
-                self.info['plots'][i].set_markersize(1.5*self.marker_size)
-            else:
-                self.info['plots'][i].set_markersize(self.marker_size)
+            is_visible = i == index
+            axis.yaxis.set_visible(is_visible)
+            axis.yaxis.grid(is_visible and self.y_grid)
+
+            self.info['labels'][i].select(is_visible)
+            width = 3*self.line_width if i == self.info['yaxis'] else self.line_width
+            self.info['plots'][i].set_linewidth(width)
 
     def configure(self):
         print('configure')
@@ -339,31 +357,40 @@ class ChartWindow(Gtk.Window):
             xmin = xmax - xrange
             if xmin != xmax :
                 self.info['axes'][0].set_xlim(xmin, xmax)
+            y_data = plot.y_data()
             for i, item in enumerate(curves):
                 axis = self.info['axes'][i]
                 dev = devs[i]
                 margin = numpy.array((0.,0.))
                 if scale == 0:
-                    margin[:] = (item['min'], item['max'])
+                    margin[:] = (item['ymin'], item['ymax'])
                 else:
-                    if not numpy.isnan(plot.data[:, i+1]).all():
-                        avg = numpy.nanmean(plot.data[:, i+1])
-                        std = numpy.nanstd(plot.data[:, i+1])
+                    if not numpy.isnan(y_data[:, i]).all():
+                        avg = numpy.nanmean(y_data[:, i])
+                        std = numpy.nanstd(y_data[:, i])
                         if std == 0.0:
                             std = 1.0
                         margin[:] = std * dev + avg
 
+                if item['log']:
+                    margin[0] = max(1e-16, margin[0])
                 if numpy.diff(margin)[0] != 0.0:
                     axis.set_ylim(*margin)
         self.last_scale = scale + 1
 
     def setup_chart(self, specs):
+
+        self.props.x_grid = specs['options'].get('x_grid', False)
+        self.props.y_grid = specs['options'].get('y_grid', False)
+        self.props.line_width = specs['options'].get('line_width', 0.5)
+
         self.info['specs'] = specs
         host = self.figure.add_subplot()
         host.set_xlabel(datetime.now().strftime("%b %d\n%H:%M:%S"), loc='right')
-        self.info['cursor'] = host.axvline(1, ls="none", lw=0.25, color="#000", alpha=0.75)
+        host.xaxis.grid(linewidth=.5, linestyle=':', color='#000')
+        host.xaxis.grid(self.x_grid)
+        self.info['cursor'] = host.axvline(1, ls="none", lw=1, color="#000", alpha=0.5)
         self.info['axes'] = [host]
-        self.info['yaxis'] = 0
         data_names = []
         artists = []
 
@@ -373,6 +400,7 @@ class ChartWindow(Gtk.Window):
             color = '#{:02x}{:02x}{:02x}'.format(*item['color'])
             self.info['colors'].append(color)
             label = LegendItem(item['name'], color=color)
+            label.select(i == 0)
             label.connect("button-press-event", self.on_mouse_press)
             self.legend.add(label)
             self.info['labels'].append(label)
@@ -382,25 +410,35 @@ class ChartWindow(Gtk.Window):
                 axis = host.twinx()
                 axis.yaxis.tick_left()
                 axis.yaxis.set_label_position('left')
-                axis.yaxis.set_visible(i == self.info['yaxis'])
                 axis.set_frame_on(False)
                 self.info['axes'].append(axis)
+
+            if item.get('log'):
+                axis.set_yscale('log')
+            #else:
+            #    axis.set_yscale('linear')
+
+            axis.yaxis.set_visible(i == 0)
+            axis.yaxis.grid(linewidth=.5, linestyle=':', color='#000')
+            axis.yaxis.grid(self.y_grid and i == 0)
 
             axis.tick_params(axis='y', colors=color)
 
             ln, = axis.plot(
                 [], [], '-', marker=marker_style, markevery=[], color=color,
-                markerfacecolor="white", markersize=self.marker_size
+                markerfacecolor="white", markersize=self.marker_size, lw=self.line_width
             )
-            axis.set_ylim(item['min'], item['max'])
+            if item['log']:
+                item['ymin'] = max(1e-16, item['ymin'])
+            axis.set_ylim(item['ymin'], item['ymax'])
             artists.append(ln)
 
         self.info['plots'] = artists
 
         if 'options' in specs:
-            s_freq = int(1/specs['options']['sampleinterval'])
-            r_freq = int(1/specs['options']['refreshinterval'])
-            period = specs['options']['numsamples'] * specs['options']['sampleinterval']
+            s_freq = specs['options']['sample_freq']
+            r_freq = specs['options']['refresh_freq']
+            period = specs['options']['period']
         else:
             s_freq = 10
             r_freq = 10
@@ -416,25 +454,30 @@ class ChartWindow(Gtk.Window):
         self.info['data'] = data
 
     def on_data_changed(self, plot):
+        x_data = plot.x_data()
+        y_data = plot.y_data()
+
+        if x_data is None:
+            return
+
         for j in range(plot.count-1):
             ln = self.info['plots'][j]
-            finder = -1
+            if not self.paused:
+                ln.set_data(x_data, y_data[:, j])
+
+            finder = 0
             if self.info['markers']:
                 finder = self.info['markers'][0]
-            #self.info['labels'][j].set_value(plot.data[finder, j+1])
-            if not self.paused:
-                ln.set_data(plot.data[:, 0], plot.data[:, j+1])
-
             value = ln.get_ydata()[finder]
             self.info['labels'][j].set_value(value)
 
         if not self.activated:
-            xmin, xmax = -self.info['specs']['options']['timespan'], 0
+            xmin, xmax = -self.info['specs']['options']['period'], 0
             if xmin != xmax:
                 self.info['axes'][0].set_xlim(xmin, xmax)
             self.activated = True
 
-            self.info['axes'][0].set_xlabel(self.info['data'].now_time.strftime("%b %d\n%H:%M:%S"), loc='right')
+        self.info['axes'][0].set_xlabel(self.info['data'].end_time().strftime("%b %d\n%H:%M:%S"), loc='right')
         self.canvas.draw_idle()
 
     def on_edit(self, btn):
@@ -476,7 +519,6 @@ class ChartManager(object):
 
         """
         search_locations = self.search_paths if not root_path else [root_path] + self.search_paths
-
         is_abs = os.path.isabs(path)
         if is_abs and os.path.exists(path):
             full_path = path

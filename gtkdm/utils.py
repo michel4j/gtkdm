@@ -145,29 +145,52 @@ class PlotData(GObject.GObject):
         super().__init__()
         self.count = count
         self.size = size
+        self.sample_freq = 1
+        self.refresh_freq = 1
+        self.sample_every = 1.0
+        self.refresh_every = 1.0
+        self.sleep_for = 0.5
+        self.setup(count, size, sample_freq, refresh_freq)
         self.data = None
         self.arrays = False
-        self.sample_freq = sample_freq
-        self.refresh_freq = refresh_freq
         self.alive = True
 
         Thread(target=self.monitor, daemon=True).start()
+
+    def setup(self, count, size:int = 1, sample_freq: float = 1, refresh_freq: float = 1):
+        self.count = count
+        self.size = size
+        self.sample_freq = sample_freq
+        self.refresh_freq = refresh_freq
+        if sample_freq > 0 and refresh_freq > 0:
+            self.sample_every = 1 / self.sample_freq
+            self.refresh_every = 1 / self.refresh_freq
+            self.sleep_for = min(self.sample_every, self.refresh_every) / 2
 
     def monitor(self):
         gepics.threads_init()
         last_sample = time.time()
         last_refresh = time.time()
         if self.sample_freq:
-            sample_every = 1/self.sample_freq
-            refresh_every = 1/self.refresh_freq
-            sleep_for = min(sample_every, refresh_every)/2
             while self.alive:
-                if time.time() - last_sample > sample_every:
+                if time.time() - last_sample > self.sample_every:
                     self.sample_data()
                     last_sample = time.time()
-                if time.time() - last_refresh > refresh_every:
+                if time.time() - last_refresh > self.refresh_every:
                     GLib.idle_add(self.refresh)
-                time.sleep(sleep_for)
+                time.sleep(self.sleep_for)
+
+    def x_data(self):
+        if self.data is not None:
+            sel = ~numpy.isnan(self.data[:, 0])
+            if sel.sum():
+                return self.data[:, 0]
+
+    def y_data(self):
+        if self.data is not None:
+            sel = ~numpy.isnan(self.data[:, 0])
+            if sel.sum():
+                return self.data[:, 1:]
 
     def destroy(self):
         self.alive = False
@@ -255,25 +278,38 @@ class StripData(PlotData):
         self.pvs = [
             gepics.PV(name) for name in names
         ]
-        self.now_time = datetime.now()
+
         for pv in self.pvs:
             pv.connect('active', self.activate)
 
     def activate(self, obj, state):
         if state and self.data is None:
-            self.data = numpy.empty((self.size, self.count), dtype=numpy.float32)
+            self.data = numpy.empty((self.size, self.count), dtype=numpy.float64)
             self.data.fill(numpy.nan)
-            self.data[:, 0] = numpy.linspace(-self.period, 0, self.size)
+
+    def x_data(self):
+        if self.data is not None:
+            sel = ~numpy.isnan(self.data[:,0])
+            if sel.sum():
+                return self.data[:, 0] - self.data[0, 0]
+
+    def end_time(self):
+        t = datetime.now()
+        if self.data is not None:
+            sel = ~numpy.isnan(self.data[:, 0])
+            if sel.sum():
+                t = datetime.fromtimestamp(float(self.data[0, 0]))
+        return t
 
     def sample_data(self):
-        self.now_time = datetime.now()
         if self.data is not None:
-            self.data[:-1, 1:] = self.data[1:, 1:]  # preserve time axis
+            self.data[1:, :] = self.data[:-1, :]
             for i, pv in enumerate(self.pvs):
                 value = numpy.nan
                 if pv.is_active():
                     value = pv.get()
                     if isinstance(value, numpy.ndarray):
                         value = value[-1]
-                self.data[-1, i+1] = value
+                self.data[0, i+1] = value
+            self.data[0, 0] = time.time()
 

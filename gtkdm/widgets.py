@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import shlex
 import subprocess
 import textwrap
@@ -2214,8 +2215,7 @@ class ShellMenuItem(Gtk.Bin):
             if self.proc:
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:
-                cmds = self.command.split()
-                self.proc = subprocess.Popen(cmds, shell=True, stdout=subprocess.DEVNULL)
+                self.proc = subprocess.Popen(self.command, shell=True, stdout=subprocess.DEVNULL)
 
 
 class MessageLog(FontMixin, ActiveMixin, Gtk.EventBox):
@@ -2434,7 +2434,7 @@ class Plot(Gtk.Bin):
             for i, group in enumerate(specs['series']):
                 data_names = [] if self.strip_plot else [group.get('x-data', "#")]
                 artists = []
-                selectors = [-1]  # Y-axis selectors. -1 represents X-axis.
+                selectors = []
                 for item in group['y-data']:
                     data_names.append(item['y'])
                     axis = self.info['axes'][item.get('axis', 'y')]
@@ -2462,24 +2462,26 @@ class Plot(Gtk.Bin):
     def on_data_changed(self, plot, i):
         artists = self.info['plots'][i]
         selectors = self.info['selectors'][i]
+        x_data = plot.x_data()
+        y_data = plot.y_data()
         for j in range(plot.count-1):
             ln = artists[j]
-            ln.set_data(plot.data[:, 0], plot.data[:, j+1])
+            ln.set_data(x_data, y_data[:, j])
 
         # update x-limits if not explicitly set
-        if not self.info['specs'].get('x-limits') and not numpy.isnan(plot.data[:, 0]).all():
-            vx_min, vx_max = numpy.nanmin(plot.data[:, 0]), numpy.nanmax(plot.data[:, 0])
+        if not self.info['specs'].get('x-limits') and not numpy.isnan(x_data).all():
+            vx_min, vx_max = numpy.nanmin(x_data), numpy.nanmax(x_data)
             if vx_min != vx_max:
                 self.info['axes']['y'].set_xlim(vx_min, vx_max)
 
         # y-limits are special, update them based on all children
         axis_names = ["y", "y1", "y2"]
-        for k in numpy.unique(selectors[1:]):
+        for k in numpy.unique(selectors):
             axis = self.info['axes'][axis_names[k]]
             sel = (selectors == k)
-            if not self.info['specs'].get('y-limits') and not numpy.isnan(plot.data[:, sel]).all():
-                vy_min, vy_max = numpy.nanmin(plot.data[:, sel]), numpy.nanmax(plot.data[:, sel])
-                dev = numpy.nanstd(plot.data[:, sel])
+            if not self.info['specs'].get('y-limits') and not numpy.isnan(y_data[:, sel]).all():
+                vy_min, vy_max = numpy.nanmin(y_data[:, sel]), numpy.nanmax(y_data[:, sel])
+                dev = numpy.nanstd(y_data[:, sel])
                 if vy_min != vy_max or dev > 0:
                     axis.set_ylim(vy_min-self.y_margin*dev, vy_max+self.y_margin*dev)
 

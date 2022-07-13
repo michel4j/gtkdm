@@ -36,7 +36,9 @@ glade-design-layout .display-frame {
 	scale > marks > mark > label {
 		padding: 0 4px
 	}
-
+	label.selected {
+		font-weight: bold;
+	}
 	.tiny {
 		button {
 			min-height: $tiny-btn-size;
