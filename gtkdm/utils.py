@@ -1,16 +1,17 @@
 import contextlib
+import logging
+import math
 import os
 import re
-import math
-import logging
 import time
+from datetime import datetime
 from threading import Thread
 
 import gepics
-import numpy
-from datetime import datetime
-
 import gi
+import numpy
+from numpy.lib import recfunctions
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import GObject, GLib
 
@@ -68,7 +69,7 @@ SUPERSCRIPTS_TRANS = str.maketrans('0123456789+-', '⁰¹²³⁴⁵⁶⁷⁸⁹�
 
 def sci_fmt_unicode(number, digits=3, sign=False):
     exp = 0 if number == 0 else math.floor(math.log10(abs(number)))
-    value = number*(10**-exp)
+    value = number * (10 ** -exp)
     exp_text = f'{exp}'.translate(SUPERSCRIPTS_TRANS)
     val_fmt = f'{{:0.{digits}f}}' if sign else f'{{:0.{digits}f}}'
     val_text = val_fmt.format(value)
@@ -97,6 +98,7 @@ class ColoredConsoleHandler(logging.StreamHandler):
     """
     A colored console log handler
     """
+
     def format(self, record):
         msg = super(ColoredConsoleHandler, self).format(record)
         if record.levelno == logging.WARNING:
@@ -141,7 +143,7 @@ class PlotData(GObject.GObject):
         'changed': (GObject.SIGNAL_RUN_FIRST, None, [])
     }
 
-    def __init__(self, count, size:int = 1, sample_freq: float = 1, refresh_freq: float = 1):
+    def __init__(self, count, size: int = 1, sample_freq: float = 1, refresh_freq: float = 1):
         super().__init__()
         self.count = count
         self.size = size
@@ -150,14 +152,14 @@ class PlotData(GObject.GObject):
         self.sample_every = 1.0
         self.refresh_every = 1.0
         self.sleep_for = 0.5
-        self.setup(count, size, sample_freq, refresh_freq)
         self.data = None
+        self.setup(count, size, sample_freq, refresh_freq)
         self.arrays = False
         self.alive = True
 
         Thread(target=self.monitor, daemon=True).start()
 
-    def setup(self, count, size:int = 1, sample_freq: float = 1, refresh_freq: float = 1):
+    def setup(self, count, size: int = 1, sample_freq: float = 1, refresh_freq: float = 1):
         self.count = count
         self.size = size
         self.sample_freq = sample_freq
@@ -166,6 +168,8 @@ class PlotData(GObject.GObject):
             self.sample_every = 1 / self.sample_freq
             self.refresh_every = 1 / self.refresh_freq
             self.sleep_for = min(self.sample_every, self.refresh_every) / 2
+        self.data = numpy.empty((self.size, self.count))
+        self.data.fill(numpy.nan)
 
     def monitor(self):
         gepics.threads_init()
@@ -205,7 +209,7 @@ class PlotData(GObject.GObject):
 
 
 class XYData(PlotData):
-    def __init__(self, *names, buffer: int = 1, sample_freq: float = 1, refresh_freq: float = 1):
+    def __init__(self, *names, buffer: int = 1, sample_freq: float = 1, refresh_freq: float = 1, data=None):
         count = len(names)
         super().__init__(count, size=buffer, sample_freq=sample_freq, refresh_freq=refresh_freq)
         self.names = names
@@ -222,6 +226,17 @@ class XYData(PlotData):
             if sample_freq == 0:
                 pv.connect('changed', self.update, i)
 
+        if data is not None:
+            keys = data.dtype.names
+            n = min(data.shape[0], self.data.shape[0])
+            for i, name in enumerate(self.names):
+                if name in keys:
+                    self.data[:n, i] = data[name][:n]
+
+    def get_structured(self):
+        dtype = [(name, float) for name in self.names]
+        return recfunctions.unstructured_to_structured(self.data, numpy.dtype(dtype))
+
     def update(self, pv, data, index):
         if not self.updating:
             self.updating = True
@@ -236,8 +251,6 @@ class XYData(PlotData):
             else:
                 self.size = obj.count
                 self.arrays = True
-            self.data = numpy.empty((self.size, self.count))
-            self.data.fill(numpy.nan)
             if self.names[0] == '#':
                 self.data[:, 0] = numpy.arange(self.size)
 
@@ -263,33 +276,35 @@ class XYData(PlotData):
                 if self.size > 1:
                     self.data[:-1, self.offset:] = self.data[1:, self.offset:]
                 for i, pv in enumerate(self.pvs):
-                    self.data[-1, i+self.offset] = numpy.nan if not pv.is_active() else pv.get()
+                    self.data[-1, i + self.offset] = numpy.nan if not pv.is_active() else pv.get()
 
 
 class StripData(PlotData):
-    def __init__(self, *names, period=60.0, sample_freq=1.0, refresh_freq=1.0):
-        sample_freq = max(0.1, sample_freq)     # Strip charts can't use auto-update.
+    def __init__(self, *names, period=60.0, samples=7200, sample_freq=1.0, refresh_freq=1.0, data=None):
+        sample_freq = max(0.1, sample_freq)  # Strip charts can't use auto-update.
         refresh_freq = max(0.1, refresh_freq)
-        size = int(period * sample_freq)
+        size = samples
         count = len(names) + 1
         super().__init__(count, size=size, sample_freq=sample_freq, refresh_freq=refresh_freq)
         self.period = period
-        self.names = ('time',) + names
         self.pvs = [
             gepics.PV(name) for name in names
         ]
+        self.names = ('time',) + names
+        if data is not None:
+            keys = data.dtype.names
+            n = min(data.shape[0], self.data.shape[0])
+            for i, name in enumerate(self.names):
+                if name in keys:
+                    self.data[:n, i] = data[name][:n]
 
-        for pv in self.pvs:
-            pv.connect('active', self.activate)
-
-    def activate(self, obj, state):
-        if state and self.data is None:
-            self.data = numpy.empty((self.size, self.count), dtype=numpy.float64)
-            self.data.fill(numpy.nan)
+    def get_structured(self):
+        dtype = [(name, float) for name in self.names]
+        return recfunctions.unstructured_to_structured(self.data, numpy.dtype(dtype))
 
     def x_data(self):
         if self.data is not None:
-            sel = ~numpy.isnan(self.data[:,0])
+            sel = ~numpy.isnan(self.data[:, 0])
             if sel.sum():
                 return self.data[:, 0] - self.data[0, 0]
 
@@ -305,11 +320,12 @@ class StripData(PlotData):
         if self.data is not None:
             self.data[1:, :] = self.data[:-1, :]
             for i, pv in enumerate(self.pvs):
-                value = numpy.nan
                 if pv.is_active():
                     value = pv.get()
                     if isinstance(value, numpy.ndarray):
                         value = value[-1]
-                self.data[0, i+1] = value
+                    self.data[0, i + 1] = value
             self.data[0, 0] = time.time()
+
+
 

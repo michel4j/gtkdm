@@ -1,6 +1,8 @@
 
-# Lower case letters represet lighter version of same color
+import colorsys
+from matplotlib import colors
 
+# Lower case letters represet lighter version of same color
 COLOR_NAMES = {
     'R': 'red',
     'G': 'green',
@@ -151,3 +153,32 @@ def color(s, fg=None, bg=None):
         return template.format(';'.join(codes), s)
     else:
         return s
+
+
+def str_to_hex(values, bits: int = 8):
+    """
+    Convert a tuple/list of strings of color values to an HTML color specification
+    :param values: tuple of strings
+    :param bits:  color depth, default is 8-bit
+    :return: single string like "#ff00dd"
+
+    """
+    max_value = (2**bits - 1)
+    rgb = tuple(float(v)/max_value for v in values)
+    return colors.to_hex(rgb)
+
+
+def darker(color1, color2):
+    """
+    Test if one color is darker than another
+    :param color1: first color
+    :param color2: second color
+    :return: True if color1 is darker than color2
+    """
+    c1 = colors.to_rgb(color1)
+    c2 = colors.to_rgb(color2)
+
+    hls1 = colorsys.rgb_to_hls(*c1)
+    hls2 = colorsys.rgb_to_hls(*c2)
+
+    return hls1[1] < hls2[1]

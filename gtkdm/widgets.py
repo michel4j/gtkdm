@@ -2144,7 +2144,7 @@ class MenuButton(Gtk.Bin):
         super().__init__(*args, **kwargs)
         ctx = self.get_style_context()
         self.btn = Gtk.MenuButton(use_popover=True)
-        self.icon = Gtk.Image.new_from_icon_name('view-paged-symbolic', Gtk.IconSize.MENU)
+        self.icon = Gtk.Image.new_from_icon_name('pan-down-symbolic', Gtk.IconSize.MENU)
         self.text = Gtk.Label(label=self.label)
         child = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         child.pack_start(self.icon, False, False, 0)

@@ -1,0 +1,22 @@
+### FIGURE
+figure.facecolor: 303030
+figure.edgecolor: 9c9c9c
+lines.color: 9c9c9c
+patch.edgecolor: 9c9c9c
+axes.labelcolor: 9c9c9c
+
+### PATCHES
+patch.facecolor: 303030
+
+
+### TICKS & GRIDS
+xtick.direction: out
+ytick.direction: out
+xtick.color: 9c9c9c
+ytick.color: 9c9c9c
+grid.color:  9c9c9c
+
+
+### AXES
+axes.facecolor: 303030
+axes.edgecolor: 9c9c9c
