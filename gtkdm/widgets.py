@@ -844,6 +844,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
 
         cr.set_line_width(0.75)
         for i in range(self.count):
+            if  not self._view_labels[i].strip(): continue
             x = pix((i // stride) * col_width + self.spacing)
             y = pix(self.spacing + (i % stride) * (self.size + self.spacing))
             cr.rectangle(x, y, self.size, self.size)
@@ -876,10 +877,12 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        bit_string = f'{value:064b}'[::-1]
+        bit_string = f'{int(value):064b}'[::-1]
         byte_strings = [bit_string[i:i + 8] for i in range(0, 64, 8)]
+
         if self.big_endian:
             byte_strings = byte_strings[::-1]
+
         self._view_bits = byte_strings[self.offset][::-1] if self.inverted else byte_strings[self.offset]
         self.queue_draw()
 
@@ -909,32 +912,28 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
 
     def do_draw(self, cr):
         style = self.get_style_context()
-        cr.set_line_width(0.5)
         self.theme['label'] = style.get_color(style.get_state())
+
+        cr.set_line_width(0.75)
         cr.set_source_rgba(*self.theme['fill'])
-        x = y = pix(self.spacing)
+        x = pix(self.spacing)
+        y = pix(self.spacing/2)
 
         cr.rectangle(x, y, self.size, self.size)
         cr.fill_preserve()
         cr.set_source_rgba(*self.theme['border'])
         cr.stroke()
+
         cr.set_source_rgba(*self.theme['label'])
         label = '<label>' if EDITOR and not self.label else self.label
-
-        opts = cairo.FontOptions()
-        opts.set_antialias(cairo.Antialias.SUBPIXEL)
-        opts.set_hint_style(cairo.HintStyle.FULL)
-        opts.set_hint_metrics(cairo.HintMetrics.ON)
-        self.set_font_options(opts)
-
         layout = self.create_pango_layout(label)
         ink, logical = layout.get_pixel_extents()
-        cr.move_to(pix(self.spacing + x + self.size), pix(y + self.size / 2 - logical.height / 2))
+        cr.move_to(self.spacing + x + self.size, y + self.size / 2 - logical.height / 2)
         PangoCairo.show_layout(cr, layout)
 
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
-        self.set_size_request(self.get_allocation().width, self.size + 2 * self.spacing)
+        self.set_size_request(self.get_allocation().width, self.size + self.spacing)
         if self.channel and not EDITOR:
             self.pv = gepics.PV(self.channel)
             self.pv.connect('changed', self.on_change)

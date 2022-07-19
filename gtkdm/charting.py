@@ -37,7 +37,7 @@ STP_CONVERTERS = {
     'GridXon': ('x_grid', bool),
     'GridYon': ('y_grid', bool),
     'AxisYcolorStat': ('color_axis', bool),
-    'GraphLineWidth': ('line_width', lambda v: numpy.linspace(0, 2, 6)[int(v)+1]),
+    'GraphLineWidth': ('line_width', lambda v: numpy.linspace(0, 3, 6)[int(v)+1]),
     'Units': ('units', str),
 }
 

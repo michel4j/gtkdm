@@ -168,6 +168,10 @@ def str_to_hex(values, bits: int = 8):
     return colors.to_hex(rgb)
 
 
+def rgb_to_hex(r, g, b):
+    return colors.to_hex((r,g,b))
+
+
 def darker(color1, color2):
     """
     Test if one color is darker than another

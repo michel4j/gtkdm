@@ -6,6 +6,7 @@ from enum import Enum, EnumMeta
 
 from gi.repository import GObject, Gtk, Pango, Gdk
 
+from . import colors
 
 Column = namedtuple('Column', ['title', 'type', 'text', 'expand', 'editable', 'min_width'])
 Column.__new__.__defaults__ = (None,) * len(Column._fields)
@@ -52,6 +53,7 @@ class Table(GObject.GObject):
         self.view = view
         self.view.props.enable_grid_lines = Gtk.TreeViewGridLines.BOTH
         self.view.set_model(self.model)
+        self.column_info = {}
         self.add_columns()
         self.selection = self.view.get_selection()
         if self.select_multiple:
@@ -211,7 +213,7 @@ class Table(GObject.GObject):
                 column.set_fixed_width(32)
                 column.set_cell_data_func(renderer, self.format_icon, data)
                 self.view.append_column(column)
-            elif cell.type in [ColumnType.TEXT, ColumnType.FLOAT, ColumnType.INT]:
+            else:  # [ColumnType.TEXT, ColumnType.FLOAT, ColumnType.INT]:
                 renderer = Gtk.CellRendererText()
                 column = Gtk.TreeViewColumn(title=cell.title, cell_renderer=renderer, text=data, editable=cell.editable)
                 column.props.sizing = Gtk.TreeViewColumnSizing.FIXED
@@ -229,6 +231,11 @@ class Table(GObject.GObject):
                 if cell.min_width:
                     column.set_min_width(cell.min_width)
                 self.view.append_column(column)
+
+            self.column_info[column] = {
+                'index': data,
+                'cell': cell
+            }
             if self.tooltips:
                 self.view.set_tooltip_column(self.tooltips.value)
 
@@ -302,16 +309,6 @@ class Table(GObject.GObject):
         model = self.view.get_model()
         model[path][data] = not self.model[path][data]
 
-    def color_activated(self, view, path, column):
-        """
-        Handle activation of rows
-        :param view: Gtk.TreeView
-        :param path: Gtk.TreePath
-        :param column: Gtk.TreeViewColumn
-        :return:
-        """
-        print('COLOR CLICKED', column, path, view)
-
     def cell_edited(self, cell, path, text, data):
         """
         Method to handle editing of cells
@@ -346,6 +343,33 @@ class Table(GObject.GObject):
         :return:
         """
         pass
+
+    def color_activated(self, view, path, column):
+        """
+        Handle activation of rows
+        :param view: Gtk.TreeView
+        :param path: Gtk.TreePath
+        :param column: Gtk.TreeViewColumn
+        :return:
+        """
+        info = self.column_info.get(column, {})
+        if not info:
+            return
+        else:
+            data = info['index']
+            cell = info['cell']
+            model = view.get_model()
+            if cell.type == ColumnType.COLOR and cell.editable:
+                dialog = Gtk.ColorChooserDialog()
+                if dialog.run() == Gtk.ResponseType.OK:
+                    color = dialog.get_rgba()
+                    model[path][data] = colors.rgb_to_hex(color.red, color.green, color.blue)
+                dialog.destroy()
+
+
+
+
+
 
     def row_activated(self, view, path, column):
         """
