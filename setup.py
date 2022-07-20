@@ -24,6 +24,8 @@ setup(
         'gtkdm': [
             'glade/catalog.xml',
             'glade/style.css',
+            'glade/dark.mplstyle',
+            'glade/chart-config.ui'
         ]
     },
     install_requires=requirements + [
