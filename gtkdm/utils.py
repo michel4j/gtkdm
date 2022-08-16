@@ -209,7 +209,7 @@ class PlotData(GObject.GObject):
 
 
 class XYData(PlotData):
-    def __init__(self, *names, buffer: int = 1, sample_freq: float = 1, refresh_freq: float = 1, data=None):
+    def __init__(self, *names, buffer: int = 1, sample_freq: float = 1, refresh_freq: float = 1):
         count = len(names)
         super().__init__(count, size=buffer, sample_freq=sample_freq, refresh_freq=refresh_freq)
         self.names = names
@@ -223,15 +223,8 @@ class XYData(PlotData):
         ]
         for i, pv in enumerate(self.pvs):
             pv.connect('active', self.activate)
-            if sample_freq == 0:
+            if sample_freq == 0.0:
                 pv.connect('changed', self.update, i)
-
-        if data is not None:
-            keys = data.dtype.names
-            n = min(data.shape[0], self.data.shape[0])
-            for i, name in enumerate(self.names):
-                if name in keys:
-                    self.data[:n, i] = data[name][:n]
 
     def get_structured(self):
         dtype = [(name, float) for name in self.names]
@@ -245,12 +238,14 @@ class XYData(PlotData):
             self.updating = False
 
     def activate(self, obj, state):
-        if state and self.data is None:
-            if obj.count == 1:
+        if all(pv.is_active() for pv in self.pvs):
+            size = max(pv.count for pv in self.pvs)
+            if size == 1:
                 self.arrays = False
             else:
-                self.size = obj.count
+                self.size = size
                 self.arrays = True
+                self.setup(len(self.names), size, self.sample_freq, self.refresh_freq)
             if self.names[0] == '#':
                 self.data[:, 0] = numpy.arange(self.size)
 

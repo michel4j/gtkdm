@@ -539,6 +539,7 @@ class ChartWindow(Gtk.Window):
         self.last_scale = scale + 1
 
     def setup_chart(self, specs):
+
         if specs:
             self.props.x_grid = specs['options'].get('x_grid', False)
             self.props.y_grid = specs['options'].get('y_grid', False)
@@ -635,17 +636,18 @@ class ChartWindow(Gtk.Window):
             self.info['data'] = None
             del old_data
 
-        data = StripData(
-            *data_names,
-            period=specs['options']['period'],
-            samples=specs['options']['samples'],
-            sample_freq=specs['options']['sample_freq'],
-            refresh_freq=specs['options']['refresh_freq'],
-            data=existing
-        )
+        if specs:
+            data = StripData(
+                *data_names,
+                period=specs['options']['period'],
+                samples=specs['options']['samples'],
+                sample_freq=specs['options']['sample_freq'],
+                refresh_freq=specs['options']['refresh_freq'],
+                data=existing
+            )
 
-        self.data_src = data.connect('changed', self.on_data_changed)
-        self.info['data'] = data
+            self.data_src = data.connect('changed', self.on_data_changed)
+            self.info['data'] = data
 
     def on_data_changed(self, plot):
         try:
@@ -691,7 +693,7 @@ class ChartWindow(Gtk.Window):
         window.apply_button.connect('clicked', self.apply_config, window, table, form)
         window.add_button.connect('clicked', self.add_plot, window, table)
 
-        form.set_values(**specs["options"])
+        form.set_values(**specs.get("options", {}))
 
         table.add_items(specs.get('plots', []))
         window.show_all()
@@ -721,7 +723,6 @@ class ChartWindow(Gtk.Window):
                 })
         else:
             btn.set_sensitive(False)
-
 
     def apply_config(self, btn, window, table, form):
         specs = self.info['specs']
@@ -792,11 +793,11 @@ class ChartManager(object):
         if not full_path:
             logger.warning('Chart File {} not found'.format(path))
             specs = {}
+            name = None
         else:
             logger.info(f"Loading: {full_path}...")
             specs = stp_to_spec(full_path)
-
-        name = Path(path).name
+            name = Path(path).name
         window = ChartWindow(title=name)
         window.setup_chart(specs)
         window.connect('destroy', lambda x: Gtk.main_quit())

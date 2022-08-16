@@ -2314,6 +2314,7 @@ class HideSwitch(Gtk.Bin):
 Y_AXIS_OFFSET = 60
 AXIS_SPACE = 0.92
 
+
 class Plot(Gtk.Bin):
     __gtype_name__ = 'Plot'
 
@@ -2463,6 +2464,10 @@ class Plot(Gtk.Bin):
         selectors = self.info['selectors'][i]
         x_data = plot.x_data()
         y_data = plot.y_data()
+        if x_data is None or y_data is None:
+            print(plot, x_data, y_data, plot.data)
+            return
+
         for j in range(plot.count-1):
             ln = artists[j]
             ln.set_data(x_data, y_data[:, j])
