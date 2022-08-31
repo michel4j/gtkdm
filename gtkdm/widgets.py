@@ -1049,6 +1049,7 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
     minimum = GObject.Property(type=float, default=0., nick='Minimum')
     maximum = GObject.Property(type=float, default=100., nick='Maximum')
     increment = GObject.Property(type=float, default=1., nick='Increment')
+    digits = GObject.Property(type=int, minimum=0, maximum=5, default=1, nick='Decimals')
     alarm = GObject.Property(type=bool, default=False, nick='Alarm Sensitive')
     use_limits = GObject.Property(type=bool, default=False, nick='Use PV Limits')
 
@@ -1067,6 +1068,8 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.bind_property('minimum', self.adjustment, 'lower',
                            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
         self.bind_property('increment', self.adjustment, 'step-increment',
+                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property('digits', self.tweak, 'digits',
                            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
 
     def on_realize(self, obj):
@@ -1193,8 +1196,9 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
     def __init__(self, *args, **kwargs):
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
         self.connect('realize', self.on_realize)
+        target = Gtk.Entry(width_chars=6)
         self.entries = {
-            'target': Gtk.Entry(width_chars=6),
+            'target': target,
             'feedback': Gtk.Entry(width_chars=6, editable=False, can_focus=False)
         }
 
