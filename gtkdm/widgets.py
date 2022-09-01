@@ -2469,7 +2469,6 @@ class Plot(Gtk.Bin):
         x_data = plot.x_data()
         y_data = plot.y_data()
         if x_data is None or y_data is None:
-            print(plot, x_data, y_data, plot.data)
             return
 
         for j in range(plot.count-1):
@@ -2477,7 +2476,12 @@ class Plot(Gtk.Bin):
             ln.set_data(x_data, y_data[:, j])
 
         # update x-limits if not explicitly set
-        if not self.info['specs'].get('x-limits') and not numpy.isnan(x_data).all():
+        if self.strip_plot:
+            # update x-limits if not explicitly set
+            xmin, xmax = -plot.period, 0
+            if xmin != xmax:
+                self.info['axes']['y'].set_xlim(xmin, xmax)
+        elif not self.info['specs'].get('x-limits') and not numpy.isnan(x_data).all():
             vx_min, vx_max = numpy.nanmin(x_data), numpy.nanmax(x_data)
             if vx_min != vx_max:
                 self.info['axes']['y'].set_xlim(vx_min, vx_max)
