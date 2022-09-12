@@ -1058,9 +1058,10 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
         self.pv = None
         self.in_progress = False
-        self.adjustment = Gtk.Adjustment(50., 0.0, 100.0, 1.0, .0, 0)
+
         self.tweak = Gtk.SpinButton()
-        self.tweak.set_adjustment(self.adjustment)
+        self.adjustment = self.tweak.get_adjustment()
+
         self.connect('realize', self.on_realize)
         self.add(self.tweak)
         self.bind_property('maximum', self.adjustment, 'upper',
@@ -1078,16 +1079,16 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
-            self.adjustment.connect('value-changed', self.on_value_set)
+            self.tweak.connect('value-changed', self.on_value_set)
 
     def on_change(self, pv, value):
         self.in_progress = True
-        self.adjustment.set_value(value)
+        self.tweak.set_value(value)
         self.in_progress = False
 
     def on_value_set(self, obj):
         if not self.in_progress:
-            self.pv.put(self.adjustment.props.value)
+            self.pv.put(self.tweak.get_value())
 
 
 class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
