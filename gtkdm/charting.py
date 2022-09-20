@@ -28,7 +28,7 @@ STP_CONVERTERS = {
     'Scale': ('log', lambda v: bool(int(v))),
     'Precision': ('precision', int),
     'PlotStatus': ('show', bool),
-    'Comment': ('comments', str),
+    'Comment': ('comments', lambda v: str(v).strip("\"'")),
     'Name': ('name', str),
     'Timespan': ('period', float),
     'NumSamples': ('samples', int),
@@ -49,6 +49,7 @@ def get_relative_path(path):
     :return: str
     """
     return str(Path(__file__).parent.joinpath(path))
+
 
 def stp_to_spec(filename):
     """
@@ -592,7 +593,7 @@ class ChartWindow(Gtk.Window):
             data_names.append(item['name'])
             color = item['color']
             self.info['colors'].append(color)
-            label = LegendItem(item['name'], color=color, units=item.get('units'), comments=item.get('comments'))
+            label = LegendItem(item.get('comments', item['name']), color=color, units=item.get('units'), comments=item.get('name'))
             label.select(i == 0)
             label.connect("button-press-event", self.on_mouse_press)
             self.legend.add(label)
