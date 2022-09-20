@@ -182,7 +182,7 @@ class ChartToolbar(NavigationToolbar):
 
 
 class LegendItem(Gtk.EventBox):
-    def __init__(self, name, color, units=None, comments=None):
+    def __init__(self, name, color, units=None, comments=''):
         super().__init__()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
@@ -202,15 +202,15 @@ class LegendItem(Gtk.EventBox):
     def set_info(self, **kwargs):
         self.info.update(kwargs)
         color = self.info.get('color', '#000')
-        name = self.info.get('name', '')
+        name = self.info.get('name', '').strip()
         units = self.info.get('units')
-        comments = self.info.get('comments')
+        comments = self.info.get('comments', '').strip()
+        text = name if not comments else comments
         suffix = '' if not units else f' {units}'
         self.label.set_ellipsize(Pango.EllipsizeMode.END)
-        self.label.set_markup(f'<span color="{color}">{name}</span>')
+        self.label.set_markup(f'<span color="{color}">{text}</span>')
         self.value.set_markup(f'<span color="{color}"><small><tt>nan</tt></small></span>')
-        if comments:
-            self.set_tooltip_markup(f'<small>{comments}</small>')
+        self.set_tooltip_markup(f'<small>{name}</small>')
         self.name = name
 
     def set_value(self, value):
@@ -593,7 +593,7 @@ class ChartWindow(Gtk.Window):
             data_names.append(item['name'])
             color = item['color']
             self.info['colors'].append(color)
-            label = LegendItem(item.get('comments', item['name']), color=color, units=item.get('units'), comments=item.get('name'))
+            label = LegendItem(item['name'], color=color, units=item.get('units'), comments=item.get('comments'))
             label.select(i == 0)
             label.connect("button-press-event", self.on_mouse_press)
             self.legend.add(label)
