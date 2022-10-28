@@ -15,7 +15,7 @@ from numpy.lib import recfunctions
 gi.require_version('Gtk', '3.0')
 from gi.repository import GObject, GLib
 
-import colors
+from . import colors
 
 
 def parse_macro_spec(macro_spec):
@@ -199,7 +199,7 @@ class PlotData(GObject.GObject):
     def destroy(self):
         self.alive = False
 
-    def sample_data(self):
+    def get_structured(self):
         raise NotImplementedError()
 
     def refresh(self):

@@ -5,3 +5,4 @@ pip-chill
 pygobject
 matplotlib
 PyYAML
+pandas

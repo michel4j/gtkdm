@@ -2,10 +2,11 @@
 
 import argparse
 import logging
+
 import gi
+
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-
 from gtkdm import widgets, utils
 
 
@@ -14,9 +15,10 @@ if __name__ == '__main__':
     parser.add_argument('display', metavar='display', type=str, help='Display File Name')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose Logging')
     parser.add_argument('-m', '--macros', type=str, help='Macros', required=False)
+    parser.add_argument('--debug', action='store_true', help='Debug')
     args = parser.parse_args()
 
-    if args.verbose:
+    if args.verbose or args.debug:
         utils.log_to_console(level=logging.DEBUG)
     else:
         utils.log_to_console(level=logging.INFO)

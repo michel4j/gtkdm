@@ -11,8 +11,10 @@ from . import colors
 Column = namedtuple('Column', ['title', 'type', 'text', 'expand', 'editable', 'min_width'])
 Column.__new__.__defaults__ = (None,) * len(Column._fields)
 
+
 class ColumnType(Enum):
     TEXT, TOGGLE, ICON, FLOAT, INT, COLOR = range(6)
+
 
 DATA_TYPES = {
     ColumnType.TEXT: str,

@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 import gi
 import numpy
+import pandas
 import cairo
 
 gi.require_version('Gtk', '3.0')
@@ -420,10 +421,13 @@ class ChartWindow(Gtk.Window):
 
         if response == Gtk.ResponseType.OK:
             filename = dialog.get_filename()
+            format = dialog.get_filter()
         else:
             filename = None
+            format = None
         dialog.destroy()
-        return filename
+
+        return filename, format
 
     def on_mouse_press(self, widget, event):
         if event.button == Gdk.BUTTON_MIDDLE:
@@ -472,10 +476,37 @@ class ChartWindow(Gtk.Window):
         self.props.paused = state
 
     def save_data(self):
-        pass
+        # supported formats
+        filters = (
+            {'name': 'HDF5', 'mime-type': 'application/x-hdf5', 'pattern': '*.h5'},
+            {'name': 'CSV', 'mime-type': 'text/csv', 'pattern': '*.csv'},
+            {'name': 'Excel', 'mime-type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+             'pattern': '*.xlsx'},
+        )
+
+        filename, format = self.choose_file(Gtk.FileChooserAction.SAVE, filters=filters)
+        if isinstance(format, Gtk.FileFilter):
+            df = pandas.DataFrame.from_records(self.info['data'].get_structured()).dropna(subset='time')
+            if format.get_name() == 'HDF5':
+                basename, ext = os.path.splitext(filename)
+                filename = f'{basename}.h5'
+                df.to_hdf(filename, 'data', complevel=9, complib='blosc:zstd')
+                print(f'Data written to {format.get_name()} file {filename}')
+            elif format.get_name() == 'CSV':
+                basename, ext = os.path.splitext(filename)
+                filename = f'{basename}.csv'
+                df.to_csv(filename)
+                print(f'Data written to {format.get_name()} file {filename}')
+            elif format.get_name() == 'Excel':
+                basename, ext = os.path.splitext(filename)
+                filename = f'{basename}.xlsx'
+                df.to_excel(filename)
+                print(f'Data written to {format.get_name()} file {filename}')
+        else:
+            print(f'File format "{format.get_name()}" not supported.')
 
     def save_plot(self):
-        filename = self.choose_file(
+        filename, format = self.choose_file(
             action=Gtk.FileChooserAction.SAVE,
             filters=(
                 {'name': 'Portable Network Graphics', 'mime-type': 'image/png', 'pattern': '*.png'},
