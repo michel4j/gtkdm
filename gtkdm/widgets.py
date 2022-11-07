@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 import re
-import shutil
+import time
 import shlex
 import subprocess
 import textwrap
@@ -10,6 +10,7 @@ import zipfile
 from datetime import datetime
 from math import atan2, pi, cos, sin, ceil
 from pathlib import Path
+from enum import Enum
 
 import cairo
 import gi
@@ -20,7 +21,6 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo
 
-
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.style import context as style_context
@@ -30,11 +30,9 @@ import gepics
 import xml.etree.ElementTree as ET
 
 from . import utils, colors, version, PLUGIN_DIR
-from .utils import logger,  XYData, StripData
-
+from .utils import logger, XYData, StripData
 
 EDITOR = True
-
 
 ENTRY_CONVERTERS = {
     'string': str,
@@ -298,6 +296,10 @@ class BlankWidget(Gtk.Widget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.connect('notify', self.do_notify)
+
+    def do_notify(self, *args):
+        self.queue_draw()
 
     def do_realize(self, *args):
         allocation = self.get_allocation()
@@ -844,7 +846,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
 
         cr.set_line_width(0.75)
         for i in range(self.count):
-            if  not self._view_labels[i].strip(): continue
+            if not self._view_labels[i].strip(): continue
             x = pix((i // stride) * col_width + self.spacing)
             y = pix(self.spacing + (i % stride) * (self.size + self.spacing))
             cr.rectangle(x, y, self.size, self.size)
@@ -917,7 +919,7 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         cr.set_line_width(0.75)
         cr.set_source_rgba(*self.theme['fill'])
         x = pix(self.spacing)
-        y = pix(self.spacing/2)
+        y = pix(self.spacing / 2)
 
         cr.rectangle(x, y, self.size, self.size)
         cr.fill_preserve()
@@ -1796,6 +1798,8 @@ class Gauge(ActiveMixin, BlankWidget):
             cr.show_text(self.units_label)
 
         # needle
+        cr.save()
+        cr.set_operator(cairo.OPERATOR_DIFFERENCE)
         cr.set_line_width(0.75)
         value_angle = angle_scale * (self.value - minimum) + start_angle
         vr = 5 * r / 6
@@ -1809,11 +1813,16 @@ class Gauge(ActiveMixin, BlankWidget):
         cr.line_to(x + nx, y + ny)
         cr.fill_preserve()
         cr.stroke()
+        cr.restore()
 
         # label
         if self.label:
             xb, yb, tw, th = cr.text_extents(self.label)[:4]
-            lines = textwrap.wrap(self.label, int(len(self.label) * 0.6 * allocation.width / tw))
+            w = int(len(self.label) * 0.6 * allocation.width / tw)
+            if w > 0:
+                lines = textwrap.wrap(self.label, w)
+            else:
+                lines = [self.label]
             cr.set_source_rgba(*color)
             yl = max(y, y + rt * sin(start_angle))
             for i, line in enumerate(lines):
@@ -1931,6 +1940,7 @@ class Symbol(ActiveMixin, BlankWidget):
             style = self.get_style_context()
             color = style.get_color(style.get_state())
             cr.set_source_rgba(*color)
+            cr.set_line_width(.25)
             cr.rectangle(1.5, 1.5, allocation.width - 3, allocation.height - 3)
             cr.stroke()
 
@@ -1982,6 +1992,228 @@ class Diagram(BlankWidget):
             cr.set_source_rgba(*color)
             cr.rectangle(pix(1), pix(1), allocation.width - 2, allocation.height - 2)
             cr.stroke()
+
+
+class Vessel(ActiveMixin, BlankWidget):
+    __gtype_name__ = 'Vessel'
+
+    channel = GObject.Property(type=str, default='', nick='PV Name')
+    kind = GObject.Property(type=str, nick='Type')
+    scale = GObject.Property(type=float, default=1, nick='Value Scale')
+    offset = GObject.Property(type=float, default=0, nick='Value Offset')
+    animate = GObject.Property(type=bool, default=False, nick='Animate Surface')
+    xalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='X-Alignment')
+    yalign = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.5, nick='Y-Alignment')
+    margin = GObject.Property(type=float, minimum=0.0, maximum=0.5, default=0.05, nick='Margin Fraction')
+    body = GObject.Property(type=float, minimum=0.0, maximum=1.0, default=0.8, nick='Body Fraction')
+    shelves = GObject.Property(type=int, minimum=0, maximum=4, default=0, nick='# Shelves')
+    ripples = GObject.Property(type=int, minimum=0, maximum=6, default=6, nick='# Ripples')
+
+    class Type(Enum):
+        RECTANGLE = 0
+        COLUMN = 1
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ready = False
+        self.ripple_height = 0.025
+        self.value = 0.0
+        self.gap = 2
+        self.pv = None
+        self.colors = {
+            'vessel': (0.0, 0.0, 0.0, 0.5),
+            'liquid': (1.0, 1.0, 1.0, 0.5)
+        }
+        self.config = {}
+        self.connect('size-allocate', self.setup)
+
+    def do_realize(self, *args):
+        super().do_realize(*args)
+        if self.channel and not EDITOR:
+            self.pv = gepics.PV(self.channel)
+            self.pv.connect('changed', self.on_change)
+            self.pv.connect('active', self.on_active)
+        style = self.get_style_context()
+        self.colors['vessel'] = self.get_style_context().get_color(style.get_state())
+
+    def do_notify(self, *args):
+        self.setup(self, self.get_allocation())
+        super().do_notify(*args)
+
+    def on_active(self, pv, connected):
+        super().on_active(pv, connected)
+        if connected:
+            self.colors['liquid'] = (0.2, 0.75, 0.85, .75)
+            if self.props.animate:
+                GLib.timeout_add(100, self.animate_surface)
+        else:
+            self.colors['liquid'] = (1.0, 1.0, 1.0, 0.5)
+
+    def on_change(self, pv, value):
+        self.value = (value - self.offset) * self.scale
+        self.queue_draw()
+
+    def setup(self, widget, alloc):
+        x_margin = pix(self.props.margin * alloc.width)
+        y_margin = pix(self.props.margin * alloc.height)
+        width = alloc.width - 2 * x_margin
+        height = alloc.height - 2 * y_margin
+        full = self.props.body * height
+
+        self.config = {
+            'x_margin': x_margin,
+            'y_margin': y_margin,
+            'width': width,
+            'height': height,
+            'full': full,
+            'base': (height - full)/2,
+            'label_pos': (x_margin + width * self.props.xalign, y_margin + height * self.props.yalign),
+            'matrix': cairo.Matrix(1.0, 0.0, 0.0, -1.0, 0.0, alloc.height),
+        }
+        self.ready = True
+
+    def animate_surface(self):
+        self.ripple_height = 0.025 * numpy.sin(time.time() * 5)
+        self.queue_draw()
+        return self.pv is not None and self.pv.is_active()
+
+    def do_draw(self, cr):
+        if not self.ready:
+            return
+        elif self.kind == 'rectangle':
+            self.draw_rect(cr)
+        elif self.kind == 'column':
+            self.draw_column(cr)
+
+    def draw_liquid_surface(self, cr):
+        # liquid surface
+        width = self.config['width'] - 2*self.gap
+        if self.props.ripples:
+            height = self.config['height']
+            w = width / (self.props.ripples * 3)
+            h = self.ripple_height * height
+            for i in range(self.props.ripples):
+                cr.rel_curve_to(w, -h, 2 * w, h, 3 * w, 0)
+        else:
+            cr.rel_line_to(width, 0)
+
+    def draw_level(self, cr):
+        cr.save()
+        cr.set_source_rgba(1, 1, 1, 1)
+        cx, cy = self.config['label_pos']
+        label = f'{self.value:0.2g} %'
+        layout = self.create_pango_layout(label)
+        ink, logical = layout.get_pixel_extents()
+        cr.move_to(cx - logical.width / 2, cy - logical.height / 2)
+        cr.set_operator(cairo.OPERATOR_DIFFERENCE)
+        PangoCairo.show_layout(cr, layout)
+        cr.restore()
+
+    def draw_shelves(self, cr):
+        if self.props.shelves:
+            # setup variables
+            x_margin = self.config['x_margin']
+            y_margin = self.config['y_margin']
+            width = self.config['width']
+            height = self.config['height']
+            full = self.config['full']
+            base = self.config['base']
+
+            cr.set_line_width(0.5)
+            if self.kind in ['column', 'rectangle', 'tank', 'cylinder']:
+                separation = (full - base)
+                shelf = separation / 4
+                bottom = (height - separation)/2
+                for i in range(self.props.shelves - 1):
+                    cr.move_to(x_margin, y_margin + bottom + i*shelf)
+                    cr.rel_line_to(width, 0)
+                    if i < 3:
+                        cr.move_to(x_margin, y_margin + bottom + separation - i*shelf)
+                        cr.rel_line_to(width, 0)
+                cr.stroke()
+
+    def draw_rect(self, cr):
+        cr.save()
+        cr.transform(self.config['matrix']) # flip Y axis
+
+        # setup variables
+        x_margin = self.config['x_margin']
+        y_margin = self.config['y_margin']
+        width = self.config['width']
+        height = self.config['height']
+        full = self.config['full']
+        base = self.config['base']
+        cx, cy = self.config['label_pos']
+        contents = int(self.value * full / 100)
+
+        # vessel body
+        cr.set_source_rgba(*self.colors['vessel'])  # vessel walls
+        cr.set_line_width(1.5)
+        cr.rectangle(x_margin, y_margin, width, height)
+        cr.stroke()
+        self.draw_shelves(cr)
+
+        # contents
+        width = width - 2 * self.gap
+        cr.set_source_rgba(*self.colors['liquid'])
+        cr.move_to(x_margin + self.gap, y_margin + self.gap)
+        cr.rel_line_to(0, contents + base)
+
+        self.draw_liquid_surface(cr) # liquid surface
+
+        cr.rel_line_to(0, -(contents + base))
+        cr.rel_line_to(-width, 0)
+        cr.close_path()
+        cr.fill()
+
+        cr.restore()
+        cr.save()
+
+        self.draw_level(cr) # show level
+
+    def draw_column(self, cr):
+        cr.save()
+        cr.transform(self.config['matrix']) # flip Y axis
+
+        # setup variables
+        x_margin = self.config['x_margin']
+        y_margin = self.config['y_margin']
+        width = self.config['width']
+        height = self.config['height']
+        full = self.config['full']
+        base = self.config['base']
+        cx, cy = self.config['label_pos']
+        contents = int(self.value * full / 100)
+
+        # vessel
+        cr.set_line_width(1.5)
+        cr.set_source_rgba(*self.colors['vessel'])  # vessel walls
+        cr.move_to(x_margin, y_margin)
+        cr.rel_move_to(0, base)
+        cr.rel_line_to(0, full)
+        cr.rel_curve_to(0, base, width, base, width, 0)
+        cr.rel_line_to(0, -full)
+        cr.rel_curve_to(0, -base, -width, -base, -width, 0)
+        cr.stroke()
+        self.draw_shelves(cr)
+
+        # contents
+        width -= 2 * self.gap
+        base -= self.gap / 2
+        cr.set_source_rgba(*self.colors['liquid'])
+        cr.move_to(x_margin + self.gap, y_margin + self.gap)
+        cr.rel_move_to(0, base)
+        cr.rel_line_to(0, contents)
+
+        self.draw_liquid_surface(cr)
+
+        cr.rel_line_to(0, -contents)
+        cr.rel_curve_to(0, -base, -width, -base, -width, 0)
+        cr.close_path()
+        cr.fill()
+        cr.restore()
+
+        self.draw_level(cr)
 
 
 class CheckControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
@@ -2326,7 +2558,7 @@ class Plot(Gtk.Bin):
     scheme = GObject.Property(type=str, default="default", nick='Plot Style')
     dpi = GObject.Property(type=int, default=72, minimum=50, maximum=500, nick='DPI')
     legend = GObject.Property(type=bool, default=False, nick='Show Legend')
-    marker_size =  GObject.Property(type=float, default=5, minimum=0, maximum=50, nick='Marker Size')
+    marker_size = GObject.Property(type=float, default=5, minimum=0, maximum=50, nick='Marker Size')
     strip_plot = GObject.Property(type=bool, default=False, nick='Strip Plot')
     specs = GObject.Property(type=str, nick='Specification File')
     macros = GObject.Property(type=str, default='', nick='Macros')
@@ -2397,7 +2629,7 @@ class Plot(Gtk.Bin):
 
         for i in range(1, min(count, 3)):
             axis = host.twinx()
-            axis.spines["right"].set_position(("outward", Y_AXIS_OFFSET * (i-1)))
+            axis.spines["right"].set_position(("outward", Y_AXIS_OFFSET * (i - 1)))
             axis.xaxis.set_ticks([])
             self.info['axes'][f'y{i}'] = axis
 
@@ -2449,7 +2681,7 @@ class Plot(Gtk.Bin):
                         [], [], item.get("style", "-"), ms=self.marker_size, label=item.get('label', item["y"])
                     )
                     artists.append(ln)
-                    selectors.append({'y': 0, 'y1':  1, 'y2': 2}[item.get('axis', 'y')])
+                    selectors.append({'y': 0, 'y1': 1, 'y2': 2}[item.get('axis', 'y')])
                 self.info['plots'].append(artists)
                 self.info['selectors'].append(numpy.array(selectors))
                 handles.extend(artists)
@@ -2472,7 +2704,7 @@ class Plot(Gtk.Bin):
         if x_data is None or y_data is None:
             return
 
-        for j in range(plot.count-1):
+        for j in range(plot.count - 1):
             ln = artists[j]
             ln.set_data(x_data, y_data[:, j])
 
@@ -2496,11 +2728,9 @@ class Plot(Gtk.Bin):
                 vy_min, vy_max = numpy.nanmin(y_data[:, sel]), numpy.nanmax(y_data[:, sel])
                 dev = numpy.nanstd(y_data[:, sel])
                 if vy_min != vy_max or dev > 0:
-                    axis.set_ylim(vy_min-self.y_margin*dev, vy_max+self.y_margin*dev)
+                    axis.set_ylim(vy_min - self.y_margin * dev, vy_max + self.y_margin * dev)
 
         if self.strip_plot:
             self.info['axes']["y"].set_xlabel(datetime.now().strftime("%b %d, %H:%M:%S"), loc='right')
 
         self.canvas.draw_idle()
-
-

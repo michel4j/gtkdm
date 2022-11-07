@@ -11,6 +11,9 @@ REMOVE = {
             'shadow-type',
             'label',
             'shadow'
+        ],
+        "Vessel": [
+            "label-format"
         ]
     },
     "classes": [
