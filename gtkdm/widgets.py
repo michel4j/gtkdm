@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import time
 import shlex
 import subprocess
@@ -19,7 +20,7 @@ import yaml
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
-from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo
+from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo, Pango
 
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 from matplotlib.figure import Figure
@@ -533,6 +534,7 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.set_css_name('text-monitor')
         self.get_style_context().add_class('text-monitor')
         self.label = Gtk.Label('...')
+        self.label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self.add(self.label)
         self.pv = None
         self.connect('realize', self.on_realize)
@@ -1673,7 +1675,10 @@ class ShellButton(Gtk.Bin):
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:
                 cmds = shlex.split(self.command)
-                self.proc = subprocess.Popen(cmds, stdout=subprocess.DEVNULL)
+                if shutil.which(cmds[0]) is not None:
+                    self.proc = subprocess.Popen(cmds, stdout=subprocess.DEVNULL)
+                else:
+                    logger.error(f"{cmds[0]} not found!")
 
 
 class Gauge(ActiveMixin, BlankWidget):

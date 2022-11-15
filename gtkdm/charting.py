@@ -5,6 +5,7 @@ import bisect
 from datetime import datetime
 from pathlib import Path
 import gi
+import json
 import numpy
 import pandas
 import cairo
@@ -95,6 +96,11 @@ def stp_to_spec(filename):
     return info
 
 
+def plt_to_spec(filename):
+    with open(filename, 'r') as fobj:
+        info = json.load(fobj)
+    return info
+
 def get_margins(n, sig=1):
     """
     Calculate the margins for the given number of plots
@@ -117,8 +123,9 @@ class ChartToolbar(NavigationToolbar):
 
     toolitems = (
         ('Open', 'Open Chart/Data', 'document-open', 'open_chart'),
-        ('Archive', 'Save the Data', 'document-save', 'save_data'),
-        ('Save', 'Save the Figure', 'media-floppy', 'save_plot'),
+        ('Save', 'Save the Chart', 'media-floppy', 'save_plot'),
+        ('Archive', 'Save the Data', 'insert-object', 'save_data'),
+        ('Image', 'Save an Image', 'insert-image', 'save_image'),
         (None, None, None, None),
         ('Home', 'Reset original view', 'emblem-synchronizing', 'reset_plot'),
         ('Back', 'Back to  previous view', 'go-previous', 'back'),
@@ -162,6 +169,9 @@ class ChartToolbar(NavigationToolbar):
 
     def save_plot(self, btn):
         self.chart.save_plot()
+
+    def save_image(self, btn):
+        self.chart.save_image()
 
     def reset_plot(self, btn):
         self.chart.reset()
@@ -414,7 +424,10 @@ class ChartWindow(Gtk.Window):
             flt = Gtk.FileFilter()
             flt.set_name(filter['name'])
             flt.add_mime_type(filter['mime-type'])
-            flt.add_pattern(filter.get('pattern', '*.*'))
+            if 'pattern' in filter:
+                flt.add_pattern(filter.get('pattern', '*.*'))
+            elif 'patterns' in filter:
+                [flt.add_pattern(pattern) for pattern in filter['patterns']]
             dialog.add_filter(flt)
 
         response = dialog.run()
@@ -485,27 +498,28 @@ class ChartWindow(Gtk.Window):
         )
 
         filename, format = self.choose_file(Gtk.FileChooserAction.SAVE, filters=filters)
-        if isinstance(format, Gtk.FileFilter):
-            df = pandas.DataFrame.from_records(self.info['data'].get_structured()).dropna(subset='time')
-            if format.get_name() == 'HDF5':
-                basename, ext = os.path.splitext(filename)
-                filename = f'{basename}.h5'
-                df.to_hdf(filename, 'data', complevel=9, complib='blosc:zstd')
-                print(f'Data written to {format.get_name()} file {filename}')
-            elif format.get_name() == 'CSV':
-                basename, ext = os.path.splitext(filename)
-                filename = f'{basename}.csv'
-                df.to_csv(filename)
-                print(f'Data written to {format.get_name()} file {filename}')
-            elif format.get_name() == 'Excel':
-                basename, ext = os.path.splitext(filename)
-                filename = f'{basename}.xlsx'
-                df.to_excel(filename)
-                print(f'Data written to {format.get_name()} file {filename}')
-        else:
-            print(f'File format "{format.get_name()}" not supported.')
+        if filename is not None:
+            if isinstance(format, Gtk.FileFilter):
+                df = pandas.DataFrame.from_records(self.info['data'].get_structured()).dropna(subset='time')
+                if format.get_name() == 'HDF5':
+                    basename, ext = os.path.splitext(filename)
+                    filename = f'{basename}.h5'
+                    df.to_hdf(filename, 'data', complevel=9, complib='blosc:zstd')
+                    print(f'Data written to {format.get_name()} file {filename}')
+                elif format.get_name() == 'CSV':
+                    basename, ext = os.path.splitext(filename)
+                    filename = f'{basename}.csv'
+                    df.to_csv(filename)
+                    print(f'Data written to {format.get_name()} file {filename}')
+                elif format.get_name() == 'Excel':
+                    basename, ext = os.path.splitext(filename)
+                    filename = f'{basename}.xlsx'
+                    df.to_excel(filename)
+                    print(f'Data written to {format.get_name()} file {filename}')
+            else:
+                print(f'File format "{format}" not supported.')
 
-    def save_plot(self):
+    def save_image(self):
         filename, format = self.choose_file(
             action=Gtk.FileChooserAction.SAVE,
             filters=(
@@ -521,8 +535,29 @@ class ChartWindow(Gtk.Window):
             ctx.paint()
             surface.write_to_png(filename)
 
+    def save_plot(self):
+        filename, format = self.choose_file(
+            action=Gtk.FileChooserAction.SAVE,
+            filters=(
+                {'name': 'GtkDM Chart', 'mime-type': 'application/chart', 'pattern': '*.plt'},
+            )
+        )
+
+        if filename is not None:
+            root, ext = os.path.splitext(filename)
+            filename = f'{root}.plt'
+            with open(filename, 'w') as fobj:
+                json.dump(self.info['specs'], fobj)
+
     def open_chart(self):
-        print("Open chart")
+        filename, format = self.choose_file(
+            action=Gtk.FileChooserAction.OPEN,
+            filters=(
+                {'name': 'GtkDM Chart', 'mime-type': 'application/json', 'patterns': ('*.plt', '*.stp')},
+            )
+        )
+        if filename is not None:
+            Manager.load_chart(filename)
 
     def reset(self):
         plot = self.info['data']
@@ -785,6 +820,7 @@ class ChartManager(object):
         self.macros = {}
         self.registry = {}
         self.search_paths = [os.getcwd()] + os.environ.get('GTKDM_DISPLAY_PATH', '').split(':')
+        self.windows = []
 
     def find_chart(self, path, root_path=None):
         """
@@ -814,7 +850,7 @@ class ChartManager(object):
 
         return full_path
 
-    def show_chart(self, path=None):
+    def load_chart(self, path=None):
         """
         Show a display file
 
@@ -828,12 +864,41 @@ class ChartManager(object):
             name = None
         else:
             logger.info(f"Loading: {full_path}...")
-            specs = stp_to_spec(full_path)
             name = Path(path).name
+            if full_path.endswith('.stp'):
+                specs = stp_to_spec(full_path)
+            elif full_path.endswith('.plt'):
+                specs = plt_to_spec(full_path)
+            else:
+                logger.warning('Unsupported chart format!')
+                specs = {}
+                name = None
+        self.create_chart(specs, name)
+
+    def create_chart(self, specs, name):
+        """
+        Create and display a new chart window
+
+        :param specs: specs dictionary
+        :param name:  chart title
+        """
+
         window = ChartWindow(title=name)
         window.setup_chart(specs)
-        window.connect('destroy', lambda x: Gtk.main_quit())
+        window.connect('destroy', self.close_window)
+        self.windows.append(window)
         window.show_all()
+
+    def close_window(self, window):
+        """
+        Check and exit application when the last window is closed.
+
+        :param window:
+        :return:
+        """
+        self.windows.remove(window)
+        if not len(self.windows):
+            Gtk.main_quit()
 
 
 Manager = ChartManager()

@@ -20,5 +20,5 @@ if __name__ == '__main__':
     else:
         utils.log_to_console(level=logging.INFO)
 
-    charting.Manager.show_chart(args.chart)
+    charting.Manager.load_chart(args.chart)
     Gtk.main()
