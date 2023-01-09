@@ -461,6 +461,7 @@ class DisplayWindow(Gtk.Window):
             environ = dict(os.environ)
             environ['GLADE_CATALOG_SEARCH_PATH'] = PLUGIN_DIR
             environ['GLADE_MODULE_SEARCH_PATH'] = PLUGIN_DIR
+
             subprocess.Popen(['glade', self.path], env=environ)
         except FileNotFoundError as e:
             logger.warn("GtkDM Editor not available")
@@ -813,7 +814,8 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
     __gtype_name__ = 'Byte'
     channel = GObject.Property(type=str, default='', nick='PV Name')
     offset = GObject.Property(type=int, minimum=0, maximum=4, default=0, nick='Byte Offset')
-    count = GObject.Property(type=int, minimum=1, maximum=8, default=8, nick='Bit Count')
+    count = GObject.Property(type=int, minimum=1, maximum=16, default=8, nick='Bit Count')
+    shift = GObject.Property(type=int, minimum=0, maximum=16, default=0, nick='Bit Shift')
     inverted = GObject.Property(type=bool, default=False, nick='Inverted')
     big_endian = GObject.Property(type=bool, default=False, nick='Big-Endian')
     labels = GObject.Property(type=str, default='', nick='Labels')
@@ -839,7 +841,8 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
 
     def do_draw(self, cr):
         allocation = self.get_allocation()
-        stride = ceil(self.count / self.columns)
+        actual_count = len([l for l in self._view_labels if l.strip()])
+        stride = ceil(actual_count / self.columns)
         col_width = allocation.width / self.columns
 
         # draw boxes
@@ -847,14 +850,16 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
         self.theme['label'] = style.get_color(style.get_state())
 
         cr.set_line_width(0.75)
+        pos = 0
         for i in range(self.count):
             if not self._view_labels[i].strip(): continue
-            x = pix((i // stride) * col_width + self.spacing)
-            y = pix(self.spacing + (i % stride) * (self.size + self.spacing))
+            x = pix((pos // stride) * col_width + self.spacing)
+            y = pix(self.spacing + (pos % stride) * (self.size + self.spacing))
             cr.rectangle(x, y, self.size, self.size)
-            color = self.palette(int(self._view_bits[i]))
-            cr.set_source_rgba(*color)
-            cr.fill_preserve()
+            if i < len(self._view_bits):
+                color = self.palette(int(self._view_bits[i]))
+                cr.set_source_rgba(*color)
+                cr.fill_preserve()
             cr.set_source_rgba(*self.theme['border'])
             cr.stroke()
 
@@ -865,6 +870,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
                 ink, logical = layout.get_pixel_extents()
                 cr.move_to(self.spacing + x + self.size, y + self.size / 2 - logical.height / 2)
                 PangoCairo.show_layout(cr, layout)
+            pos += 1
 
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
@@ -883,11 +889,16 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
     def on_change(self, pv, value):
         bit_string = f'{int(value):064b}'[::-1]
         byte_strings = [bit_string[i:i + 8] for i in range(0, 64, 8)]
-
         if self.big_endian:
-            byte_strings = byte_strings[::-1]
+            bit_string = "".join(byte_strings[::-1])
 
-        self._view_bits = byte_strings[self.offset][::-1] if self.inverted else byte_strings[self.offset]
+        start = self.offset * 8 + self.shift
+        end = start + self.count
+        self._view_bits = bit_string[start:end]
+
+        if self.inverted:
+            self._view_bits = self._view_bits[::-1]
+
         self.queue_draw()
 
 

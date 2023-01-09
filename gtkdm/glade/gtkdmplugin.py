@@ -1,7 +1,9 @@
 import os
 import sys
 
-PLUGIN_DIR = os.path.dirname(os.path.dirname(__file__))
+from pathlib import Path
+plugin_path = Path(__file__)
+PLUGIN_DIR = str(plugin_path.parent.parent.parent)
 sys.path.append(PLUGIN_DIR)
 
 from gtkdm import widgets
