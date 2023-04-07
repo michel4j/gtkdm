@@ -342,13 +342,20 @@ class AlarmMixin(object):
 
 class ActiveMixin(object):
     PV_COPY_BUTTON = 2
+    ready: bool
+    copy_text:  str
+
+    def set_ready(self, state):
+        self.ready = state
 
     def on_active(self, pv, connected):
+        self.ready = False
         self.copy_text = pv.name
         self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.connect("button-press-event", self.on_mouse_press)
         self.set_tooltip_text(self.copy_text)
         if connected:
+            GLib.timeout_add(1000, self.set_ready, True)
             try:
                 pv.ctrlvars = pv.get_with_metadata(with_ctrlvars=True)
             except ChannelAccessGetFailure:
@@ -876,8 +883,9 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
         self.palette = ColorSequence(self.colors)
         labels = [v.strip() for v in self.labels.split(',')]
         self._view_labels = labels + (self.count - len(labels)) * ['']
+        actual_count = len([l for l in self._view_labels if l.strip()])
 
-        stride = ceil(self.count / self.columns)
+        stride = ceil(actual_count / self.columns)
         height = stride * self.size + (stride + 1) * self.spacing
         self.set_size_request(self.get_allocation().width, int(height))
         if self.channel and not EDITOR:
@@ -1049,7 +1057,7 @@ class ScaleControl(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.in_progress = False
 
     def on_value_set(self, obj):
-        if not self.in_progress:
+        if self.ready and not self.in_progress:
             if self.pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
                 self.pv.put(self.adjustment.props.value)
             else:
@@ -1102,7 +1110,7 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.in_progress = False
 
     def on_value_set(self, obj):
-        if not self.in_progress:
+        if self.ready and not self.in_progress:
             self.pv.put(self.tweak.get_value())
 
 
@@ -1406,7 +1414,7 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.button.get_style_context().add_class('button')
 
     def on_clicked(self, button):
-        if self.state:
+        if self.ready and self.state:
             spec = self.registry[self.state]
             spec['pv'].put(spec['value'], wait=True)
 
@@ -1469,9 +1477,8 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         ctx = self.get_style_context()
         ctx.add_class('tiny')
         self.state_pv = None
-        self.updating_state = False
-        self.registry = {}
 
+        self.registry = {}
         self.connect('realize', self.on_realize)
         self.button.connect('state-set', self.on_switch_change)
         self.add(self.button)
@@ -1479,11 +1486,11 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.show_all()
 
     def on_switch_change(self, button, value):
-        for state, spec in self.registry.items():
-            if value == spec['active']:
-                spec['pv'].put(spec['value'])
-                break
-
+        if self.ready:
+            for state, spec in self.registry.items():
+                if value == spec['active']:
+                    spec['pv'].put(spec['value'])
+                    break
         return True
 
     def on_state_change(self, obj, value):
@@ -1686,6 +1693,7 @@ class ShellButton(Gtk.Bin):
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:
                 cmds = shlex.split(self.command)
+                print(cmds)
                 if shutil.which(cmds[0]) is not None:
                     self.proc = subprocess.Popen(cmds, stdout=subprocess.DEVNULL)
                 else:
@@ -2467,6 +2475,7 @@ class ShellMenuItem(Gtk.Bin):
             if self.proc:
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:
+                print(shutil.which('gtkdm-charting'))
                 self.proc = subprocess.Popen(self.command, shell=True, stdout=subprocess.DEVNULL)
 
 
