@@ -223,7 +223,7 @@ class XYData(PlotData):
         ]
         for i, pv in enumerate(self.pvs):
             pv.connect('active', self.activate)
-            if sample_freq == 0.0:
+            if numpy.isclose(sample_freq, 0.0):
                 pv.connect('changed', self.update, i)
 
     def get_structured(self):
@@ -231,11 +231,11 @@ class XYData(PlotData):
         return recfunctions.unstructured_to_structured(self.data, numpy.dtype(dtype))
 
     def update(self, pv, data, index):
-        if not self.updating:
-            self.updating = True
-            self.update_column(index, data)
-            self.refresh()
-            self.updating = False
+        #if not self.updating:
+        self.updating = True
+        self.update_column(index, data)
+        self.refresh()
+        self.updating = False
 
     def activate(self, obj, state):
         if all(pv.is_active() for pv in self.pvs):

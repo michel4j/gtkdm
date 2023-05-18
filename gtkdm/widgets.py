@@ -247,7 +247,7 @@ class ColorSequence(object):
     def __getitem__(self, item):
         try:
             i = int(item)
-        except ValueError:
+        except:
             i = 0
         return self.specs[i % len(self.specs)]
 
@@ -581,7 +581,11 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         if self.pv.units and self.show_units:
             text = '{} {}'.format(text, pv.units)
         if self.colors:
-            text = '<span color="{}">{}</span>'.format(self.palette[value], text)
+            try:
+                color = self.palette[value]
+            except:
+                color = 'black'
+            text = '<span color="{}">{}</span>'.format(color, text)
         self.label.set_markup(text)
 
 
@@ -1693,7 +1697,6 @@ class ShellButton(Gtk.Bin):
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:
                 cmds = shlex.split(self.command)
-                print(cmds)
                 if shutil.which(cmds[0]) is not None:
                     self.proc = subprocess.Popen(cmds, stdout=subprocess.DEVNULL)
                 else:
