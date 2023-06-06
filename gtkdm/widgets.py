@@ -1500,8 +1500,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
     def on_state_change(self, obj, value):
         for state, spec in self.registry.items():
             if value == spec['state']:
-                if self.button.get_state() != spec['active']:
-                    self.button.set_state(spec['active'])
+                self.button.set_state(spec['active'])
                 break
 
     def on_realize(self, obj):

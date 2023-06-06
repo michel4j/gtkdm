@@ -248,6 +248,8 @@ class XYData(PlotData):
                 self.setup(len(self.names), size, self.sample_freq, self.refresh_freq)
             if self.names[0] == '#':
                 self.data[:, 0] = numpy.arange(self.size)
+            # for i, pv in enumerate(self.pvs):
+            #     self.update(pv, pv.get(), i)
 
     def update_column(self, index, vals):
         if isinstance(vals, (float, int)):
