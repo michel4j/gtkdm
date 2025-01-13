@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="gtkdmplugin" version="0.0"/>
@@ -84,512 +84,530 @@
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <child>
-      <object class="Layout">
-        <property name="width-request">1050</property>
-        <property name="height-request">600</property>
+      <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
         <child>
-          <object class="Diagram" id="diagram1">
-            <property name="width-request">304</property>
-            <property name="height-request">208</property>
+          <object class="Layout">
+            <property name="width-request">1050</property>
+            <property name="height-request">600</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="pixbuf">cmcfid.svg</property>
+            <child>
+              <object class="Diagram" id="diagram1">
+                <property name="width-request">304</property>
+                <property name="height-request">208</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="pixbuf">cmcfid.svg</property>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">180</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor" id="textmonitor1">
+                <property name="width-request">100</property>
+                <property name="height-request">28</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:PM1:intensityM</property>
+                <property name="color">rgb(32,74,135)</property>
+                <property name="xalign">0.5</property>
+              </object>
+              <packing>
+                <property name="x">11</property>
+                <property name="y">150</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor" id="textmonitor2">
+                <property name="width-request">100</property>
+                <property name="height-request">25</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:PM2:X:positionM</property>
+                <property name="color">rgb(115,210,22)</property>
+                <property name="font-size">3</property>
+                <property name="monospace">True</property>
+                <property name="xalign">0.5</property>
+                <style>
+                  <class name="dark"/>
+                </style>
+              </object>
+              <packing>
+                <property name="x">592</property>
+                <property name="y">154</property>
+              </packing>
+            </child>
+            <child>
+              <object class="LineMonitor" id="linemonitor2">
+                <property name="width-request">124</property>
+                <property name="height-request">90</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="arrow">True</property>
+                <property name="direction">south-east</property>
+              </object>
+              <packing>
+                <property name="x">89</property>
+                <property name="y">165</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Byte" id="byte1">
+                <property name="width-request">224</property>
+                <property name="height-request">79</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:GV1:positionM</property>
+                <property name="columns">3</property>
+                <property name="labels">Byte 0, Byte 1, Byte 2, Byte 3, Byte 4, Byte 5, Byte 6, Byte 7</property>
+                <property name="size">12</property>
+              </object>
+              <packing>
+                <property name="x">307</property>
+                <property name="y">413</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextControl" id="textcontrol1">
+                <property name="width-request">67</property>
+                <property name="height-request">28</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="channel">michel:H1:setCurrentC</property>
+                <property name="xalign">1</property>
+              </object>
+              <packing>
+                <property name="x">534</property>
+                <property name="y">115</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextLabel" id="textlabel1">
+                <property name="width-request">100</property>
+                <property name="height-request">20</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="text">Beam Transport</property>
+              </object>
+              <packing>
+                <property name="x">103</property>
+                <property name="y">440</property>
+              </packing>
+            </child>
+            <child>
+              <object class="LineMonitor" id="linemonitor3">
+                <property name="width-request">519</property>
+                <property name="height-request">20</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:cathodeTempM</property>
+                <property name="color">rgb(78,154,6)</property>
+                <property name="line-width">10</property>
+              </object>
+              <packing>
+                <property name="x">11</property>
+                <property name="y">389</property>
+              </packing>
+            </child>
+            <child>
+              <object class="LineMonitor" id="linemonitor1">
+                <property name="width-request">31</property>
+                <property name="height-request">36</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="arrow">True</property>
+                <property name="direction">north-east</property>
+                <property name="line-width">0.69999999999999996</property>
+              </object>
+              <packing>
+                <property name="x">204</property>
+                <property name="y">411</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Indicator" id="indicator1">
+                <property name="width-request">162</property>
+                <property name="height-request">21</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:GV1:positionM</property>
+                <property name="colors">YGRO</property>
+                <property name="size">12</property>
+              </object>
+              <packing>
+                <property name="x">548</property>
+                <property name="y">29</property>
+              </packing>
+            </child>
+            <child>
+              <object class="CommandButton" id="commandbutton1">
+                <property name="width-request">62</property>
+                <property name="height-request">28</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:initAllSQ</property>
+                <property name="label">Reset</property>
+              </object>
+              <packing>
+                <property name="x">602</property>
+                <property name="y">115</property>
+              </packing>
+            </child>
+            <child>
+              <object class="ScaleControl">
+                <property name="width-request">149</property>
+                <property name="height-request">61</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">{device}:cathodeCurrentC</property>
+                <property name="maximum">20</property>
+              </object>
+              <packing>
+                <property name="x">381</property>
+                <property name="y">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="ChoiceButton">
+                <property name="width-request">129</property>
+                <property name="height-request">55</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:autoC</property>
+              </object>
+              <packing>
+                <property name="x">208</property>
+                <property name="y">327</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Gauge">
+                <property name="width-request">151</property>
+                <property name="height-request">133</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="angle">190</property>
+                <property name="channel">michel:cathodeTempM</property>
+                <property name="levels">True</property>
+                <property name="maximum">200</property>
+                <property name="step">30</property>
+                <property name="ticks">3</property>
+              </object>
+              <packing>
+                <property name="x">13</property>
+                <property name="y">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Gauge">
+                <property name="width-request">171</property>
+                <property name="height-request">118</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="angle">100</property>
+                <property name="channel">michel:CM1:intensityM</property>
+                <property name="levels">True</property>
+                <property name="maximum">50</property>
+                <property name="step">15</property>
+                <property name="units">False</property>
+              </object>
+              <packing>
+                <property name="x">178</property>
+                <property name="y">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="ChoiceButton">
+                <property name="width-request">180</property>
+                <property name="height-request">29</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:gunOnC</property>
+                <property name="orientation">horizontal</property>
+              </object>
+              <packing>
+                <property name="x">19</property>
+                <property name="y">474</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Symbol">
+                <property name="width-request">29</property>
+                <property name="height-request">52</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:GV1:positionM</property>
+                <property name="file">shutters.sym</property>
+              </object>
+              <packing>
+                <property name="x">152</property>
+                <property name="y">357</property>
+              </packing>
+            </child>
+            <child>
+              <object class="CheckControl">
+                <property name="width-request">100</property>
+                <property name="height-request">20</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">michel:GV1:positionC</property>
+              </object>
+              <packing>
+                <property name="x">547</property>
+                <property name="y">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="DisplayButton">
+                <property name="width-request">41</property>
+                <property name="height-request">27</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="display">pseudoMtr.ui</property>
+                <property name="label">VFM</property>
+                <property name="macros">motor=PSL1608-4-B10-03:gap,units=mm</property>
+              </object>
+              <packing>
+                <property name="x">57</property>
+                <property name="y">323</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Shape">
+                <property name="width-request">24</property>
+                <property name="height-request">28</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:GV1:positionM</property>
+                <property name="colors">AC</property>
+                <property name="filled">True</property>
+                <property name="label">C35</property>
+                <property name="labelled">True</property>
+                <property name="oval">True</property>
+              </object>
+              <packing>
+                <property name="x">244</property>
+                <property name="y">427</property>
+              </packing>
+            </child>
+            <child>
+              <object class="MenuButton">
+                <property name="width-request">122</property>
+                <property name="height-request">25</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label">Extras</property>
+                <property name="menu">displaymenu1</property>
+              </object>
+              <packing>
+                <property name="x">374</property>
+                <property name="y">103</property>
+              </packing>
+            </child>
+            <child>
+              <object class="ChoiceMenu">
+                <property name="width-request">122</property>
+                <property name="height-request">29</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:GV1:positionM</property>
+              </object>
+              <packing>
+                <property name="x">374</property>
+                <property name="y">70</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TweakControl">
+                <property name="width-request">122</property>
+                <property name="height-request">29</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:cathodeCurrentC</property>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">126</property>
+              </packing>
+            </child>
+            <child>
+              <object class="MessageLog">
+                <property name="width-request">250</property>
+                <property name="height-request">66</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="alarm">True</property>
+                <property name="channel">michel:OP:autoMsg</property>
+              </object>
+              <packing>
+                <property name="x">16</property>
+                <property name="y">521</property>
+              </packing>
+            </child>
+            <child>
+              <object class="DisplayButton">
+                <property name="width-request">65</property>
+                <property name="height-request">27</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="display">embed.ui</property>
+                <property name="label">DCM</property>
+              </object>
+              <packing>
+                <property name="x">165</property>
+                <property name="y">181</property>
+              </packing>
+            </child>
+            <child>
+              <object class="HideSwitch">
+                <property name="width-request">50</property>
+                <property name="height-request">26</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="x">13</property>
+                <property name="y">357</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Symbol">
+                <property name="width-request">34</property>
+                <property name="height-request">34</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">michel:GV1:positionC</property>
+                <property name="file">iop.sym</property>
+              </object>
+              <packing>
+                <property name="x">28</property>
+                <property name="y">408</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Symbol">
+                <property name="width-request">34</property>
+                <property name="height-request">34</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="angle">180</property>
+                <property name="file">tmp.sym</property>
+              </object>
+              <packing>
+                <property name="x">450</property>
+                <property name="y">361</property>
+              </packing>
+            </child>
+            <child>
+              <object class="ShellButton">
+                <property name="width-request">40</property>
+                <property name="height-request">20</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="command">gedit</property>
+                <property name="label">Editor</property>
+              </object>
+              <packing>
+                <property name="x">216</property>
+                <property name="y">133</property>
+              </packing>
+            </child>
+            <child>
+              <object class="TextMonitor">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">TST001:floatout</property>
+              </object>
+              <packing>
+                <property name="x">455</property>
+                <property name="y">216</property>
+              </packing>
+            </child>
+            <child>
+              <object class="DisplayFrame" id="displayframe1">
+                <property name="width-request">311</property>
+                <property name="height-request">182</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="display">embed.ui</property>
+                <property name="macros">device=michel</property>
+              </object>
+              <packing>
+                <property name="x">286</property>
+                <property name="y">414</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Plot">
+                <property name="width-request">411</property>
+                <property name="height-request">293</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="buffer">100</property>
+                <property name="legend">True</property>
+                <property name="specs">test.plot</property>
+                <property name="strip-plot">True</property>
+                <property name="y-margin">0.5</property>
+              </object>
+              <packing>
+                <property name="x">630</property>
+                <property name="y">296</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Vessel">
+                <property name="width-request">101</property>
+                <property name="height-request">236</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="animate">True</property>
+                <property name="body">0.69999999999999996</property>
+                <property name="channel">SMTR1608-3-I20-16.RBV</property>
+                <property name="kind">column</property>
+                <property name="scale">0.10</property>
+                <property name="shelves">4</property>
+                <property name="xalign">0.29999999999999999</property>
+              </object>
+              <packing>
+                <property name="x">718</property>
+                <property name="y">31</property>
+              </packing>
+            </child>
+            <child>
+              <object class="Vessel">
+                <property name="width-request">36</property>
+                <property name="height-request">68</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="animate">True</property>
+                <property name="channel">CRYC1608-I20-01:CC:L2Level_MON</property>
+                <property name="kind">rectangle</property>
+              </object>
+              <packing>
+                <property name="x">774</property>
+                <property name="y">71</property>
+              </packing>
+            </child>
           </object>
           <packing>
-            <property name="x">10</property>
-            <property name="y">180</property>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="TextMonitor" id="textmonitor1">
-            <property name="width-request">100</property>
-            <property name="height-request">28</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:PM1:intensityM</property>
-            <property name="color">rgb(32,74,135)</property>
-            <property name="xalign">0.5</property>
-          </object>
-          <packing>
-            <property name="x">11</property>
-            <property name="y">150</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
-          <object class="TextMonitor" id="textmonitor2">
-            <property name="width-request">100</property>
-            <property name="height-request">25</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:PM2:X:positionM</property>
-            <property name="color">rgb(115,210,22)</property>
-            <property name="font-size">3</property>
-            <property name="monospace">True</property>
-            <property name="xalign">0.5</property>
-            <style>
-              <class name="dark"/>
-            </style>
-          </object>
-          <packing>
-            <property name="x">592</property>
-            <property name="y">154</property>
-          </packing>
-        </child>
-        <child>
-          <object class="LineMonitor" id="linemonitor2">
-            <property name="width-request">124</property>
-            <property name="height-request">90</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="arrow">True</property>
-            <property name="direction">south-east</property>
-          </object>
-          <packing>
-            <property name="x">89</property>
-            <property name="y">165</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Byte" id="byte1">
-            <property name="width-request">224</property>
-            <property name="height-request">79</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:GV1:positionM</property>
-            <property name="columns">3</property>
-            <property name="labels">Byte 0, Byte 1, Byte 2, Byte 3, Byte 4, Byte 5, Byte 6, Byte 7</property>
-            <property name="size">12</property>
-          </object>
-          <packing>
-            <property name="x">307</property>
-            <property name="y">413</property>
-          </packing>
-        </child>
-        <child>
-          <object class="TextControl" id="textcontrol1">
-            <property name="width-request">67</property>
-            <property name="height-request">28</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="channel">michel:H1:setCurrentC</property>
-            <property name="xalign">1</property>
-          </object>
-          <packing>
-            <property name="x">534</property>
-            <property name="y">115</property>
-          </packing>
-        </child>
-        <child>
-          <object class="TextLabel" id="textlabel1">
-            <property name="width-request">100</property>
-            <property name="height-request">20</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="text">Beam Transport</property>
-          </object>
-          <packing>
-            <property name="x">103</property>
-            <property name="y">440</property>
-          </packing>
-        </child>
-        <child>
-          <object class="LineMonitor" id="linemonitor3">
-            <property name="width-request">519</property>
-            <property name="height-request">20</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:cathodeTempM</property>
-            <property name="color">rgb(78,154,6)</property>
-            <property name="line-width">10</property>
-          </object>
-          <packing>
-            <property name="x">11</property>
-            <property name="y">389</property>
-          </packing>
-        </child>
-        <child>
-          <object class="LineMonitor" id="linemonitor1">
-            <property name="width-request">31</property>
-            <property name="height-request">36</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="arrow">True</property>
-            <property name="direction">north-east</property>
-            <property name="line-width">0.69999999999999996</property>
-          </object>
-          <packing>
-            <property name="x">204</property>
-            <property name="y">411</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Indicator" id="indicator1">
-            <property name="width-request">162</property>
-            <property name="height-request">21</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:GV1:positionM</property>
-            <property name="colors">YGRO</property>
-            <property name="size">12</property>
-          </object>
-          <packing>
-            <property name="x">548</property>
-            <property name="y">29</property>
-          </packing>
-        </child>
-        <child>
-          <object class="CommandButton" id="commandbutton1">
-            <property name="width-request">62</property>
-            <property name="height-request">28</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:initAllSQ</property>
-            <property name="label">Reset</property>
-          </object>
-          <packing>
-            <property name="x">602</property>
-            <property name="y">115</property>
-          </packing>
-        </child>
-        <child>
-          <object class="ScaleControl">
-            <property name="width-request">149</property>
-            <property name="height-request">61</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">{device}:cathodeCurrentC</property>
-            <property name="maximum">20</property>
-          </object>
-          <packing>
-            <property name="x">381</property>
-            <property name="y">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="ChoiceButton">
-            <property name="width-request">129</property>
-            <property name="height-request">55</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:autoC</property>
-          </object>
-          <packing>
-            <property name="x">208</property>
-            <property name="y">327</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Gauge">
-            <property name="width-request">151</property>
-            <property name="height-request">133</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="angle">190</property>
-            <property name="channel">michel:cathodeTempM</property>
-            <property name="levels">True</property>
-            <property name="maximum">200</property>
-            <property name="step">30</property>
-            <property name="ticks">3</property>
-          </object>
-          <packing>
-            <property name="x">13</property>
-            <property name="y">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Gauge">
-            <property name="width-request">171</property>
-            <property name="height-request">118</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="angle">100</property>
-            <property name="channel">michel:CM1:intensityM</property>
-            <property name="levels">True</property>
-            <property name="maximum">50</property>
-            <property name="step">15</property>
-            <property name="units">False</property>
-          </object>
-          <packing>
-            <property name="x">178</property>
-            <property name="y">6</property>
-          </packing>
-        </child>
-        <child>
-          <object class="ChoiceButton">
-            <property name="width-request">180</property>
-            <property name="height-request">29</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:gunOnC</property>
-            <property name="orientation">horizontal</property>
-          </object>
-          <packing>
-            <property name="x">19</property>
-            <property name="y">474</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Symbol">
-            <property name="width-request">29</property>
-            <property name="height-request">52</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:GV1:positionM</property>
-            <property name="file">shutters.sym</property>
-          </object>
-          <packing>
-            <property name="x">152</property>
-            <property name="y">357</property>
-          </packing>
-        </child>
-        <child>
-          <object class="CheckControl">
-            <property name="width-request">100</property>
-            <property name="height-request">20</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="alarm">True</property>
-            <property name="channel">michel:GV1:positionC</property>
-          </object>
-          <packing>
-            <property name="x">547</property>
-            <property name="y">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="DisplayButton">
-            <property name="width-request">41</property>
-            <property name="height-request">27</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="display">pseudoMtr.ui</property>
-            <property name="label">VFM</property>
-            <property name="macros">motor=PSL1608-4-B10-03:gap,units=mm</property>
-          </object>
-          <packing>
-            <property name="x">57</property>
-            <property name="y">323</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Shape">
-            <property name="width-request">24</property>
-            <property name="height-request">28</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:GV1:positionM</property>
-            <property name="colors">AC</property>
-            <property name="filled">True</property>
-            <property name="label">C35</property>
-            <property name="labelled">True</property>
-            <property name="oval">True</property>
-          </object>
-          <packing>
-            <property name="x">244</property>
-            <property name="y">427</property>
-          </packing>
-        </child>
-        <child>
-          <object class="MenuButton">
-            <property name="width-request">122</property>
-            <property name="height-request">25</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label">Extras</property>
-            <property name="menu">displaymenu1</property>
-          </object>
-          <packing>
-            <property name="x">374</property>
-            <property name="y">103</property>
-          </packing>
-        </child>
-        <child>
-          <object class="ChoiceMenu">
-            <property name="width-request">122</property>
-            <property name="height-request">29</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:GV1:positionM</property>
-          </object>
-          <packing>
-            <property name="x">374</property>
-            <property name="y">70</property>
-          </packing>
-        </child>
-        <child>
-          <object class="TweakControl">
-            <property name="width-request">122</property>
-            <property name="height-request">29</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:cathodeCurrentC</property>
-          </object>
-          <packing>
-            <property name="x">25</property>
-            <property name="y">126</property>
-          </packing>
-        </child>
-        <child>
-          <object class="MessageLog">
-            <property name="width-request">250</property>
-            <property name="height-request">66</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="alarm">True</property>
-            <property name="channel">michel:OP:autoMsg</property>
-          </object>
-          <packing>
-            <property name="x">16</property>
-            <property name="y">521</property>
-          </packing>
-        </child>
-        <child>
-          <object class="DisplayButton">
-            <property name="width-request">65</property>
-            <property name="height-request">27</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="display">embed.ui</property>
-            <property name="label">DCM</property>
-          </object>
-          <packing>
-            <property name="x">165</property>
-            <property name="y">181</property>
-          </packing>
-        </child>
-        <child>
-          <object class="HideSwitch">
-            <property name="width-request">50</property>
-            <property name="height-request">26</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="x">13</property>
-            <property name="y">357</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Symbol">
-            <property name="width-request">34</property>
-            <property name="height-request">34</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">michel:GV1:positionC</property>
-            <property name="file">iop.sym</property>
-          </object>
-          <packing>
-            <property name="x">28</property>
-            <property name="y">408</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Symbol">
-            <property name="width-request">34</property>
-            <property name="height-request">34</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="angle">180</property>
-            <property name="file">tmp.sym</property>
-          </object>
-          <packing>
-            <property name="x">450</property>
-            <property name="y">361</property>
-          </packing>
-        </child>
-        <child>
-          <object class="ShellButton">
-            <property name="width-request">40</property>
-            <property name="height-request">20</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="command">gedit</property>
-            <property name="label">Editor</property>
-          </object>
-          <packing>
-            <property name="x">216</property>
-            <property name="y">133</property>
-          </packing>
-        </child>
-        <child>
-          <object class="TextMonitor">
-            <property name="width-request">100</property>
-            <property name="height-request">80</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="channel">TST001:floatout</property>
-          </object>
-          <packing>
-            <property name="x">455</property>
-            <property name="y">216</property>
-          </packing>
-        </child>
-        <child>
-          <object class="DisplayFrame" id="displayframe1">
-            <property name="width-request">311</property>
-            <property name="height-request">182</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="display">embed.ui</property>
-            <property name="macros">device=michel</property>
-          </object>
-          <packing>
-            <property name="x">286</property>
-            <property name="y">414</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Plot">
-            <property name="width-request">411</property>
-            <property name="height-request">293</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="buffer">100</property>
-            <property name="legend">True</property>
-            <property name="specs">test.plot</property>
-            <property name="strip-plot">True</property>
-            <property name="y-margin">0.5</property>
-          </object>
-          <packing>
-            <property name="x">630</property>
-            <property name="y">296</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Vessel">
-            <property name="width-request">101</property>
-            <property name="height-request">236</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="animate">True</property>
-            <property name="body">0.69999999999999996</property>
-            <property name="channel">SMTR1608-3-I20-16.RBV</property>
-            <property name="kind">column</property>
-            <property name="scale">0.10</property>
-            <property name="shelves">4</property>
-            <property name="xalign">0.29999999999999999</property>
-          </object>
-          <packing>
-            <property name="x">718</property>
-            <property name="y">31</property>
-          </packing>
-        </child>
-        <child>
-          <object class="Vessel">
-            <property name="width-request">36</property>
-            <property name="height-request">68</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="animate">True</property>
-            <property name="channel">CRYC1608-I20-01:CC:L2Level_MON</property>
-            <property name="kind">rectangle</property>
-          </object>
-          <packing>
-            <property name="x">774</property>
-            <property name="y">71</property>
-          </packing>
+          <placeholder/>
         </child>
       </object>
     </child>

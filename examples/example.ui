@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtkdmplugin" version="0.0"/>
+  <object class="GtkWindow">
+    <property name="can-focus">False</property>
+    <property name="default-width">300</property>
+    <property name="default-height">450</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="border-width">12</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <child>
+          <object class="TextLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="text">Example Display</property>
+            <property name="xalign">0</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=3 n-rows=3 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="hexpand">False</property>
+            <property name="vexpand">False</property>
+            <property name="row-homogeneous">True</property>
+            <property name="column-homogeneous">True</property>
+            <child>
+              <object class="OnOffSwitch">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="off-channel">TST001:toggle</property>
+                <property name="on-channel">TST001:toggle</property>
+                <property name="state-channel">TST001:toggle</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="CheckControl">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="channel">TST001:toggle</property>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="OnOffButton">
+                <property name="width-request">24</property>
+                <property name="height-request">24</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="off-channel">TST001:toggle</property>
+                <property name="off-state-value">0</property>
+                <property name="off-value">0</property>
+                <property name="on-channel">TST001:toggle</property>
+                <property name="on-state-value">1</property>
+                <property name="on-value">1</property>
+                <property name="state-channel">TST001:toggle</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="Plot">
+            <property name="width-request">410</property>
+            <property name="height-request">290</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="buffer">100</property>
+            <property name="legend">True</property>
+            <property name="specs">test.plot</property>
+            <property name="strip-plot">True</property>
+            <property name="y-margin">0.5</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
