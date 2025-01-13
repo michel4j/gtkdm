@@ -1981,8 +1981,11 @@ class Symbol(ActiveMixin, BlankWidget):
 
         if self.file:
             symbol_path = Manager.find_display(self.file)
-            self.frames = SymbolFrames.new_from_file(symbol_path)
-            self.image = self.frames(-1)
+            if symbol_path:
+                self.frames = SymbolFrames.new_from_file(symbol_path)
+                self.image = self.frames(-1)
+            else:
+                logger.error(f"Symbol file not found: {self.file}")
 
     def on_change(self, pv, value):
         self.image = self.frames(value)
