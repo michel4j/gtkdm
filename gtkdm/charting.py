@@ -353,7 +353,7 @@ class ChartWindow(Gtk.Window):
         self.canvas = FigureCanvas(self.figure)
         self.canvas.set_size_request(650, 550)
         self.canvas.mpl_connect('motion_notify_event', self.on_cursor_motion)
-        self.canvas.mpl_connect('button_release_event', self.on_cursor_click)
+        #self.canvas.mpl_connect('button_release_event', self.on_cursor_click)
         self.toolbar = ChartToolbar(self.canvas, self)
 
         self.legend = Gtk.ListBox()
@@ -467,9 +467,9 @@ class ChartWindow(Gtk.Window):
                 ln.set_markevery(markers)
         self.canvas.draw_idle()
 
-    def on_cursor_click(self, event):
-        if event.inaxes:
-            x, y = event.xdata, event.ydata
+    # def on_cursor_click(self, event):
+    #     if event.inaxes:
+    #         x, y = event.xdata, event.ydata
 
     def on_legend_activated(self, listbox, row):
         index = row.get_index()
@@ -483,7 +483,6 @@ class ChartWindow(Gtk.Window):
             self.info['labels'][i].select(is_visible)
             width = 3*self.line_width if i == self.info['yaxis'] else self.line_width
             self.info['plots'][i].set_linewidth(width)
-        #self.info['plots'][index].set_color(self.info['specs'][index]['color'])
 
     def pause(self, state):
         self.props.paused = state
@@ -580,13 +579,16 @@ class ChartWindow(Gtk.Window):
             xmin, xmax = self.info['axes'][0].get_xlim()
             xrange = (xmax - xmin) * self.last_scale / (scale + 1)
             xmin = xmax - xrange
-            if xmin != xmax :
+            if xmin != xmax:
                 self.info['axes'][0].set_xlim(xmin, xmax)
             y_data = plot.y_data()
-            for i, item in enumerate(curves):
+
+            i = self.info['yaxis']
+            if i is not None:
+                item = curves[i]
                 axis = self.info['axes'][i]
                 dev = devs[i]
-                margin = numpy.array((0.,0.))
+                margin = numpy.array([0.0, 0.0])
                 if scale == 0:
                     margin[:] = (item['ymin'], item['ymax'])
                 else:
@@ -602,6 +604,7 @@ class ChartWindow(Gtk.Window):
                 if numpy.diff(margin)[0] != 0.0:
                     item['orig_ymin'], item['orig_ymax'] = item['ymin'], item['ymax']
                     item['ymin'], item['ymax'] = margin
+                    print(margin)
                     axis.set_ylim(*margin)
         self.last_scale = scale + 1
 

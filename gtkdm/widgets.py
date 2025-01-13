@@ -17,10 +17,13 @@ import cairo
 import gi
 import numpy
 import yaml
+import matplotlib
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
 from gi.repository import Gtk, GObject, Gdk, Gio, GdkPixbuf, GLib, PangoCairo, Pango
+
+matplotlib.use('Gtk3Agg')
 
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 from matplotlib.figure import Figure
@@ -152,8 +155,8 @@ class DisplayManager(object):
             except KeyError as e:
                 logger.warn('Macro {} not specified for display "{}"'.format(e, filename))
             data = (
-                    '<?xml version="1.0" encoding="UTF-8"?>\n' +
-                    ET.tostring(tree.getroot(), encoding='unicode', method='xml')
+                '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                ET.tostring(tree.getroot(), encoding='unicode', method='xml')
             )
             with utils.working_dir(directory):
                 builder = Gtk.Builder.new_from_string(data, -1)
@@ -899,7 +902,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        bit_string = f'{int(value):064b}'[::-1]
+        bit_string = f'{numpy.uint16(value):064b}'[::-1]
         byte_strings = [bit_string[i:i + 8] for i in range(0, 64, 8)]
         if self.big_endian:
             bit_string = "".join(byte_strings[::-1])

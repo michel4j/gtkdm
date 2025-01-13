@@ -4,8 +4,6 @@ import sys
 import os
 import argparse
 
-print(sys.path, sys.executable)
-
 import gtkdm
 import subprocess
 

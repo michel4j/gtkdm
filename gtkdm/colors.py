@@ -103,6 +103,7 @@ def is_string(obj):
     """
     return isinstance(obj, str)
 
+
 def _join(*values):
     """
     Join a series of values with semicolons. The values
