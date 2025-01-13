@@ -24,7 +24,7 @@ def parse_macro_spec(macro_spec):
     :param macro_spec: Macro string in the format "key=value,key=value,..."
     """
     if macro_spec:
-        return dict(re.findall("(\w+)=([^,]*)", macro_spec))
+        return dict(re.findall(r"(\w+)=([^,]*)", macro_spec))
     else:
         return {}
 
