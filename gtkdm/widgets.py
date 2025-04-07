@@ -2299,7 +2299,7 @@ class DisplayButton(Gtk.Bin):
     label = GObject.Property(type=str, default='', nick='Label')
     display = GObject.Property(type=str, default='', nick='Display File')
     macros = GObject.Property(type=str, default='', nick='Macros')
-    frame = GObject.Property(type=DisplayFrame, nick='Target Frame')
+    frame = GObject.Property(type=DisplayFrame, nick='Target Frame', default=None)
     multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
 
     def __init__(self, *args, **kwargs):
@@ -2406,7 +2406,7 @@ class MenuButton(Gtk.Bin):
     """
     __gtype_name__ = 'MenuButton'
     label = GObject.Property(type=str, default='', nick='Label')
-    menu = GObject.Property(type=Gtk.Popover, nick='Display Menu')
+    menu = GObject.Property(type=Gtk.Popover, nick='Display Menu', default=None)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
