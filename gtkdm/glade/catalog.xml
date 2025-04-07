@@ -48,18 +48,7 @@
         <glade-widget-class name="Symbol" generic-name="symbol" title="Symbol" icon-name="widget-gtk-drawingarea"/>
         <glade-widget-class name="Vessel" generic-name="vessel" title="Vessel" icon-name="widget-gtk-drawingarea"/>
         <glade-widget-class name="Diagram" generic-name="diagram" title="Diagram" icon-name="widget-gtk-image"/>
-        <glade-widget-class name="DisplayButton" generic-name="displaybutton" title="Display Button" icon-name="widget-gtk-appchooserbutton">
-            <properties>
-                <property id="frame" custom-layout="false" name="Target Frame">
-                    <parameter-spec>
-                        <type>GladeParamObjects</type>
-                        <value-type>DisplayFrame</value-type>
-                    </parameter-spec>
-                    <tooltip>A list of LED labels</tooltip>
-                </property>
-            </properties>
-        </glade-widget-class>
-
+        <glade-widget-class name="DisplayButton" generic-name="displaybutton" title="Display Button" icon-name="widget-gtk-appchooserbutton"/>
         <glade-widget-class name="HideSwitch" generic-name="hideswitch" title="HideSwitch" icon-name="widget-gtk-switch">
             <properties>
                 <property id="widgets" name="Widgets">
