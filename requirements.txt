@@ -3,6 +3,6 @@ pyepics
 numpy
 pip-chill
 pygobject
-matplotlib~=3.6
+matplotlib
 PyYAML
 pandas

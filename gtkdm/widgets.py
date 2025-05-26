@@ -2,22 +2,22 @@ import hashlib
 import json
 import os
 import re
-import shutil
-import time
 import shlex
+import shutil
 import subprocess
 import textwrap
+import time
 import zipfile
 from datetime import datetime
-from math import atan2, pi, cos, sin, ceil
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
 
 import cairo
 import gi
+import matplotlib
 import numpy
 import yaml
-import matplotlib
+from math import atan2, pi, cos, sin, ceil
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
@@ -63,7 +63,7 @@ ENTRY_CONVERTERS = {
     'ctrl_long': int,
     'ctrl_double': float
 }
-
+UPDATE_INTERVAL = 0.05  # seconds, minimum time between updates
 FONT_SIZES = {
     -3: 'xxs', -2: 'xs', -1: 'sm', 0: 'md', 1: 'lg', 2: 'xl', 3: 'xxl'
 }
@@ -147,16 +147,16 @@ class DisplayManager(object):
         new_macros.update(self.macros)
         new_macros.update(utils.parse_macro_spec(macros_spec))
         new_macro_spec = utils.compress_macro(new_macros)
-        unique_text = ('{}{}'.format(filename, new_macro_spec)).encode('utf-8')
+        unique_text = (f'{filename}{new_macro_spec}').encode('utf-8')
         key = hashlib.sha256(unique_text).hexdigest()
         if multiple or key not in self.registry:
             try:
                 utils.update_properties(tree, new_macros)
             except KeyError as e:
-                logger.warn('Macro {} not specified for display "{}"'.format(e, filename))
+                logger.warn(f'Macro {e} not specified for display "{filename}"')
             data = (
-                '<?xml version="1.0" encoding="UTF-8"?>\n' +
-                ET.tostring(tree.getroot(), encoding='unicode', method='xml')
+                    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                    ET.tostring(tree.getroot(), encoding='unicode', method='xml')
             )
             with utils.working_dir(directory):
                 builder = Gtk.Builder.new_from_string(data, -1)
@@ -346,7 +346,7 @@ class AlarmMixin(object):
 class ActiveMixin(object):
     PV_COPY_BUTTON = 2
     ready: bool
-    copy_text:  str
+    copy_text: str
 
     def set_ready(self, state):
         self.ready = state
@@ -524,6 +524,38 @@ class DisplayFrame(Gtk.EventBox):
             Manager.embed_display(self, self.display, macros_spec=self.macros)
 
 
+def format_pv_value(widget, pv, value, show_units=True, color=None):
+    """
+    Format the value of a PV for display in a widget.
+    :param widget: Current Widget instance, used for properties like precision, colors, etc.
+    :param pv:  Process Variable instance containing type, units, enum_strs, etc.
+    :param value: Value to format, can be of various types depending on the PV type.
+    :param show_units: If True, units are shown on the display.
+    :param color: Color to use for the text, if applicable.
+    :return: Formatted string representation of the value, possibly with units and color.
+    """
+
+    suffix = f' {pv.units}' if show_units and pv.units else ''
+    if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
+        text = f'{pv.enum_strs[value]}{suffix}'
+    elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
+        precision = widget.prec if widget.prec >= 0 else pv.precision
+        if precision < 0:
+            text = f'{value:g}{suffix}'
+        elif widget.sci:
+            precision += 1
+            text = f'{value:.{precision}g}{suffix}'
+        else:
+            text = f'{value:.{precision}f}{suffix}'
+    else:
+        raw_text = pv.char_value.strip('"').strip("'")
+        text = f'{raw_text}{suffix}'
+
+    if color:
+        text = f'<span color="{color}">{text}</span>'
+    return text
+
+
 class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     __gtype_name__ = 'TextMonitor'
 
@@ -548,9 +580,12 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self.add(self.label)
         self.pv = None
+        self.last_change = 0
         self.connect('realize', self.on_realize)
-        self.bind_property('xalign', self.label, 'xalign',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'xalign', self.label, 'xalign',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.palette = ColorSequence(self.colors)
 
     def on_realize(self, obj):
@@ -560,36 +595,15 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
+            pass
 
         super().on_realize(obj)
 
     def on_change(self, pv, value):
-        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
-            try:
-                text = pv.enum_strs[value]
-            except IndexError:
-                text = "Invalid"
-        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            precision = self.prec if self.prec >= 0 else pv.precision
-            if precision < 0:
-                text = f'{value:g}'
-            elif self.sci:
-                precision += 1
-                text = f'{value:.{precision}g}'
-            else:
-                text = f'{value:.{precision}f}'
-        else:
-            text = pv.char_value.strip('"').strip("'")
-
-        if self.pv.units and self.show_units:
-            text = '{} {}'.format(text, pv.units)
-        if self.colors:
-            try:
-                color = self.palette[value]
-            except:
-                color = 'black'
-            text = '<span color="{}">{}</span>'.format(color, text)
-        self.label.set_markup(text)
+        if time.time() - self.last_change > UPDATE_INTERVAL:
+            color = self.palette[value] if self.colors else None
+            self.label.set_markup(format_pv_value(self, pv, value, color=color))
+            self.last_change = time.time()
 
 
 class ArrayMonitor(TextMonitor):
@@ -637,12 +651,17 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.box.pack_end(self.value_label, True, True, 0)
         self.add(self.box)
         self.pv = None
+        self.last_change = 0
         self.label_pv = None
         self.connect('realize', self.on_realize)
-        self.bind_property('xalign', self.value_label, 'xalign',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('label', self.desc_label, 'label',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'xalign', self.value_label, 'xalign',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'label', self.desc_label, 'label',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.palette = ColorSequence(self.colors)
 
         self.value_label.get_style_context().add_class('value')
@@ -657,7 +676,7 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
+                self.label_pv = gepics.PV(f'{self.channel}.DESC')
                 self.label_pv.connect('changed', self.on_label_change)
         super().on_realize(obj)
 
@@ -665,26 +684,10 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.props.label = value
 
     def on_change(self, pv, value):
-        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
-            text = pv.enum_strs[value]
-        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            precision = self.prec if self.prec >= 0 else pv.precision
-            if precision < 0:
-                text = f'{pv.value:g}'
-            elif self.sci:
-                precision += 1
-                text = f'{pv.value:.{precision}g}'
-            else:
-                text = f'{pv.value:.{precision}f}'
-        else:
-            text = pv.char_value
-
-        if self.pv.units and self.show_units:
-            text = '{} {}'.format(text, pv.units)
-        if self.colors:
-            text = '<span color="{}">{}</span>'.format(self.palette[value], text)
-        self.value_label.set_markup(text)
-
+        if time.time() - self.last_change > UPDATE_INTERVAL:
+            color = self.palette[value] if self.colors else None
+            self.value_label.set_markup(format_pv_value(self, pv, value, color=color))
+            self.last_change = time.time()
 
 class TextLabel(FontMixin, Gtk.Bin):
     __gtype_name__ = 'TextLabel'
@@ -702,8 +705,10 @@ class TextLabel(FontMixin, Gtk.Bin):
 
         self.label = Gtk.Label(label='Label')
         self.bind_property('text', self.label, 'label', GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('xalign', self.label, 'xalign',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'xalign', self.label, 'xalign',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.add(self.label)
         self.connect('realize', self.on_realize)
 
@@ -727,8 +732,10 @@ class DateLabel(FontMixin, Gtk.Bin):
         super().__init__(*args, **kwargs)
 
         self.label = Gtk.Label(label='')
-        self.bind_property('xalign', self.label, 'xalign',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'xalign', self.label, 'xalign',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.add(self.label)
         self.connect('realize', self.on_realize)
 
@@ -1010,18 +1017,30 @@ class ScaleControl(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.scale.set_adjustment(self.adjustment)
         self.connect('realize', self.on_realize)
         self.add(self.scale)
-        self.bind_property('orientation', self.scale, 'orientation',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('inverted', self.scale, 'inverted',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('maximum', self.adjustment, 'upper',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('minimum', self.adjustment, 'lower',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('increment', self.adjustment, 'step-increment',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('digits', self.scale, 'digits',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'orientation', self.scale, 'orientation',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'inverted', self.scale, 'inverted',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'maximum', self.adjustment, 'upper',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'minimum', self.adjustment, 'lower',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'increment', self.adjustment, 'step-increment',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'digits', self.scale, 'digits',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         for signal in ['notify::marks', 'notify::digits', 'notify::labels']:
             self.connect(signal, self.update_marks)
         self.set_sensitive(False)
@@ -1094,14 +1113,22 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
         self.connect('realize', self.on_realize)
         self.add(self.tweak)
-        self.bind_property('maximum', self.adjustment, 'upper',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('minimum', self.adjustment, 'lower',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('increment', self.adjustment, 'step-increment',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('digits', self.tweak, 'digits',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'maximum', self.adjustment, 'upper',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'minimum', self.adjustment, 'lower',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'increment', self.adjustment, 'step-increment',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'digits', self.tweak, 'digits',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
 
     def on_realize(self, obj):
         if self.channel and not EDITOR:
@@ -1134,17 +1161,25 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.last_change = 0
         self.connect('realize', self.on_realize)
         self.entry = Gtk.Entry(width_chars=5)
-        self.bind_property('xalign', self.entry, 'xalign',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('editable', self.entry, 'editable',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('editable', self.entry, 'sensitive',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
-        self.bind_property('editable', self.entry, 'can-focus',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'xalign', self.entry, 'xalign',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'editable', self.entry, 'editable',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'editable', self.entry, 'sensitive',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
+        self.bind_property(
+            'editable', self.entry, 'can-focus',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.entry.connect('activate', self.on_activate)
         self.entry.connect('focus-out-event', self.on_focus_out)
         self.entry.connect('focus-in-event', self.disable_restore)
@@ -1153,7 +1188,6 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.restore_src = None
         self.pv = None
         self.add(self.entry)
-
         self.set_sensitive(False)
 
     def on_realize(self, obj):
@@ -1179,23 +1213,11 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.disable_restore()
 
     def on_change(self, pv, value):
-        self.in_progress = True
-        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
-            text = pv.enum_strs[value]
-        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            precision = self.prec if self.prec >= 0 else pv.precision
-            if precision < 0:
-                text = f'{pv.value:g}'
-            elif self.sci:
-                precision += 1
-                text = f'{pv.value:.{precision}g}'
-            else:
-                text = f'{pv.value:.{precision}f}'
-        else:
-            text = pv.char_value
-
-        self.entry.set_text(text)
-        self.in_progress = False
+        if time.time() - self.last_change > UPDATE_INTERVAL and not self.in_progress:
+            self.in_progress = True
+            self.entry.set_text(format_pv_value(self, pv, value))
+            self.last_change = time.time()
+            self.in_progress = False
 
     def on_activate(self, entry):
         text = self.entry.get_text()
@@ -1235,9 +1257,15 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
 
         for name, entry in self.entries.items():
             self.pack_start(entry, True, True, 0)
-            self.bind_property('xalign', entry, 'xalign',
-                               GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+            self.bind_property(
+                'xalign', entry, 'xalign',
+                GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+                )
 
+        self.last_change = {
+            'target': 0.0,
+            'feedback': 0.0,
+        }
         self.entries['target'].connect('activate', self.on_activate)
         self.entries['target'].connect('focus-out-event', self.on_focus_out)
         self.entries['target'].connect('focus-in-event', self.disable_restore)
@@ -1305,26 +1333,15 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
         self.disable_restore()
 
     def on_change(self, pv, value, name):
-        self.progress[name] = True
-        entry = self.entries[name]
-        if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
-            text = pv.enum_strs[value]
-        elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
-            precision = self.prec if self.prec >= 0 else pv.precision
-            if precision <= 0:
-                text = f'{pv.value:0.5g}'
-            elif self.sci:
-                precision += 1
-                text = f'{pv.value:.{precision}g}'
-            else:
-                text = f'{pv.value:.{precision}f}'
-        else:
-            text = pv.char_value
-        if name == 'feedback' and pv.units and self.show_units:
-            text = '{} {}'.format(text, pv.units)
 
-        entry.set_text(text)
-        self.progress[name] = False
+        if time.time() - self.last_change[name] > UPDATE_INTERVAL and not self.progress[name]:
+            self.progress[name] = True
+            self.last_change[name] = time.time()
+            show_units = (name == 'feedback' and self.show_units)
+            entry = self.entries[name]
+            entry.set_text(format_pv_value(self, pv, value, show_units=show_units))
+            self.progress[name] = False
+            self.last_change[name] = time.time()
 
     def on_activate(self, entry):
         text = self.entries['target'].get_text()
@@ -1354,8 +1371,10 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.label_pv = None
         self.connect('realize', self.on_realize)
         self.button.connect('clicked', self.on_clicked)
-        self.bind_property('label', self.button, 'label',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'label', self.button, 'label',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.add(self.button)
         self.set_sensitive(False)
         self.get_style_context().add_class('gtkdm-button')
@@ -1413,8 +1432,10 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
         self.connect('realize', self.on_realize)
         self.button.connect('clicked', self.on_clicked)
-        self.bind_property('on_label', self.button, 'label',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'on_label', self.button, 'label',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.add(self.button)
         self.set_sensitive(False)
         self.get_style_context().add_class('gtkdm-button')
@@ -1566,8 +1587,10 @@ class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.connect('realize', self.on_realize)
         self.in_progress = False
         self.menu_labels = []
-        self.bind_property('orientation', self.box, 'orientation',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'orientation', self.box, 'orientation',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.buttons = [Gtk.ToggleButton(label='One'), Gtk.ToggleButton(label='Two'), ]
         for i, btn in enumerate(self.buttons):
             self.box.pack_start(btn, False, False, 0)
@@ -1687,8 +1710,10 @@ class ShellButton(Gtk.Bin):
         self.button.connect('clicked', self.on_clicked)
         self.add(self.button)
         self.proc = None
-        self.bind_property('label', self.button, 'label',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'label', self.button, 'label',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.show_all()
         self.get_style_context().add_class('gtkdm-button')
         self.button.get_style_context().add_class('button')
@@ -2098,7 +2123,7 @@ class Vessel(ActiveMixin, BlankWidget):
             'width': width,
             'height': height,
             'full': full,
-            'base': (height - full)/2,
+            'base': (height - full) / 2,
             'label_pos': (x_margin + width * self.props.xalign, y_margin + height * self.props.yalign),
             'matrix': cairo.Matrix(1.0, 0.0, 0.0, -1.0, 0.0, alloc.height),
         }
@@ -2119,7 +2144,7 @@ class Vessel(ActiveMixin, BlankWidget):
 
     def draw_liquid_surface(self, cr):
         # liquid surface
-        width = self.config['width'] - 2*self.gap
+        width = self.config['width'] - 2 * self.gap
         if self.props.ripples:
             height = self.config['height']
             w = width / (self.props.ripples * 3)
@@ -2155,18 +2180,18 @@ class Vessel(ActiveMixin, BlankWidget):
             if self.kind in ['column', 'rectangle', 'tank', 'cylinder']:
                 separation = (full - base)
                 shelf = separation / 4
-                bottom = (height - separation)/2
+                bottom = (height - separation) / 2
                 for i in range(self.props.shelves - 1):
-                    cr.move_to(x_margin, y_margin + bottom + i*shelf)
+                    cr.move_to(x_margin, y_margin + bottom + i * shelf)
                     cr.rel_line_to(width, 0)
                     if i < 3:
-                        cr.move_to(x_margin, y_margin + bottom + separation - i*shelf)
+                        cr.move_to(x_margin, y_margin + bottom + separation - i * shelf)
                         cr.rel_line_to(width, 0)
                 cr.stroke()
 
     def draw_rect(self, cr):
         cr.save()
-        cr.transform(self.config['matrix']) # flip Y axis
+        cr.transform(self.config['matrix'])  # flip Y axis
 
         # setup variables
         x_margin = self.config['x_margin']
@@ -2191,7 +2216,7 @@ class Vessel(ActiveMixin, BlankWidget):
         cr.move_to(x_margin + self.gap, y_margin + self.gap)
         cr.rel_line_to(0, contents + base)
 
-        self.draw_liquid_surface(cr) # liquid surface
+        self.draw_liquid_surface(cr)  # liquid surface
 
         cr.rel_line_to(0, -(contents + base))
         cr.rel_line_to(-width, 0)
@@ -2201,11 +2226,11 @@ class Vessel(ActiveMixin, BlankWidget):
         cr.restore()
         cr.save()
 
-        self.draw_level(cr) # show level
+        self.draw_level(cr)  # show level
 
     def draw_column(self, cr):
         cr.save()
-        cr.transform(self.config['matrix']) # flip Y axis
+        cr.transform(self.config['matrix'])  # flip Y axis
 
         # setup variables
         x_margin = self.config['x_margin']
@@ -2306,8 +2331,10 @@ class DisplayButton(Gtk.Bin):
         super().__init__(*args, **kwargs)
         self.button = Gtk.Button(label=self.label)
         self.button.connect('clicked', self.on_clicked)
-        self.bind_property('label', self.button, 'label',
-                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+        self.bind_property(
+            'label', self.button, 'label',
+            GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+            )
         self.add(self.button)
         ctx = self.get_style_context()
         ctx.add_class('tiny')
@@ -2544,9 +2571,9 @@ class MessageLog(FontMixin, ActiveMixin, Gtk.EventBox):
 
         _iter = self.buffer.get_end_iter()
         if self.show_time:
-            text = "{} - {}\n".format(datetime.now().strftime("%m/%d %H:%M:%S"), value)
+            text = f"{datetime.now().strftime('%m/%d %H:%M:%S')} - {value}\n"
         else:
-            text = "{}\n".format(value)
+            text = f"{value}\n"
         self.buffer.insert_with_tags(_iter, text, self.active_tag)
         self.adj.set_value(self.adj.get_upper() - self.adj.get_page_size())
 
@@ -2575,8 +2602,10 @@ class HideSwitch(Gtk.Bin):
             for name in self.widgets.split(','):
                 w = top_level.builder.get_object(name.strip())
                 if w:
-                    self.btn.bind_property('active', w, 'visible',
-                                           GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE)
+                    self.btn.bind_property(
+                        'active', w, 'visible',
+                        GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
+                        )
         GLib.timeout_add(2000, self.btn.set_active, self.default)
         # self.btn.set_active(self.default)
 
