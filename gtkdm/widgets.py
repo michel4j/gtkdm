@@ -37,6 +37,7 @@ from . import utils, colors, version, PLUGIN_DIR
 from .utils import logger, XYData, StripData
 
 EDITOR = True
+gepics.REUSE = False
 
 ENTRY_CONVERTERS = {
     'string': str,
@@ -113,9 +114,9 @@ class DisplayManager(object):
         :param key: registry key
         """
         window = self.registry.pop(key)
-        for obj in window.builder.get_objects():
-            if hasattr(obj, 'destroy'):
-                obj.destroy()
+        # for obj in window.builder.get_objects():
+        #     if hasattr(obj, 'destroy'):
+        #         obj.destroy()
 
     def show_display(self, path, macros_spec="", main=False, multiple=False):
         """
@@ -132,7 +133,7 @@ class DisplayManager(object):
 
         full_path = self.find_display(path)
         if not full_path:
-            logger.error('Display File {} not found'.format(path))
+            logger.error(f'Display File {path} not found')
             return
 
         logger.info(f"Loading: {full_path}...")
@@ -147,7 +148,7 @@ class DisplayManager(object):
         new_macros.update(self.macros)
         new_macros.update(utils.parse_macro_spec(macros_spec))
         new_macro_spec = utils.compress_macro(new_macros)
-        unique_text = (f'{filename}{new_macro_spec}').encode('utf-8')
+        unique_text = f'{filename}{new_macro_spec}'.encode('utf-8')
         key = hashlib.sha256(unique_text).hexdigest()
         if multiple or key not in self.registry:
             try:
@@ -534,10 +535,14 @@ def format_pv_value(widget, pv, value, show_units=True, color=None):
     :param color: Color to use for the text, if applicable.
     :return: Formatted string representation of the value, possibly with units and color.
     """
-
+    if not pv.is_active():
+        return '⚠'
     suffix = f' {pv.units}' if show_units and pv.units else ''
     if pv.type in ['enum', 'time_enum', 'ctrl_enum']:
-        text = f'{pv.enum_strs[value]}{suffix}'
+        try:
+            text = f'{pv.enum_strs[value]}{suffix}'
+        except IndexError:
+            text = f'{value}{suffix}'
     elif pv.type in ['double', 'float', 'time_double', 'time_float', 'ctrl_double', 'ctrl_float']:
         precision = widget.prec if widget.prec >= 0 else pv.precision
         if precision < 0:
@@ -1505,6 +1510,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         ctx = self.get_style_context()
         ctx.add_class('tiny')
         self.state_pv = None
+        self.ready = False
 
         self.registry = {}
         self.connect('realize', self.on_realize)
