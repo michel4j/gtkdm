@@ -346,7 +346,7 @@ class AlarmMixin(object):
 
 class ActiveMixin(object):
     PV_COPY_BUTTON = 2
-    ready: bool
+    ready: bool = False
     copy_text: str
 
     def set_ready(self, state):
