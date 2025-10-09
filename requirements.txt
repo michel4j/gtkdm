@@ -1,4 +1,3 @@
-gepics
 pyepics
 numpy
 pip-chill

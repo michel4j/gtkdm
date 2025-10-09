@@ -141,7 +141,7 @@ class ChartToolbar(NavigationToolbar):
     )
 
     def __init__(self, canvas, window):
-        super().__init__(canvas, window)
+        super().__init__(canvas)
         self.chart = window
         self.paused = False
         self.widgets = {}
@@ -453,7 +453,7 @@ class ChartWindow(Gtk.Window):
             x = max(numpy.nanmin(x_data), min(event.xdata, numpy.nanmax(x_data)))
             self.info['cursor'].set_linestyle('-')
             finder = len(x_data) - bisect.bisect_right(x_data[::-1], x) - 1
-            self.info['cursor'].set_xdata(x_data[finder])
+            self.info['cursor'].set_xdata([x_data[finder]])
             markers = [finder]
             style.add_class('finding')
         else:

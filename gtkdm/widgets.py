@@ -30,14 +30,14 @@ from matplotlib.figure import Figure
 from matplotlib.style import context as style_context
 
 from epics.ca import ChannelAccessGetFailure
-import gepics
+
 import xml.etree.ElementTree as ET
 
 from . import utils, colors, version, PLUGIN_DIR
-from .utils import logger, XYData, StripData
+from .utils import logger, XYData, StripData, Alarm, PV
 
 EDITOR = True
-gepics.REUSE = False
+REUSE = False
 
 ENTRY_CONVERTERS = {
     'string': str,
@@ -332,10 +332,10 @@ class BlankWidget(Gtk.Widget):
 class AlarmMixin(object):
     def on_alarm(self, pv, alarm):
         if self.alarm:
-            if alarm == gepics.Alarm.MAJOR:
+            if alarm == Alarm.MAJOR:
                 self.get_style_context().remove_class('gtkdm-warning')
                 self.get_style_context().add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
+            elif alarm == Alarm.MINOR:
                 self.get_style_context().add_class('gtkdm-warning')
                 self.get_style_context().remove_class('gtkdm-critical')
             else:
@@ -596,7 +596,7 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     def on_realize(self, obj):
         self.palette = ColorSequence(self.colors)
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -675,13 +675,13 @@ class TextPanel(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
     def on_realize(self, obj):
         self.palette = ColorSequence(self.colors)
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV(f'{self.channel}.DESC')
+                self.label_pv = PV(f'{self.channel}.DESC')
                 self.label_pv.connect('changed', self.on_label_change)
         super().on_realize(obj)
 
@@ -827,7 +827,7 @@ class LineMonitor(ActiveMixin, AlarmMixin, BlankWidget):
         self.palette = ColorSequence(self.colors)
 
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -908,7 +908,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
         height = stride * self.size + (stride + 1) * self.spacing
         self.set_size_request(self.get_allocation().width, int(height))
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -977,13 +977,13 @@ class Indicator(ActiveMixin, AlarmMixin, BlankWidget):
         self.palette = ColorSequence(self.colors)
         self.set_size_request(self.get_allocation().width, self.size + self.spacing)
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
+                self.label_pv = PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -1073,7 +1073,7 @@ class ScaleControl(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.scale.props.value_pos = value_pos
         self.update_marks()
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -1137,7 +1137,7 @@ class TweakControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_realize(self, obj):
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -1197,7 +1197,7 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_realize(self, obj):
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
@@ -1293,10 +1293,10 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
     def on_alarm(self, pv, alarm, name):
         if self.alarm:
             widget = self.entries[name]
-            if alarm == gepics.Alarm.MAJOR:
+            if alarm == Alarm.MAJOR:
                 widget.get_style_context().remove_class('gtkdm-warning')
                 widget.get_style_context().add_class('gtkdm-critical')
-            elif alarm == gepics.Alarm.MINOR:
+            elif alarm == Alarm.MINOR:
                 widget.get_style_context().add_class('gtkdm-warning')
                 widget.get_style_context().remove_class('gtkdm-critical')
             else:
@@ -1307,12 +1307,12 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
     def on_realize(self, obj):
         if not EDITOR:
             if self.tgt_channel and (not self.fbk_channel or self.tgt_channel == self.fbk_channel):
-                pv = gepics.PV(self.tgt_channel)
+                pv = PV(self.tgt_channel)
                 self.pv['target'] = pv
                 self.pv['feedback'] = pv
             elif self.tgt_channel and self.fbk_channel:
-                self.pv['target'] = gepics.PV(self.tgt_channel)
-                self.pv['feedback'] = gepics.PV(self.fbk_channel)
+                self.pv['target'] = PV(self.tgt_channel)
+                self.pv['feedback'] = PV(self.fbk_channel)
             else:
                 return
 
@@ -1391,11 +1391,11 @@ class CommandButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_realize(self, obj):
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('active', self.on_active)
 
             if not (self.label or self.icon_name):
-                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
+                self.label_pv = PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
         if self.icon_name:
@@ -1483,11 +1483,11 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         }
         self.button.set_label(self.on_label)
         if not EDITOR:
-            self.state_pv = gepics.PV(self.state_channel)
+            self.state_pv = PV(self.state_channel)
             self.state_pv.connect('changed', self.on_state_change)
             self.state_pv.connect('active', self.on_active)
             for state, spec in self.registry.items():
-                spec['pv'] = gepics.PV(spec['channel'])
+                spec['pv'] = PV(spec['channel'])
 
 
 class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
@@ -1549,11 +1549,11 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
             },
         }
         if not EDITOR:
-            self.state_pv = gepics.PV(self.state_channel)
+            self.state_pv = PV(self.state_channel)
             self.state_pv.connect('changed', self.on_state_change)
             self.state_pv.connect('active', self.on_active)
             for state, spec in self.registry.items():
-                spec['pv'] = gepics.PV(spec['channel'])
+                spec['pv'] = PV(spec['channel'])
 
 
 class MessageButton(CommandButton):
@@ -1614,7 +1614,7 @@ class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
             self.menu_labels = [v.strip() for v in re.split(r'[,|;]', self.labels)]
 
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('active', self.on_active)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('changed', self.on_change)
@@ -1678,7 +1678,7 @@ class ChoiceMenu(ActiveMixin, Gtk.EventBox):
         if self.labels.strip():
             self.menu_labels = [v.strip() for v in re.split(r'[,|;]', self.labels)]
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect_after('active', self.on_active)
             self.pv.connect('changed', self.on_change)
 
@@ -1893,12 +1893,12 @@ class Gauge(ActiveMixin, BlankWidget):
     def on_realize(self, widget):
         self.palette = ColorSequence(self.colors)
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
+                self.label_pv = PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -2006,7 +2006,7 @@ class Symbol(ActiveMixin, BlankWidget):
 
     def on_realize(self, widget):
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
 
@@ -2093,7 +2093,7 @@ class Vessel(ActiveMixin, BlankWidget):
     def do_realize(self, *args):
         super().do_realize(*args)
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('active', self.on_active)
         style = self.get_style_context()
@@ -2303,13 +2303,13 @@ class CheckControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
     def on_realize(self, obj):
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
+                self.label_pv = PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -2415,13 +2415,13 @@ class Shape(ActiveMixin, AlarmMixin, BlankWidget):
             'border': style.get_color(style.get_state())
         }
         if self.channel and not EDITOR:
-            self.pv = gepics.PV(self.channel)
+            self.pv = PV(self.channel)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
 
             if not self.label:
-                self.label_pv = gepics.PV('{}.DESC'.format(self.channel))
+                self.label_pv = PV('{}.DESC'.format(self.channel))
                 self.label_pv.connect('changed', self.on_label_change)
 
     def on_label_change(self, pv, value):
@@ -2550,18 +2550,18 @@ class MessageLog(FontMixin, ActiveMixin, Gtk.EventBox):
         self.add(self.sw)
         self.adj = self.sw.get_vadjustment()
         self.tags = {
-            gepics.Alarm.MAJOR: self.buffer.create_tag(foreground='Red', wrap_mode=Gtk.WrapMode.WORD),
-            gepics.Alarm.MINOR: self.buffer.create_tag(foreground='Orange', wrap_mode=Gtk.WrapMode.WORD),
-            gepics.Alarm.NORMAL: self.buffer.create_tag(wrap_mode=Gtk.WrapMode.WORD),
-            gepics.Alarm.INVALID: self.buffer.create_tag(foreground='Gray', wrap_mode=Gtk.WrapMode.WORD),
+            Alarm.MAJOR: self.buffer.create_tag(foreground='Red', wrap_mode=Gtk.WrapMode.WORD),
+            Alarm.MINOR: self.buffer.create_tag(foreground='Orange', wrap_mode=Gtk.WrapMode.WORD),
+            Alarm.NORMAL: self.buffer.create_tag(wrap_mode=Gtk.WrapMode.WORD),
+            Alarm.INVALID: self.buffer.create_tag(foreground='Gray', wrap_mode=Gtk.WrapMode.WORD),
         }
-        self.active_tag = self.tags[gepics.Alarm.NORMAL]
+        self.active_tag = self.tags[Alarm.NORMAL]
         self.connect('realize', self.on_realize)
 
     def on_realize(self, obj):
         pv_name = self.channel
         if pv_name:
-            self.pv = gepics.PV(pv_name)
+            self.pv = PV(pv_name)
             self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
