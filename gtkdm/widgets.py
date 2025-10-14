@@ -37,7 +37,7 @@ from . import utils, colors, version, PLUGIN_DIR
 from .utils import logger, XYData, StripData, Alarm, PV
 
 EDITOR = True
-REUSE = False
+
 
 ENTRY_CONVERTERS = {
     'string': str,
@@ -914,7 +914,7 @@ class Byte(ActiveMixin, AlarmMixin, BlankWidget):
             self.pv.connect('active', self.on_active)
 
     def on_change(self, pv, value):
-        bit_string = f'{numpy.uint16(value):064b}'[::-1]
+        bit_string = f'{numpy.int32(value):064b}'[::-1]
         byte_strings = [bit_string[i:i + 8] for i in range(0, 64, 8)]
         if self.big_endian:
             bit_string = "".join(byte_strings[::-1])

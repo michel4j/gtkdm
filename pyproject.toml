@@ -1,0 +1,53 @@
+[project]
+name = "gtkdm"
+dynamic = ["version"]
+description = "Python GTK Display Manager for EPICS operator interfaces"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Michel Fodje", email = "michel.fodje@lightsource.ca" },
+]
+keywords = [
+    "control-system",
+    "display",
+    "epics",
+    "manager",
+    "scada",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "pyepics",
+    "pygobject",
+    "PyYAML",
+    "tables",
+]
+
+[project.urls]
+Homepage = "https://github.com/michel4j/gtkdm"
+Issues = "https://github.com/michel4j/gtkdm/issues"
+
+[tool.poetry]
+packages = [
+    { include = "gtkdm" },
+]
+version = "0.0.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+format = "{base}.{revision}{distance}"

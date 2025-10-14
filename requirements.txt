@@ -5,3 +5,4 @@ pygobject
 matplotlib
 PyYAML
 pandas
+tables
