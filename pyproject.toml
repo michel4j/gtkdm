@@ -1,6 +1,6 @@
 [project]
 name = "gtkdm"
-dynamic = ["version"]
+dynamic = [""]
 description = "Python GTK Display Manager for EPICS operator interfaces"
 readme = "README.md"
 license = "MIT"
@@ -21,24 +21,29 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "matplotlib",
-    "numpy",
     "pandas",
-    "pyepics",
+    "gepics",
     "pygobject",
     "PyYAML",
     "tables",
+    "matplotlib",
+    "numpy",
 ]
+requires-python = ">=3.9,<4.0"
+version = "2020.8.78"
 
 [project.urls]
 Homepage = "https://github.com/michel4j/gtkdm"
 Issues = "https://github.com/michel4j/gtkdm/issues"
 
+
 [tool.poetry]
 packages = [
     { include = "gtkdm" },
 ]
-version = "0.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pygobject-stubs = "^2.13.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
@@ -48,6 +53,6 @@ build-backend = "poetry_dynamic_versioning.backend"
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
 
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 vcs = "git"
 format = "{base}.{revision}{distance}"

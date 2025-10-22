@@ -11,6 +11,7 @@ import zipfile
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 import cairo
 import gi
@@ -30,11 +31,12 @@ from matplotlib.figure import Figure
 from matplotlib.style import context as style_context
 
 from epics.ca import ChannelAccessGetFailure
-
+from gepics import PV, Alarm
 import xml.etree.ElementTree as ET
 
 from . import utils, colors, version, PLUGIN_DIR
-from .utils import logger, XYData, StripData, Alarm, PV
+from .utils import logger, XYData, StripData
+
 
 EDITOR = True
 
@@ -64,7 +66,7 @@ ENTRY_CONVERTERS = {
     'ctrl_long': int,
     'ctrl_double': float
 }
-UPDATE_INTERVAL = 0.05  # seconds, minimum time between updates
+UPDATE_INTERVAL = 0.1  # seconds, minimum time between updates
 FONT_SIZES = {
     -3: 'xxs', -2: 'xs', -1: 'sm', 0: 'md', 1: 'lg', 2: 'xl', 3: 'xxl'
 }
@@ -272,10 +274,6 @@ def pix(v):
     """Round to neareast 0.5 for cairo drawing"""
     x = round(v * 2)
     return x / 2 if x % 2 else (x + 1) / 2
-
-
-def radians(a):
-    return (a * pi / 180)
 
 
 def ticks(lo, hi, step):
@@ -1074,7 +1072,7 @@ class ScaleControl(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.update_marks()
         if self.channel and not EDITOR:
             self.pv = PV(self.channel)
-            self.pv.connect('changed', self.on_change)
+            self.pv.connect('changed', self.handle_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
             self.adjustment.connect('value-changed', self.on_value_set)
@@ -1218,11 +1216,11 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.disable_restore()
 
     def on_change(self, pv, value):
-        if time.time() - self.last_change > UPDATE_INTERVAL and not self.in_progress:
-            self.in_progress = True
-            self.entry.set_text(format_pv_value(self, pv, value))
-            self.last_change = time.time()
-            self.in_progress = False
+        #if time.time() - self.last_change > UPDATE_INTERVAL and not self.in_progress:
+        self.in_progress = True
+        self.entry.set_text(format_pv_value(self, pv, value))
+        self.last_change = time.time()
+        self.in_progress = False
 
     def on_activate(self, entry):
         text = self.entry.get_text()
@@ -1317,7 +1315,7 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
                 return
 
             for name, pv in self.pv.items():
-                pv.connect('changed', self.on_change, name)
+                pv.connect('changed', self.on_field_change, name)
                 pv.connect('alarm', self.on_alarm, name)
 
             self.pv['target'].connect('active', self.on_active)
@@ -1334,11 +1332,10 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
 
     def restore_value(self):
         if self.pv['target']:
-            self.on_change(self.pv['target'], self.pv['target'].value, 'target')
+            self.on_field_change(self.pv['target'], self.pv['target'].value, 'target')
         self.disable_restore()
 
-    def on_change(self, pv, value, name):
-
+    def on_field_change(self, pv, value, name):
         if time.time() - self.last_change[name] > UPDATE_INTERVAL and not self.progress[name]:
             self.progress[name] = True
             self.last_change[name] = time.time()
@@ -1777,9 +1774,9 @@ class Gauge(ActiveMixin, BlankWidget):
         maximum = ceil(self.maximum // self.step) * self.step
 
         half_angle = self.angle / 2
-        start_angle = radians(270 - half_angle)
-        end_angle = radians(270 + half_angle)
-        offset = r * sin(90 - radians(half_angle)) / 2
+        start_angle = numpy.radians(270 - half_angle)
+        end_angle = numpy.radians(270 + half_angle)
+        offset = r * sin(90 - numpy.radians(half_angle)) / 2
         angle_scale = (end_angle - start_angle) / (maximum - minimum)
         tick_width = 12
         y += offset
