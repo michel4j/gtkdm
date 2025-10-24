@@ -66,7 +66,7 @@ ENTRY_CONVERTERS = {
     'ctrl_long': int,
     'ctrl_double': float
 }
-UPDATE_INTERVAL = 0.1  # seconds, minimum time between updates
+UPDATE_INTERVAL = 0.25  # seconds, minimum time between updates
 FONT_SIZES = {
     -3: 'xxs', -2: 'xs', -1: 'sm', 0: 'md', 1: 'lg', 2: 'xl', 3: 'xxl'
 }
@@ -584,6 +584,8 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.add(self.label)
         self.pv = None
         self.last_change = 0
+        self.pending_value = None
+        self.update_active = True
         self.connect('realize', self.on_realize)
         self.bind_property(
             'xalign', self.label, 'xalign',
@@ -602,11 +604,24 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
 
         super().on_realize(obj)
 
+    def update_value(self):
+        self.last_change = time.time()
+        if self.pending_value is not None:
+            color = self.palette[self.pending_value] if self.colors else None
+            self.label.set_markup(format_pv_value(self, self.pv, self.pending_value, color=color))
+            self.pending_value = None
+            self.update_active = False
+            return False
+        else:
+            return True
+
     def on_change(self, pv, value):
+        self.pending_value = value
         if time.time() - self.last_change > UPDATE_INTERVAL:
-            color = self.palette[value] if self.colors else None
-            self.label.set_markup(format_pv_value(self, pv, value, color=color))
-            self.last_change = time.time()
+            self.update_value()
+        elif not self.update_active:
+            self.update_active = True
+            GLib.timeout_add(int(UPDATE_INTERVAL * 1000), self.update_value)
 
 
 class ArrayMonitor(TextMonitor):
