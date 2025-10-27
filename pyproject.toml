@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
     "pandas",
     "gepics (>=2025.10.3, <2026.0.0)",
-    "pygobject (>=3.44.2,<4.0.0)",
+    "pygobject (==3.44.2)",
     "PyYAML",
     "tables",
     "matplotlib",
