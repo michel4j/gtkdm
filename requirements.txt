@@ -1,8 +1,0 @@
-pyepics
-numpy
-pip-chill
-pygobject
-matplotlib
-PyYAML
-pandas
-tables
