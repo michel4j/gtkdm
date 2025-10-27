@@ -1087,7 +1087,7 @@ class ScaleControl(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.update_marks()
         if self.channel and not EDITOR:
             self.pv = PV(self.channel)
-            self.pv.connect('changed', self.handle_change)
+            self.pv.connect('changed', self.on_change)
             self.pv.connect('alarm', self.on_alarm)
             self.pv.connect('active', self.on_active)
             self.adjustment.connect('value-changed', self.on_value_set)
