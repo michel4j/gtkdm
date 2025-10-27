@@ -1,24 +1,7 @@
 #!/usr/bin/env python3
 
-import argparse
-import logging
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 
-from gtkdm import charting, utils
-
+from gtkdm.scripts import charting_main
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Gtk Display Manager Charting')
-    parser.add_argument('chart', nargs='?', metavar='display', type=str, help='Chart File Name')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose Logging')
-    args = parser.parse_args()
-
-    if args.verbose:
-        utils.log_to_console(level=logging.DEBUG)
-    else:
-        utils.log_to_console(level=logging.INFO)
-
-    charting.Manager.load_chart(args.chart)
-    Gtk.main()
+    charting_main()

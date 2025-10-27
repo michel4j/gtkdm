@@ -51,11 +51,11 @@ version = "0.0.0"
 
 
 [tool.poetry.scripts]
-gtkdm = { reference = 'bin/gtkdm', type = "file" }
-gtkdm-charting = { reference = 'bin/gtkdm-charting', type = "file" }
-gtkdm-editor = { reference = 'bin/gtkdm-editor', type = "file" }
-gtkdm-migrate = { reference = 'bin/gtkdm-migrate', type = "file" }
-gtkdm-mksym = { reference = 'bin/gtkdm-mksym', type = "file" }
+gtkdm = "gtkdm.scripts:main"
+gtkdm-charting = "gtkdm.scripts:charting_main"
+gtkdm-editor = "gtkdm.scripts:editor"
+gtkdm-migrate = "gtkdm.scripts:migrate"
+gtkdm-mksym = "gtkdm.scripts:make_symbol"
 
 [tool.poetry.group.dev.dependencies]
 pygobject-stubs = "^2.13.0"

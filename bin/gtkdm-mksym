@@ -1,29 +1,6 @@
 #!/usr/bin/env python
 
-import argparse
-import json
-import os
-import zipfile
+from gtkdm.scripts import make_symbol
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Create Gtk DM Symbol')
-    parser.add_argument('-n', '--name', type=str, help='Symbol Name', required=True)
-    parser.add_argument('images', metavar='images', type=str, nargs='+', help='State files in sequence')
-    args = parser.parse_args()
-
-    sym_file = '{}.sym'.format(args.name)
-    with zipfile.ZipFile(sym_file, 'w', zipfile.ZIP_DEFLATED) as sym:
-        names = []
-        for image in args.images:
-            directory, file_name = os.path.split(image)
-            if directory:
-                os.chdir(directory)
-            if os.path.exists(file_name):
-                if file_name not in names:
-                    print('Adding {} to {} ...'.format(file_name, sym_file))
-                    sym.write(file_name)
-                names.append(file_name)
-            else:
-                print('{} not found! Skipping ...'.format(image))
-        sym.writestr('symbol.json', json.dumps(names))
-    print('{} ready.'.format(sym_file))
+    make_symbol()

@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-import argparse
-
-import gtkdm
-import subprocess
-
-PROJECT_DIR = gtkdm.PLUGIN_DIR
+from gtkdm.scripts import editor
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Gtk Display Manager for EPICS.')
-    parser.add_argument('display', metavar='display', nargs="?", type=str, help='Display File Name')
-    args = parser.parse_args()
-
-    os.environ['GLADE_CATALOG_SEARCH_PATH'] = gtkdm.PLUGIN_DIR
-    os.environ['GLADE_MODULE_SEARCH_PATH'] = gtkdm.PLUGIN_DIR
-
-    if args.display:
-        subprocess.check_call(['glade', args.display])
-    else:
-        subprocess.check_call(['glade'])
+    editor()
