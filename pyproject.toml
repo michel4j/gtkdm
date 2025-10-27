@@ -1,6 +1,6 @@
 [project]
 name = "gtkdm"
-dynamic = [""]
+dynamic = ["version"]
 description = "Python GTK Display Manager for EPICS operator interfaces"
 readme = "README.md"
 license = "MIT"
@@ -30,7 +30,7 @@ dependencies = [
     "numpy",
 ]
 requires-python = ">=3.9,<4.0"
-version = "2020.8.78"
+
 
 [project.urls]
 Homepage = "https://github.com/michel4j/gtkdm"
@@ -41,6 +41,21 @@ Issues = "https://github.com/michel4j/gtkdm/issues"
 packages = [
     { include = "gtkdm" },
 ]
+include = [
+    {path = "gtkdm/glade/catalog.xml", format = ["sdist", "wheel"]},
+    {path = "gtkdm/glade/style.css", format = ["sdist", "wheel"]},
+    {path = "gtkdm/glade/dark.mplstyle", format = ["sdist", "wheel"]},
+    {path = "gtkdm/glade/chart-config.ui", format = ["sdist", "wheel"]},
+]
+version = "0.0.0"
+
+
+[tool.poetry.scripts]
+gtkdm = { reference = 'bin/gtkdm', type = "file" }
+gtkdm-charting = { reference = 'bin/gtkdm-charting', type = "file" }
+gtkdm-editor = { reference = 'bin/gtkdm-editor', type = "file" }
+gtkdm-migrate = { reference = 'bin/gtkdm-migrate', type = "file" }
+gtkdm-mksym = { reference = 'bin/gtkdm-mksym', type = "file" }
 
 [tool.poetry.group.dev.dependencies]
 pygobject-stubs = "^2.13.0"
@@ -53,6 +68,6 @@ build-backend = "poetry_dynamic_versioning.backend"
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
 
 [tool.poetry-dynamic-versioning]
-enable = false
+enable = true
 vcs = "git"
 format = "{base}.{revision}{distance}"
