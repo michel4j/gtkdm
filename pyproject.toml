@@ -22,12 +22,12 @@ classifiers = [
 ]
 dependencies = [
     "pandas",
-    "gepics",
-    "pygobject",
+    "gepics (>=2025.10.3, <2026.0.0)",
+    "pygobject (>=3.44.2,<4.0.0)",
     "PyYAML",
     "tables",
     "matplotlib",
-    "numpy",
+    "numpy (>=1.2.0,<3.0.0)",
 ]
 requires-python = ">=3.9,<4.0"
 
@@ -39,7 +39,7 @@ Issues = "https://github.com/michel4j/gtkdm/issues"
 
 [tool.poetry]
 packages = [
-    { include = "gtkdm" },
+    { include = "gtkdm", from = "." },
 ]
 include = [
     {path = "gtkdm/glade/catalog.xml", format = ["sdist", "wheel"]},
