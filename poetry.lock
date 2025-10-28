@@ -517,20 +517,20 @@ woff = ["brotli (>=1.0.1) ; platform_python_implementation == \"CPython\"", "bro
 
 [[package]]
 name = "gepics"
-version = "2025.10.2"
+version = "2025.10.3"
 description = "GObject Wrapper for PyEPICS PV"
 optional = false
-python-versions = ">=3.9"
+python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "gepics-2025.10.2-py3-none-any.whl", hash = "sha256:95720b3042623f0f9dd6c3c51109b9931383561c60ec6a11fa3bad4a24a9102f"},
-    {file = "gepics-2025.10.2.tar.gz", hash = "sha256:b518ae4792296aa47e553eed10faf63bb34abcdbc1a694db09ba0b53ea06f22d"},
+    {file = "gepics-2025.10.3-py3-none-any.whl", hash = "sha256:00a8e9bb8a26607b2590e8bf4e4848bf33314d42cae68f0367da2cf24837a2f7"},
+    {file = "gepics-2025.10.3.tar.gz", hash = "sha256:7773b047a1e14d490d38fc708a97e4a092e0d4ce86f2f7074ee609dd51a7f6b5"},
 ]
 
 [package.dependencies]
 numpy = ">=2.0.0,<3.0.0"
 pyepics = ">=3.5.8,<4.0.0"
-pygobject = ">=3.54.3,<4.0.0"
+pygobject = ">=3.44.0,<4.0.0"
 
 [[package]]
 name = "idna"
@@ -1792,17 +1792,17 @@ test = ["coverage", "psutil ; platform_system == \"Linux\"", "pytest", "pytest-c
 
 [[package]]
 name = "pygobject"
-version = "3.54.3"
+version = "3.44.2"
 description = "Python bindings for GObject Introspection"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.7, <4"
 groups = ["main"]
 files = [
-    {file = "pygobject-3.54.3.tar.gz", hash = "sha256:a8da09134a0f7d56491cf2412145e35aa74e91d760e8f337096a1cda0b92bae7"},
+    {file = "PyGObject-3.44.2.tar.gz", hash = "sha256:a30ef88b8786f2be1dc46b78d8fba8fe3a8a7666ffa1de2681f95890a80e5ad2"},
 ]
 
 [package.dependencies]
-pycairo = ">=1.16"
+pycairo = ">=1.16,<2.0"
 
 [[package]]
 name = "pygobject-stubs"
@@ -2119,4 +2119,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "a48e03914d4e823bd56dbff5a31b1ff467f63cddefc5c4a969d88fd154d125b0"
+content-hash = "a08742d7d10661f5ed830fdc577ebfe2cc961810bc9b660b55b70b7d595ce632"
