@@ -517,20 +517,20 @@ woff = ["brotli (>=1.0.1) ; platform_python_implementation == \"CPython\"", "bro
 
 [[package]]
 name = "gepics"
-version = "2025.10.3"
+version = "2025.10.4"
 description = "GObject Wrapper for PyEPICS PV"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "gepics-2025.10.3-py3-none-any.whl", hash = "sha256:00a8e9bb8a26607b2590e8bf4e4848bf33314d42cae68f0367da2cf24837a2f7"},
-    {file = "gepics-2025.10.3.tar.gz", hash = "sha256:7773b047a1e14d490d38fc708a97e4a092e0d4ce86f2f7074ee609dd51a7f6b5"},
+    {file = "gepics-2025.10.4-py3-none-any.whl", hash = "sha256:bb1d9c4ca0008ba73c690413177dc893b0c6f933c38db1bdb85a7b22845bd220"},
+    {file = "gepics-2025.10.4.tar.gz", hash = "sha256:7ce554d96e348557e41583465febcacdf2afc868220e763fb86d9863670cc09d"},
 ]
 
 [package.dependencies]
-numpy = ">=2.0.0,<3.0.0"
-pyepics = ">=3.5.8,<4.0.0"
-pygobject = ">=3.44.0,<4.0.0"
+numpy = "*"
+pyepics = "*"
+pygobject = "*"
 
 [[package]]
 name = "idna"
@@ -2119,4 +2119,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "a08742d7d10661f5ed830fdc577ebfe2cc961810bc9b660b55b70b7d595ce632"
+content-hash = "27abad203d82e0d3ca4a0270e5e735a36bf4e2f124a6806bdd4dde78a170230c"

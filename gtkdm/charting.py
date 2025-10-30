@@ -16,6 +16,7 @@ from gi.repository import Gtk, GObject, Gio, Pango, Gdk, GLib
 
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
+from matplotlib.backend_tools import Cursors
 from matplotlib.figure import Figure
 from matplotlib import pyplot
 from matplotlib.markers import MarkerStyle
@@ -127,13 +128,13 @@ class ChartToolbar(NavigationToolbar):
         ('Archive', 'Save the Data', 'insert-object', 'save_data'),
         ('Image', 'Save an Image', 'insert-image', 'save_image'),
         (None, None, None, None),
-        ('Home', 'Reset original view', 'emblem-synchronizing', 'reset_plot'),
+        ('Home', 'Reset original view', 'view-refresh', 'reset_plot'),
         ('Back', 'Back to  previous view', 'go-previous', 'back'),
         ('Forward', 'Forward to next view', 'go-next', 'forward'),
         ('Pan', 'Pan axes with left mouse, zoom with right', 'preferences-system-privacy', 'pan'),
-        ('Zoom', 'Zoom to rectangle', 'edit-select-all', 'zoom'),
-        ('Diverge', 'Zoom Out and Expand plots', 'view-fullscreen', 'scale_diverge'),
-        ('Converge', 'Zoom In and Compress plots', 'view-restore', 'scale_converge'),
+        ('Zoom', 'Zoom to rectangle', 'zoom-fit-best', 'zoom'),
+        ('Diverge', 'Zoom Out and Expand plots', 'zoom-in', 'scale_diverge'),
+        ('Converge', 'Zoom In and Compress plots', 'zoom-out', 'scale_converge'),
         ('Pause', 'Pause Updates', 'media-playback-pause', 'pause'),
         (None, None, None, None),
 
@@ -144,6 +145,7 @@ class ChartToolbar(NavigationToolbar):
         super().__init__(canvas)
         self.chart = window
         self.paused = False
+        self.panning = False
         self.widgets = {}
         self.scale = 0
         self.max_scale = 6
@@ -163,6 +165,11 @@ class ChartToolbar(NavigationToolbar):
         icon_name = f'{PAUSE_ICONS[self.paused]}-symbolic'
         btn.get_icon_widget().set_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
         self.chart.pause(self.paused)
+
+    def pan(self, *args):
+        self.panning = not(self.panning)
+        self.chart.set_cursor(Cursors.HAND if self.panning else None)
+        super().pan(*args)
 
     def save_data(self, btn):
         self.chart.save_data()
@@ -483,6 +490,12 @@ class ChartWindow(Gtk.Window):
             self.info['labels'][i].select(is_visible)
             width = 3*self.line_width if i == self.info['yaxis'] else self.line_width
             self.info['plots'][i].set_linewidth(width)
+
+    def set_cursor(self, cursor: Cursors = None):
+        if cursor is None:
+            self.canvas.set_cursor(Cursors.POINTER)
+        else:
+            self.canvas.set_cursor(cursor)
 
     def pause(self, state):
         self.props.paused = state
