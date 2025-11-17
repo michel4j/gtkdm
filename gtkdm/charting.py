@@ -742,7 +742,7 @@ class ChartWindow(Gtk.Window):
                 self.info['axes'].append(axis)
 
             if item.get('log'):
-                axis.set_yscale('log')
+                axis.set_yscale('symlog')
 
             axis.yaxis.set_visible(i == 0)
             axis.yaxis.grid(linewidth=.5, linestyle=':', color=fg_color)
@@ -754,8 +754,6 @@ class ChartWindow(Gtk.Window):
                 [], [], '-', marker=marker_style, markevery=[], color=color,
                 markerfacecolor=bg_color, markersize=self.marker_size, lw=self.line_width
             )
-            if item['log']:
-                item['ymin'] = max(1e-16, item['ymin'])
             axis.set_ylim(item['ymin'], item['ymax'])
             artists.append(ln)
 
