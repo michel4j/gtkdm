@@ -5,7 +5,7 @@ import bisect
 from datetime import datetime
 from pathlib import Path
 import gi
-import json
+import yaml
 import numpy
 import pandas
 import cairo
@@ -99,7 +99,7 @@ def stp_to_spec(filename):
 
 def plt_to_spec(filename):
     with open(filename, 'r') as fobj:
-        info = json.load(fobj)
+        info = yaml.safe_load(fobj)
     return info
 
 def get_margins(n, sig=1):
@@ -111,7 +111,69 @@ def get_margins(n, sig=1):
     """
     y = numpy.arange(n)
     step = (sig*2)/(n+1)
-    return step*numpy.column_stack((-(y+1), n-y))
+    margins = step*numpy.column_stack((-(y+1), n-y))
+    return margins
+
+
+def stack_margins(x: numpy.ndarray, y_data: numpy.ndarray, padding: float = 0.05) -> list[tuple[float, float]]:
+    """
+    Calculate the stack margins for the given x data and y_data for waterfall plot
+    :param x: shared x-axis array
+    :param y_data: y-axis array
+    :param padding: Vertical buffer between plots as a fraction of range
+    :return: list of tuples of  ymin, ymax margins
+    """
+    valid = ~numpy.isnan(x)
+    norm_ydata = y_data[valid,:]
+    num_values, num_plots = norm_ydata.shape
+    offsets = numpy.zeros((num_plots, ))
+    scales = numpy.ones((num_plots, ))
+    skyline = numpy.zeros((num_values,))
+
+    for i in range(num_plots):
+        y = norm_ydata[:, i]
+        # normalize this plot
+        y_min, y_max = numpy.nanmin(y), numpy.nanmax(y)
+        offsets[i] = y_min
+        if y_min != y_max:
+            scales[i] = 1 / (y_max - y_min)
+        y = (y - offsets[i]) * scales[i]
+
+        # place over skyline
+        shift = numpy.nanmax((skyline - y)) + padding
+        offsets[i] -= shift / scales[i]    # adjust and transform offset to unscaled units
+
+        # update skyline
+        skyline[:] = y + shift
+
+    # pad skyline to get top margin
+    top_margin = numpy.nanmax(skyline) + padding
+
+    return [
+        (offsets[i],  (top_margin / scales[i]) + offsets[i])
+        for i in range(num_plots)
+    ]
+
+
+def standard_margins(x: numpy.ndarray, y_data: numpy.ndarray, deviations: float = 1.0) -> list[tuple[float, float]]:
+    """
+    Calculate the margins for the given x data and y_data based on the number of standard deviations
+    :param x: shared x-axis array
+    :param y_data: y-axis array
+    :param deviations: Number of standard deviations for each plot
+    :return: list of tuples of  ymin, ymax margins
+    """
+
+    valid = ~numpy.isnan(x)
+    y_values = y_data[valid,:]
+    num_values, num_plots = y_values.shape
+    means = means[:] = numpy.mean(y_values, axis=0)
+    stds = numpy.std(y_values, axis=0) * deviations
+
+    return [
+        (means[i] - stds[i],  means[i] + stds[i])
+        for i in range(num_plots)
+    ]
 
 
 PAUSE_ICONS = {
@@ -133,11 +195,11 @@ class ChartToolbar(NavigationToolbar):
         ('Forward', 'Forward to next view', 'go-next', 'forward'),
         ('Pan', 'Pan axes with left mouse, zoom with right', 'preferences-system-privacy', 'pan'),
         ('Zoom', 'Zoom to rectangle', 'zoom-fit-best', 'zoom'),
+        ('Stack', 'Stack Plots', 'open-menu-symbolic', 'stack'),
         ('Diverge', 'Zoom Out and Expand plots', 'zoom-in', 'scale_diverge'),
-        ('Converge', 'Zoom In and Compress plots', 'zoom-out', 'scale_converge'),
+        ('Converge', 'Compress plots', 'zoom-out', 'scale_converge'),
         ('Pause', 'Pause Updates', 'media-playback-pause', 'pause'),
         (None, None, None, None),
-
         ('Configure', 'Configure The Chart', 'document-properties', 'configure'),
     )
 
@@ -147,8 +209,8 @@ class ChartToolbar(NavigationToolbar):
         self.paused = False
         self.panning = False
         self.widgets = {}
-        self.scale = 0
-        self.max_scale = 6
+        self.scale = 1
+        self.max_scale = 10
 
         for i, toolitem in enumerate(self):
             if isinstance(toolitem, Gtk.ToolButton):
@@ -190,12 +252,15 @@ class ChartToolbar(NavigationToolbar):
         self.set_scale(min(self.scale + 1, self.max_scale))
 
     def scale_converge(self, btn):
-        self.set_scale(max(self.scale - 1, 0))
+        self.set_scale(max(self.scale - 1, 1))
 
-    def set_scale(self, scale=0):
+    def stack(self, btn):
+        self.chart.stack()
+
+    def set_scale(self, scale=1):
         self.scale = scale
         self.widgets['Diverge'].set_sensitive(self.scale < self.max_scale)
-        self.widgets['Converge'].set_sensitive(self.scale > 0)
+        self.widgets['Converge'].set_sensitive(self.scale > 1)
         self.chart.auto_scale(self.scale)
 
 
@@ -392,7 +457,6 @@ class ChartWindow(Gtk.Window):
             'colors': [],
         }
         self.marker_size = 5
-        self.last_scale = 1
         self.data_src = None
         self.settings = Gtk.Settings.get_default()
         self.bind_property(
@@ -400,7 +464,7 @@ class ChartWindow(Gtk.Window):
             GObject.BindingFlags.DEFAULT | GObject.BindingFlags.SYNC_CREATE
         )
 
-    def choose_file(self, action=Gtk.FileChooserAction.OPEN, filters=()):
+    def choose_file(self, action: Gtk.FileChooserAction = Gtk.FileChooserAction.OPEN, filters=()):
         overwrite = False
         if action == Gtk.FileChooserAction.CREATE_FOLDER:
             title = 'Create Folder'
@@ -427,14 +491,14 @@ class ChartWindow(Gtk.Window):
             Gtk.ResponseType.OK,
         )
 
-        for filter in filters:
+        for file_filter in filters:
             flt = Gtk.FileFilter()
-            flt.set_name(filter['name'])
-            flt.add_mime_type(filter['mime-type'])
-            if 'pattern' in filter:
-                flt.add_pattern(filter.get('pattern', '*.*'))
-            elif 'patterns' in filter:
-                [flt.add_pattern(pattern) for pattern in filter['patterns']]
+            flt.set_name(file_filter['name'])
+            flt.add_mime_type(file_filter['mime-type'])
+            if 'pattern' in file_filter:
+                flt.add_pattern(file_filter.get('pattern', '*.*'))
+            elif 'patterns' in file_filter:
+                [flt.add_pattern(pattern) for pattern in file_filter['patterns']]
             dialog.add_filter(flt)
 
         response = dialog.run()
@@ -559,7 +623,7 @@ class ChartWindow(Gtk.Window):
             root, ext = os.path.splitext(filename)
             filename = f'{root}.plt'
             with open(filename, 'w') as fobj:
-                json.dump(self.info['specs'], fobj)
+                yaml.dump(self.info['specs'], fobj, default_flow_style=False)
 
     def open_chart(self):
         filename, format = self.choose_file(
@@ -573,56 +637,44 @@ class ChartWindow(Gtk.Window):
 
     def reset(self):
         plot = self.info['data']
-        self.toolbar.set_scale(0)
-        if plot is not None:
-            specs = self.info['specs']
-            xmax = numpy.nanmax(plot.x_data())
-            xmin = xmax - specs['options']['period']
-            self.info['axes'][0].set_xlim(xmin, xmax)
-            for i, item in enumerate(specs.get('plots', [])):
-                axis = self.info['axes'][i]
-                axis.set_ylim(item.get('orig_ymin', item['ymin']), item.get('orig_ymax', item['ymax']))
+        self.toolbar.set_scale(1)
+        if plot is None:
+            return
+
+        specs = self.info['specs']
+
+        xmax = numpy.nanmax(plot.x_data())
+        xmin = xmax - specs['options']['period']
+        self.info['axes'][0].set_xlim(xmin, xmax)
+        margins = [
+            (item.get('orig_ymin', item['ymin']), item.get('orig_ymax', item['ymax']))
+            for item in specs.get('plots', [])
+        ]
+        self.set_margins(margins)
 
     def auto_scale(self, scale):
         plot = self.info['data']
-        sigma = (2**scale)
-        if plot is not None:
-            curves = self.info['specs'].get('plots', [])
-            devs = get_margins(len(curves), sigma)
-            xmin, xmax = self.info['axes'][0].get_xlim()
-            xrange = (xmax - xmin) * self.last_scale / (scale + 1)
-            xmin = xmax - xrange
-            if xmin != xmax:
-                self.info['axes'][0].set_xlim(xmin, xmax)
-            y_data = plot.y_data()
+        if plot is None:
+            return
 
-            i = self.info['yaxis']
-            if i is not None:
-                item = curves[i]
-                axis = self.info['axes'][i]
-                dev = devs[i]
-                margin = numpy.array([0.0, 0.0])
-                if scale == 0:
-                    margin[:] = (item['ymin'], item['ymax'])
-                else:
-                    if not numpy.isnan(y_data[:, i]).all():
-                        avg = numpy.nanmean(y_data[:, i])
-                        std = numpy.nanstd(y_data[:, i])
-                        if std == 0.0:
-                            std = 1.0
-                        margin[:] = std * dev + avg
+        margins = standard_margins(plot.x_data(), plot.y_data(), deviations=scale)
+        self.set_margins(margins)
 
-                if item['log']:
-                    margin[0] = max(1e-16, margin[0])
-                if numpy.diff(margin)[0] != 0.0:
-                    item['orig_ymin'], item['orig_ymax'] = item['ymin'], item['ymax']
-                    item['ymin'], item['ymax'] = margin
-                    print(margin)
-                    axis.set_ylim(*margin)
-        self.last_scale = scale + 1
+    def set_margins(self, margins):
+        for i, axis in enumerate(self.info['axes']):
+            ymin, ymax = margins[i]
+            if ymax > ymin:
+                axis.set_ylim(ymin, ymax)
+
+    def stack(self):
+        plot = self.info['data']
+        if plot is None:
+            return
+
+        margins = stack_margins(plot.x_data(), plot.y_data())
+        self.set_margins(margins)
 
     def setup_chart(self, specs):
-
         if specs:
             self.props.x_grid = specs['options'].get('x_grid', False)
             self.props.y_grid = specs['options'].get('y_grid', False)
