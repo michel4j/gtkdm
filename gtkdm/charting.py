@@ -115,15 +115,23 @@ def get_margins(n, sig=1):
     return margins
 
 
-def stack_margins(x: numpy.ndarray, y_data: numpy.ndarray, padding: float = 0.05) -> list[tuple[float, float]]:
+def stack_margins(
+    x: numpy.ndarray,
+    y_data: numpy.ndarray,
+    x_range: tuple[float, float] | None = None,
+    padding: float = 0.05
+) -> list[tuple[float, float]]:
     """
     Calculate the stack margins for the given x data and y_data for waterfall plot
     :param x: shared x-axis array
     :param y_data: y-axis array
+    :param x_range: range of x-axis to consider
     :param padding: Vertical buffer between plots as a fraction of range
     :return: list of tuples of  ymin, ymax margins
     """
     valid = ~numpy.isnan(x)
+    if x_range is not None:
+        valid = valid & (x >= x_range[0]) & (x <= x_range[1])
     norm_ydata = y_data[valid,:]
     num_values, num_plots = norm_ydata.shape
     offsets = numpy.zeros((num_plots, ))
@@ -155,16 +163,24 @@ def stack_margins(x: numpy.ndarray, y_data: numpy.ndarray, padding: float = 0.05
     ]
 
 
-def standard_margins(x: numpy.ndarray, y_data: numpy.ndarray, deviations: float = 1.0) -> list[tuple[float, float]]:
+def standard_margins(
+        x: numpy.ndarray,
+        y_data: numpy.ndarray,
+        x_range: tuple[float, float] | None = None,
+        deviations: float = 1.0
+) -> list[tuple[float, float]]:
     """
     Calculate the margins for the given x data and y_data based on the number of standard deviations
     :param x: shared x-axis array
     :param y_data: y-axis array
+    :param x_range: range of x-axis to consider
     :param deviations: Number of standard deviations for each plot
     :return: list of tuples of  ymin, ymax margins
     """
 
     valid = ~numpy.isnan(x)
+    if x_range is not None:
+        valid = valid & (x >= x_range[0]) & (x <= x_range[1])
     y_values = y_data[valid,:]
     num_values, num_plots = y_values.shape
     means = means[:] = numpy.mean(y_values, axis=0)
@@ -652,26 +668,39 @@ class ChartWindow(Gtk.Window):
         ]
         self.set_margins(margins)
 
-    def auto_scale(self, scale):
-        plot = self.info['data']
-        if plot is None:
-            return
-
-        margins = standard_margins(plot.x_data(), plot.y_data(), deviations=scale)
-        self.set_margins(margins)
-
     def set_margins(self, margins):
         for i, axis in enumerate(self.info['axes']):
             ymin, ymax = margins[i]
             if ymax > ymin:
                 axis.set_ylim(ymin, ymax)
 
+    def auto_scale(self, scale):
+        plot = self.info['data']
+        if plot is None:
+            return
+
+        x_axis = self.info['axes'][0]
+        margins = standard_margins(
+            plot.x_data(),
+            plot.y_data(),
+            x_range=x_axis.get_xlim(),
+            deviations=scale
+        )
+        self.set_margins(margins)
+
     def stack(self):
         plot = self.info['data']
         if plot is None:
             return
 
-        margins = stack_margins(plot.x_data(), plot.y_data())
+        x_axis = self.info['axes'][0]
+
+        margins = stack_margins(
+            plot.x_data(),
+            plot.y_data(),
+            x_range=x_axis.get_xlim(),
+            padding=0.1
+        )
         self.set_margins(margins)
 
     def setup_chart(self, specs):

@@ -149,6 +149,7 @@ class PlotData(GObject.GObject):
         super().__init__()
         self.count = count
         self.size = size
+        self.display_size = 1
         self.sample_freq = 1
         self.refresh_freq = 1
         self.sample_every = 1.0
@@ -170,6 +171,7 @@ class PlotData(GObject.GObject):
             self.sample_every = 1 / self.sample_freq
             self.refresh_every = 1 / self.refresh_freq
             self.sleep_for = min(self.sample_every, self.refresh_every) / 2
+        self.display_size = int(size / sample_freq) + 1
         self.data = numpy.empty((self.size, self.count))
         self.data.fill(numpy.nan)
 
@@ -186,17 +188,21 @@ class PlotData(GObject.GObject):
                     GLib.idle_add(self.refresh)
                 time.sleep(self.sleep_for)
 
-    def x_data(self):
-        if self.data is not None:
-            sel = ~numpy.isnan(self.data[:, 0])
-            if sel.sum():
-                return self.data[:, 0]
+    def x_data(self, display=False):
+        if self.data is None:
+            return
+        sel = ~numpy.isnan(self.data[:, 0])
+        if not sel.sum():
+            return
+        return self.data[:self.display_size, 0] if display else self.data[:, 0]
 
-    def y_data(self):
-        if self.data is not None:
-            sel = ~numpy.isnan(self.data[:, 0])
-            if sel.sum():
-                return self.data[:, 1:]
+    def y_data(self, display=False):
+        if self.data is None:
+            return
+        sel = ~numpy.isnan(self.data[:, 0])
+        if not sel.sum():
+            return
+        return self.data[:self.display_size, 1:] if display else self.data[:, 1:]
 
     def destroy(self):
         self.alive = False
@@ -301,11 +307,14 @@ class StripData(PlotData):
         dtype = [(name, float) for name in self.names]
         return recfunctions.unstructured_to_structured(self.data, numpy.dtype(dtype))
 
-    def x_data(self):
-        if self.data is not None:
-            sel = ~numpy.isnan(self.data[:, 0])
-            if sel.sum():
-                return self.data[:, 0] - self.data[0, 0]
+    def x_data(self, display=False):
+        if self.data is None:
+            return
+        sel = ~numpy.isnan(self.data[:, 0])
+        if not sel.sum():
+            return
+        xoffset = self.data[0, 0]
+        return self.data[:self.display_size, 0] - xoffset if display else self.data[:, 0] - xoffset
 
     def end_time(self):
         t = datetime.now()
