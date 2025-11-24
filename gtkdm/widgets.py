@@ -18,6 +18,7 @@ import gi
 import matplotlib
 import numpy
 import yaml
+from fontTools.cffLib import buildOrder
 from math import atan2, pi, cos, sin, ceil
 
 gi.require_version('Gtk', '3.0')
@@ -2528,7 +2529,6 @@ class ShellMenuItem(Gtk.Bin):
             if self.proc:
                 self.proc.poll()
             if self.multiple or self.proc is None or self.proc.returncode is not None:
-                print(shutil.which('gtkdm-charting'))
                 self.proc = subprocess.Popen(self.command, shell=True, stdout=subprocess.DEVNULL)
 
 
@@ -2636,7 +2636,8 @@ class Plot(Gtk.Bin):
     __gtype_name__ = 'Plot'
 
     scheme = GObject.Property(type=str, default="default", nick='Plot Style')
-    dpi = GObject.Property(type=int, default=72, minimum=50, maximum=500, nick='DPI')
+    dpi = GObject.Property(type=int, default=60, minimum=50, maximum=500, nick='DPI')
+    line_width = GObject.Property(type=float, default=0.75, minimum=0.1, maximum=5, nick='Line Width')
     legend = GObject.Property(type=bool, default=False, nick='Show Legend')
     marker_size = GObject.Property(type=float, default=5, minimum=0, maximum=50, nick='Marker Size')
     strip_plot = GObject.Property(type=bool, default=False, nick='Strip Plot')
@@ -2705,6 +2706,8 @@ class Plot(Gtk.Bin):
 
         host = self.figure.add_subplot()
         host.set_xlim(*specs.get('x-limits', (None, None)))
+        original_pos = host.get_position()
+        host.set_position((0.1, original_pos.y0, 0.88, original_pos.height))
         self.info['axes']['y'] = host
 
         for i in range(1, min(count, 3)):
@@ -2732,7 +2735,7 @@ class Plot(Gtk.Bin):
         # with plt.xkcd():
         with style_context(self.scheme):
             self.figure = Figure(dpi=self.dpi)
-            self.figure.set_tight_layout(True)
+            self.figure.set_constrained_layout(True)
             self.canvas = FigureCanvas(self.figure)
             self.setup_axes(len(y_axes))
 
@@ -2758,7 +2761,10 @@ class Plot(Gtk.Bin):
                     item.get("style", "-")
 
                     ln, = axis.plot(
-                        [], [], item.get("style", "-"), ms=self.marker_size, label=item.get('label', item["y"])
+                        [], [], item.get("style", "-"),
+                        ms=self.marker_size,
+                        lw=self.line_width,
+                        label=item.get('label', item["y"])
                     )
                     artists.append(ln)
                     selectors.append({'y': 0, 'y1': 1, 'y2': 2}[item.get('axis', 'y')])
@@ -2770,11 +2776,8 @@ class Plot(Gtk.Bin):
                     self.info['data'].append(data)
                     data.connect('changed', self.on_data_changed, i)
 
-            if self.legend:
-                self.info['axes']["y"].legend(
-                    handles=handles, frameon=False, loc="center",
-                    bbox_to_anchor=(0., -0.4, 1., .2), ncol=3, mode="expand", borderaxespad=0,
-                )
+        if self.legend:
+            self.figure.legend(loc="outside upper right", frameon=False, mode="expand", ncol=4, borderaxespad=0)
 
     def on_data_changed(self, plot, i):
         artists = self.info['plots'][i]
