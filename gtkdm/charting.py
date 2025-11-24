@@ -14,7 +14,7 @@ import cairo
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('PangoCairo', "1.0")
-from gi.repository import Gtk, GObject, Gio, Pango, Gdk, GLib
+from gi.repository import Gtk, GObject, Gio, Pango, Gdk
 
 from matplotlib.backends.backend_gtk3agg import FigureCanvasGTK3Agg as FigureCanvas
 from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
@@ -75,11 +75,11 @@ def stp_to_spec(filename):
 
     info = {
         'options': {'dark': False},
-        'plots': [{} for i in range(10)]
+        'plots': [{} for _ in range(10)]
     }
 
     if colors.darker(stp_colors['background'], stp_colors['foreground']):
-        info['options']['dark']: True
+        info['options']['dark'] = True
 
     for m in curve_pattern.finditer(data):
         item = m.groupdict()
@@ -117,6 +117,13 @@ def get_margins(n, sig=1):
     return margins
 
 
+def _get_valid_y_values(x, y_data, x_range):
+    valid = ~numpy.isnan(x)
+    if x_range is not None:
+        valid = valid & (x >= x_range[0]) & (x <= x_range[1])
+    return y_data[valid, :]
+
+
 def stack_margins(
     x: numpy.ndarray,
     y_data: numpy.ndarray,
@@ -131,10 +138,7 @@ def stack_margins(
     :param padding: Vertical buffer between plots as a fraction of range
     :return: list of tuples of  ymin, ymax margins
     """
-    valid = ~numpy.isnan(x)
-    if x_range is not None:
-        valid = valid & (x >= x_range[0]) & (x <= x_range[1])
-    norm_ydata = y_data[valid,:]
+    norm_ydata = _get_valid_y_values(x, y_data, x_range)
     num_values, num_plots = norm_ydata.shape
     offsets = numpy.zeros((num_plots, ))
     scales = numpy.ones((num_plots, ))
@@ -145,7 +149,7 @@ def stack_margins(
         # normalize this plot
         y_min, y_max = numpy.nanmin(y), numpy.nanmax(y)
         offsets[i] = y_min
-        if y_min != y_max:
+        if y_max > y_min:
             scales[i] = 1 / (y_max - y_min)
         y = (y - offsets[i]) * scales[i]
 
@@ -180,10 +184,7 @@ def standard_margins(
     :return: list of tuples of  ymin, ymax margins
     """
 
-    valid = ~numpy.isnan(x)
-    if x_range is not None:
-        valid = valid & (x >= x_range[0]) & (x <= x_range[1])
-    y_values = y_data[valid,:]
+    y_values = _get_valid_y_values(x, y_data, x_range)
     num_values, num_plots = y_values.shape
     means = means[:] = numpy.mean(y_values, axis=0)
     stds = numpy.std(y_values, axis=0) * deviations
@@ -202,7 +203,7 @@ PAUSE_ICONS = {
 
 class ChartToolbar(NavigationToolbar):
 
-    toolitems = (
+    tool_items = (
         ('Open', 'Open Chart/Data', 'document-open', 'open_chart'),
         ('Save', 'Save the Chart', 'media-floppy', 'save_plot'),
         ('Archive', 'Save the Data', 'insert-object', 'save_data'),
@@ -230,24 +231,24 @@ class ChartToolbar(NavigationToolbar):
         self.scale = 1
         self.max_scale = 10
 
-        for i, toolitem in enumerate(self):
-            if isinstance(toolitem, Gtk.ToolButton):
-                icon_name = f'{self.toolitems[i][2]}-symbolic'
-                name = self.toolitems[i][0]
-                toolitem.get_icon_widget().set_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
-                self.widgets[name] = toolitem
+        for i, tool_item in enumerate(self.get_children()):
+            if isinstance(tool_item, Gtk.ToolButton):
+                icon_name = f'{self.tool_items[i][2]}-symbolic'
+                name = self.tool_items[i][0]
+                tool_item.get_icon_widget().set_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
+                self.widgets[name] = tool_item
 
     def configure(self, btn):
         self.chart.configure()
 
     def pause(self, btn):
-        self.paused = not(self.paused)
+        self.paused = not self.paused
         icon_name = f'{PAUSE_ICONS[self.paused]}-symbolic'
         btn.get_icon_widget().set_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
         self.chart.pause(self.paused)
 
     def pan(self, *args):
-        self.panning = not(self.panning)
+        self.panning = not self.panning
         self.chart.set_cursor(Cursors.HAND if self.panning else None)
         super().pan(*args)
 

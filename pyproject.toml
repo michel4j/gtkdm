@@ -28,6 +28,7 @@ dependencies = [
     "tables",
     "matplotlib",
     "numpy (>=1.2.0,<3.0.0)",
+    "pygobject-stubs (==2.14.0)",
 ]
 requires-python = ">=3.9,<4.0"
 
@@ -56,9 +57,6 @@ gtkdm-charting = "gtkdm.scripts:charting_main"
 gtkdm-editor = "gtkdm.scripts:editor"
 gtkdm-migrate = "gtkdm.scripts:migrate"
 gtkdm-mksym = "gtkdm.scripts:make_symbol"
-
-[tool.poetry.group.dev.dependencies]
-pygobject-stubs = "^2.13.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
