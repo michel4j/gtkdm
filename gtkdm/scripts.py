@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+import sys
 import subprocess
 import xml.etree.ElementTree as ET
 import zipfile
@@ -19,6 +20,7 @@ logger = utils.create_logger()
 
 
 def main():
+    command_args =  sys.argv[:]
     parser = argparse.ArgumentParser(description='Gtk Display Manager for EPICS.')
     parser.add_argument('display', metavar='display', type=str, help='Display File Name')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose Logging')
@@ -32,6 +34,7 @@ def main():
         utils.log_to_console(level=logging.INFO)
 
     widgets.Manager.reset(args.macros)
+    widgets.Manager.set_command(command_args)
     widgets.Manager.show_display(args.display, main=True)
 
     Gtk.main()

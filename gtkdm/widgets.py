@@ -1,24 +1,29 @@
+from __future__ import annotations
+
 import hashlib
 import json
 import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
+import threading
 import textwrap
 import time
 import zipfile
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from queue import Queue
+from typing import Callable
 
 import cairo
 import gi
 import matplotlib
 import numpy
 import yaml
-from fontTools.cffLib import buildOrder
+
 from math import atan2, pi, cos, sin, ceil
 
 gi.require_version('Gtk', '3.0')
@@ -73,14 +78,51 @@ FONT_SIZES = {
 }
 
 
+
+
 class DisplayManager(object):
     """Manages all displays"""
 
     def __init__(self):
         self.macros = {}
         self.registry = {}
+        self.detached = {}
+        self.detach_queue = Queue()
+        self.main_window = None
+        self.stopped = False
+        self.command = ['gtkdm']
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_PRIMARY)
         self.search_paths = [os.getcwd()] + os.environ.get('GTKDM_DISPLAY_PATH', '').split(':')
+        threading.Thread(target=self.manage_externals, daemon=True).start()
+
+    def set_command(self, args: list[str]):
+        """
+        Set the command line arguments used to launch the display
+        :param args: list of command line arguments like sys.argv
+        """
+        self.command = args
+
+    def manage_externals(self):
+        while not self.stopped:
+            # first remove all stopped processes
+            self.detached = {
+                key: proc for key, proc in self.detached.items()
+                if proc.poll() is None
+            }
+            # now add new processes
+            if not self.detach_queue.empty():
+                key, args = self.detach_queue.get()
+                proc = subprocess.Popen(
+                    args,
+                    stdout=subprocess.DEVNULL,
+                    close_fds=True,
+                    preexec_fn=os.setsid,
+                    creationflags=0,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL
+                )
+                self.detached[key] = proc
+            time.sleep(0.01)
 
     def reset(self, macro_spec):
         self.macros = utils.parse_macro_spec(macro_spec)
@@ -117,11 +159,26 @@ class DisplayManager(object):
         :param key: registry key
         """
         window = self.registry.pop(key)
+        self.stopped = True
         # for obj in window.builder.get_objects():
         #     if hasattr(obj, 'destroy'):
         #         obj.destroy()
 
-    def show_display(self, path, macros_spec="", main=False, multiple=False):
+    def present(self):
+        """
+        Present the main_window
+        """
+        if self.main_window is not None:
+            self.main_window.present()
+
+
+    def present_handler(self, sig, frame):
+        """
+        Signal Handler for presenting main window
+        """
+        self.present()
+
+    def show_display(self, path, macros_spec="", main=False, multiple=False, detach=False):
         """
         Show a display file
 
@@ -129,31 +186,46 @@ class DisplayManager(object):
         :param macros_spec: macro specification
         :param main: Whether this is a main window or a related display
         :param multiple: Whether multiple instances are allowed or not
+        :param detach:  Run in a subprocess if True
         """
         global EDITOR
         if main:
             EDITOR = False
 
+        # Resolve display path name
         full_path = self.find_display(path)
         if not full_path:
             logger.error(f'Display File {path} not found')
             return
-
-        logger.info(f"Loading: {full_path}...")
-
         directory, filename = os.path.split(full_path)
-        tree = ET.parse(full_path)
-        w = tree.find(".//object[@class='GtkWindow']")
-        w.set('class', 'DisplayWindow')  # Switch to full Window
-        w.set('id', 'related_display')
 
+        # Update macros
         new_macros = {}
         new_macros.update(self.macros)
         new_macros.update(utils.parse_macro_spec(macros_spec))
         new_macro_spec = utils.compress_macro(new_macros)
         unique_text = f'{filename}{new_macro_spec}'.encode('utf-8')
         key = hashlib.sha256(unique_text).hexdigest()
-        if multiple or key not in self.registry:
+
+        if detach:
+            if multiple or key not in self.detached:
+                # add new external display
+                cmd = [self.command[0], full_path]
+                if new_macro_spec:
+                    cmd.extend(['-m', new_macro_spec])
+                self.detach_queue.put((key, cmd))
+            else:
+                # present existing external display
+                self.detached[key].send_signal(signal.SIGUSR1)
+
+        elif multiple or key not in self.registry:
+            logger.info(f"Loading: {full_path}...")
+            # Replace Top-level Window
+            tree = ET.parse(full_path)
+            w = tree.find(".//object[@class='GtkWindow']")
+            w.set('class', 'DisplayWindow')  # Switch to full Window
+            w.set('id', 'related_display')
+
             try:
                 utils.update_properties(tree, new_macros)
             except KeyError as e:
@@ -170,14 +242,19 @@ class DisplayManager(object):
                 window.header.set_subtitle(filename)
                 window.props.path = full_path
                 if main:
+                    self.main_window = window
                     window.connect('destroy', lambda x: Gtk.main_quit())
                 elif not multiple:
                     self.registry[key] = window
                     window.connect('destroy', lambda x: self.destroy_window(key))
                 window.show_all()
         else:
+            # Show existing window
             window = self.registry[key]
             window.present()
+
+    def new_display(self, path, macros_spec=""):
+        pass
 
     def embed_display(self, frame, path, macros_spec=""):
         """
@@ -237,6 +314,7 @@ class DisplayManager(object):
 
 
 Manager = DisplayManager()
+signal.signal(signal.SIGUSR1, Manager.present_handler)  # Use USR1 Signal to present main window
 
 
 class ColorSequence(object):
@@ -2345,6 +2423,7 @@ class DisplayButton(Gtk.Bin):
     macros = GObject.Property(type=str, default='', nick='Macros')
     frame = GObject.Property(type=DisplayFrame, nick='Target Frame', default=None)
     multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
+    detach = GObject.Property(type=bool, default=True, nick='Detach')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -2365,7 +2444,12 @@ class DisplayButton(Gtk.Bin):
             if self.frame:
                 Manager.embed_display(self.frame, self.display, macros_spec=self.macros)
             else:
-                Manager.show_display(self.display, macros_spec=self.macros, multiple=self.multiple)
+                Manager.show_display(
+                    self.display,
+                    macros_spec=self.macros,
+                    multiple=self.multiple,
+                    detach=self.detach,
+                )
 
 
 class Shape(ActiveMixin, AlarmMixin, BlankWidget):
@@ -2489,6 +2573,7 @@ class DisplayMenuItem(Gtk.Bin):
     label = GObject.Property(type=str, default='', nick='Label')
     macros = GObject.Property(type=str, default='', nick='Macros')
     multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
+    detach = GObject.Property(type=bool, default=False, nick='Detach')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -2502,7 +2587,12 @@ class DisplayMenuItem(Gtk.Bin):
 
     def on_clicked(self, obj):
         if self.file and not EDITOR:
-            Manager.show_display(self.file, macros_spec=self.macros, multiple=self.multiple)
+            Manager.show_display(
+                self.file,
+                macros_spec=self.macros,
+                multiple=self.multiple,
+                detach=self.detach
+            )
 
 
 class ShellMenuItem(Gtk.Bin):
