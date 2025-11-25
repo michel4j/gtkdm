@@ -203,7 +203,7 @@ PAUSE_ICONS = {
 
 class ChartToolbar(NavigationToolbar):
 
-    tool_items = (
+    toolitems = (
         ('Open', 'Open Chart/Data', 'document-open', 'open_chart'),
         ('Save', 'Save the Chart', 'media-floppy', 'save_plot'),
         ('Archive', 'Save the Data', 'insert-object', 'save_data'),
@@ -231,10 +231,10 @@ class ChartToolbar(NavigationToolbar):
         self.scale = 1
         self.max_scale = 10
 
-        for i, tool_item in enumerate(self.get_children()):
+        for i, tool_item in enumerate(self):
             if isinstance(tool_item, Gtk.ToolButton):
-                icon_name = f'{self.tool_items[i][2]}-symbolic'
-                name = self.tool_items[i][0]
+                icon_name = f'{self.toolitems[i][2]}-symbolic'
+                name = self.toolitems[i][0]
                 tool_item.get_icon_widget().set_from_icon_name(icon_name, Gtk.IconSize.SMALL_TOOLBAR)
                 self.widgets[name] = tool_item
 

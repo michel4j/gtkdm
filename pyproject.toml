@@ -28,7 +28,6 @@ dependencies = [
     "tables",
     "matplotlib",
     "numpy (>=1.2.0,<3.0.0)",
-    "pygobject-stubs (==2.14.0)",
 ]
 requires-python = ">=3.9,<4.0"
 
