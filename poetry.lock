@@ -1487,28 +1487,31 @@ pycairo = ">=1.16"
 
 [[package]]
 name = "pygobject-stubs"
-version = "2.14.0"
+version = "2.16.0"
 description = "Typing stubs for PyGObject"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pygobject_stubs-2.14.0.tar.gz", hash = "sha256:614d4908a9ed6e9b821498059ab2e86736346c2fd75c0286ccb018cfcfd8ab23"},
+    {file = "pygobject_stubs-2.16.0.tar.gz", hash = "sha256:a97574616e92ef458605f9520d8d9db4c2a131affcd12fdd51db0b42395291e9"},
 ]
+
+[package.dependencies]
+typing_extensions = "*"
 
 [package.extras]
 dev = ["PyGObject", "codespell (>=2.4.1)", "isort (>=6.0.1)", "pre-commit", "ruff (>=0.12.7)"]
 
 [[package]]
 name = "pyparsing"
-version = "3.2.5"
+version = "3.3.0b1"
 description = "pyparsing - Classes and methods to define and execute parsing grammars"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pyparsing-3.2.5-py3-none-any.whl", hash = "sha256:e38a4f02064cf41fe6593d328d0512495ad1f3d8a91c4f73fc401b3079a59a5e"},
-    {file = "pyparsing-3.2.5.tar.gz", hash = "sha256:2df8d5b7b2802ef88e8d016a2eb9c7aeaa923529cd251ed0fe4608275d4105b6"},
+    {file = "pyparsing-3.3.0b1-py3-none-any.whl", hash = "sha256:61e401b24d26cd16935179f91c908ade7eff41c9ca6ec28314b42c0f371b9772"},
+    {file = "pyparsing-3.3.0b1.tar.gz", hash = "sha256:c8c97e69eb6dc535eda2c43be866a6220e8d77357027202b66cae234c37709fa"},
 ]
 
 [package.extras]
@@ -1772,7 +1775,6 @@ description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
-markers = "python_version >= \"3.11\""
 files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
@@ -1813,4 +1815,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9,<4.0"
-content-hash = "ec5744fb5968a997ae4954a8319c4d6b7c0086f07df9b42e4c87cd5440e5d56a"
+content-hash = "ee69e6cba24a8a9ba8caed5a21699a1dfb045123172d1d17d6facc42fff11161"

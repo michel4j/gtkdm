@@ -21,6 +21,7 @@ from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as Navigatio
 from matplotlib.backend_tools import Cursors
 from matplotlib.figure import Figure
 from matplotlib import pyplot
+
 from matplotlib.markers import MarkerStyle
 
 from . import version, colors

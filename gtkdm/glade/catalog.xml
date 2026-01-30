@@ -120,5 +120,4 @@
         <glade-widget-class-ref name="DisplayMenuItem"/>
         <glade-widget-class-ref name="ShellMenuItem"/>
     </glade-widget-group>
-
 </glade-catalog>

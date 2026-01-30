@@ -167,11 +167,12 @@ class PlotData(GObject.GObject):
         self.size = size
         self.sample_freq = sample_freq
         self.refresh_freq = refresh_freq
-        if sample_freq > 0 and refresh_freq > 0:
+
+        if self.sample_freq > 0 and self.refresh_freq > 0:
             self.sample_every = 1 / self.sample_freq
             self.refresh_every = 1 / self.refresh_freq
             self.sleep_for = min(self.sample_every, self.refresh_every) / 2
-        self.display_size = int(size / sample_freq) + 1
+            self.display_size = int(size / sample_freq) + 1
         self.data = numpy.empty((self.size, self.count))
         self.data.fill(numpy.nan)
 

@@ -16,7 +16,6 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from queue import Queue
-from typing import Callable
 
 import cairo
 import gi
@@ -2423,7 +2422,7 @@ class DisplayButton(Gtk.Bin):
     macros = GObject.Property(type=str, default='', nick='Macros')
     frame = GObject.Property(type=DisplayFrame, nick='Target Frame', default=None)
     multiple = GObject.Property(type=bool, default=False, nick='Allow Multiple')
-    detach = GObject.Property(type=bool, default=True, nick='Detach')
+    detach = GObject.Property(type=bool, default=False, nick='Detach')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -2739,6 +2738,7 @@ class Plot(Gtk.Bin):
     period = GObject.Property(type=int, default=60, minimum=1, nick='Display Period (s)')
     buffer = GObject.Property(type=int, default=1, minimum=1, nick='Buffer Size')
     y_margin = GObject.Property(type=float, default=2, minimum=0, maximum=5, nick='Y-margin (std)')
+    waterfall = GObject.Property(type=bool, default=False, nick='Waterfall')
 
     def __init__(self):
         super().__init__()
@@ -2876,6 +2876,9 @@ class Plot(Gtk.Bin):
         y_data = plot.y_data()
         if x_data is None or y_data is None:
             return
+
+        if self.waterfall:
+            y_data = numpy.cumsum(y_data[::-1,:], axis=0)[::-1,:]
 
         for j in range(plot.count - 1):
             ln = artists[j]
