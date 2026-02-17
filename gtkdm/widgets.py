@@ -423,18 +423,21 @@ class AlarmMixin(object):
 class ActiveMixin(object):
     PV_COPY_BUTTON = 2
     ready: bool = False
-    copy_text: str
+    pv: PV
 
     def set_ready(self, state):
         self.ready = state
 
+    def set_tooltips(self):
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        button = self.PV_COPY_BUTTON
+        self.connect("button-press-event", self.on_mouse_press, self.pv.name, button)
+        self.set_tooltip_text(self.pv.name)
+
     def on_active(self, pv, connected):
         self.ready = False
-        self.copy_text = pv.name
-        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
-        self.connect("button-press-event", self.on_mouse_press)
-        self.set_tooltip_text(self.copy_text)
         if connected:
+            self.set_tooltips()
             GLib.timeout_add(1000, self.set_ready, True)
             try:
                 pv.ctrlvars = pv.get_with_metadata(with_ctrlvars=True)
@@ -447,14 +450,14 @@ class ActiveMixin(object):
             self.set_sensitive(False)
         self.queue_draw()
 
-    def on_mouse_press(self, widget, event):
+    def on_mouse_press(self, widget, event, text, button):
         if event.button == self.PV_COPY_BUTTON:
             valid = (
-                self.PV_COPY_BUTTON == 2,
-                self.PV_COPY_BUTTON == 1 and event.type == Gdk.EventType._2BUTTON_PRESS
+                button == 2,
+                button == 1 and event.type == Gdk.EventType._2BUTTON_PRESS
             )
-            if any(valid) and hasattr(self, 'copy_text'):
-                Manager.clipboard.set_text(self.copy_text, -1)
+            if any(valid):
+                Manager.clipboard.set_text(text, -1)
 
 
 class FontMixin(object):
@@ -657,7 +660,7 @@ class TextMonitor(FontMixin, ActiveMixin, AlarmMixin, Gtk.EventBox):
         super().__init__(*args, **kwargs)
         self.set_css_name('text-monitor')
         self.get_style_context().add_class('text-monitor')
-        self.label = Gtk.Label('...')
+        self.label = Gtk.Label(label='...')
         self.label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self.add(self.label)
         self.pv = None
@@ -1330,7 +1333,6 @@ class TextControl(ActiveMixin, AlarmMixin, Gtk.EventBox):
 
 class TextEntryMonitor(ActiveMixin, Gtk.Box):
     __gtype_name__ = 'TextEntryMonitor'
-    PV_COPY_BUTTON = 1
     tgt_channel = GObject.Property(type=str, default='', nick='Target PV')
     fbk_channel = GObject.Property(type=str, default='', nick='Feedback PV')
     color = GObject.Property(type=Gdk.RGBA, nick='Color')
@@ -1365,7 +1367,7 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
         self.entries['target'].connect('activate', self.on_activate)
         self.entries['target'].connect('focus-out-event', self.on_focus_out)
         self.entries['target'].connect('focus-in-event', self.disable_restore)
-        self.pv = {
+        self.pvs = {
             'target': None,
             'feedback': None,
         }
@@ -1380,6 +1382,14 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
         self.entries['feedback'].get_style_context().add_class('feedback')
         self.show_all()
         self.set_sensitive(False)
+
+    def set_tooltips(self):
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        for button, realm in [(1, 'target'), (2, 'feedback')]:
+            self.entries[realm].add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+            copy_text = self.pvs[realm].name
+            self.entries[realm].connect("button-press-event", self.on_mouse_press, copy_text, button)
+            self.entries[realm].set_tooltip_text(copy_text)
 
     def on_alarm(self, pv, alarm, name):
         if self.alarm:
@@ -1399,19 +1409,19 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
         if not EDITOR:
             if self.tgt_channel and (not self.fbk_channel or self.tgt_channel == self.fbk_channel):
                 pv = PV(self.tgt_channel)
-                self.pv['target'] = pv
-                self.pv['feedback'] = pv
+                self.pvs['target'] = pv
+                self.pvs['feedback'] = pv
             elif self.tgt_channel and self.fbk_channel:
-                self.pv['target'] = PV(self.tgt_channel)
-                self.pv['feedback'] = PV(self.fbk_channel)
+                self.pvs['target'] = PV(self.tgt_channel)
+                self.pvs['feedback'] = PV(self.fbk_channel)
             else:
                 return
 
-            for name, pv in self.pv.items():
+            for name, pv in self.pvs.items():
                 pv.connect('changed', self.on_field_change, name)
                 pv.connect('alarm', self.on_alarm, name)
 
-            self.pv['target'].connect('active', self.on_active)
+            self.pvs['target'].connect('active', self.on_active)
 
     def disable_restore(self, *args, **kwargs):
         if self.restore_src:
@@ -1424,8 +1434,8 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
             self.restore_src = GLib.timeout_add(5000, self.restore_value)
 
     def restore_value(self):
-        if self.pv['target']:
-            self.on_field_change(self.pv['target'], self.pv['target'].value, 'target')
+        if self.pvs['target']:
+            self.on_field_change(self.pvs['target'], self.pvs['target'].value, 'target')
         self.disable_restore()
 
     def on_field_change(self, pv, value, name):
@@ -1440,7 +1450,7 @@ class TextEntryMonitor(ActiveMixin, Gtk.Box):
 
     def on_activate(self, entry):
         text = self.entries['target'].get_text()
-        pv = self.pv['target']
+        pv = self.pvs['target']
         if pv.type in ['char', 'time_char', 'ctrl_char'] and pv.count > 1:
             converter = str
         else:
@@ -1536,6 +1546,13 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         self.get_style_context().add_class('gtkdm-button')
         self.button.get_style_context().add_class('button')
 
+    def set_tooltips(self):
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        pv_names = set([entry['pv'].name for entry in self.registry.values()] + [self.state_pv.name])
+        copy_text = ',\n'.join(pv_names)
+        self.connect("button-press-event", self.on_mouse_press, copy_text.replace('\n', ''), self.PV_COPY_BUTTON)
+        self.set_tooltip_text(copy_text)
+
     def on_clicked(self, button):
         if self.ready and self.state:
             spec = self.registry[self.state]
@@ -1608,6 +1625,13 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.add(self.button)
         self.set_sensitive(False)
         self.show_all()
+
+    def set_tooltips(self):
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        pv_names = set([entry['pv'].name for entry in self.registry.values()] + [self.state_pv.name])
+        copy_text = ',\n'.join(pv_names)
+        self.connect("button-press-event", self.on_mouse_press, copy_text.replace('\n', ''), self.PV_COPY_BUTTON)
+        self.set_tooltip_text(copy_text)
 
     def on_switch_change(self, button, value):
         if self.ready:
