@@ -1624,7 +1624,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
 
         self.registry = {}
         self.connect('realize', self.on_realize)
-        self.switch.connect('notify::active', self.on_switch_toggled)
+        self.switch.connect('state-set', self.on_state_set)
 
         self.add(self.switch)
         self.set_sensitive(False)
@@ -1637,23 +1637,20 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.connect("button-press-event", self.on_mouse_press, copy_text.replace('\n', ''), self.PV_COPY_BUTTON)
         self.set_tooltip_text(copy_text)
 
-    def on_switch_toggled(self, switch, gparam):
-        if self.updating_from_pv:
-            return
-        active = switch.get_active()
-        state = 'on' if active else 'off'
-        ctrl_spec = self.registry[state]
+    def on_state_set(self, switch, state):
+        dev = 'on' if state else 'off'
+        ctrl_spec = self.registry[dev]
         ctrl_pv = ctrl_spec['pv']
         ctrl_val = ctrl_spec['value']
         ctrl_pv.put(ctrl_val)
+        return True
 
     def on_feedback_changed(self, pv, value):
-        GLib.idle_add(self.update_switch, value)
+        GLib.idle_add(self.update_switch, bool(value))
 
-    def update_switch(self, value):
-        self.updating_from_pv = True
-        self.switch.set_active(bool(value))
-        self.updating_from_pv = False
+    def update_switch(self, state):
+        self.switch.set_state(state)
+        self.switch.set_active(state)
 
     def on_realize(self, obj):
         self.registry = {
