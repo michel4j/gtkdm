@@ -1650,7 +1650,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
 
     def update_switch(self, state):
         self.switch.set_state(state)
-        self.switch.set_active(state)
+        #self.switch.set_active(state)
 
     def on_realize(self, obj):
         self.registry = {
