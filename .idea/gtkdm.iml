@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module type="PYTHON_MODULE" version="4">
+<module external.system.id="pyproject.toml" type="PYTHON_MODULE" version="4">
   <component name="Flask">
     <option name="enabled" value="false" />
   </component>
@@ -17,9 +17,8 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/.env" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.14 (gtkdm)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="gtkdm-displays" />
+    <orderEntry type="jdk" jdkName="Python 3.14 (gtkdm)" jdkType="Python SDK" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="pytest" />
