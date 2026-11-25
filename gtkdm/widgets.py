@@ -1530,7 +1530,6 @@ class OnOffButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
         super().__init__(*args, **kwargs)
         ctx = self.get_style_context()
         ctx.add_class('tiny')
-        self.updating_from_pv = False
         self.button = Gtk.Button()
         self.state_pv = None
         self.state = None
@@ -1614,9 +1613,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         super().__init__(*args, **kwargs)
         self.set_css_name('on-off')
         self.get_style_context().add_class('on-off')
-        self.switch = Gtk.Switch()
-        self.updating_from_pv = False
-
+        self.button = Gtk.Switch()
         ctx = self.get_style_context()
         ctx.add_class('tiny')
         self.state_pv = None
@@ -1624,9 +1621,8 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
 
         self.registry = {}
         self.connect('realize', self.on_realize)
-        self.switch.connect('notify::active', self.on_switch_toggled)
-
-        self.add(self.switch)
+        self.button.connect('state-set', self.on_switch_change)
+        self.add(self.button)
         self.set_sensitive(False)
         self.show_all()
 
@@ -1637,26 +1633,19 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         self.connect("button-press-event", self.on_mouse_press, copy_text.replace('\n', ''), self.PV_COPY_BUTTON)
         self.set_tooltip_text(copy_text)
 
-    def on_switch_toggled(self, switch, gparam):
-        if self.updating_from_pv:
-            return
+    def on_switch_change(self, button, value):
+        if self.ready:
+            for state, spec in self.registry.items():
+                if value == spec['active']:
+                    spec['pv'].put(spec['value'])
+                    break
+        return True
 
-        state = self.switch.get_active()
-        dev = 'on' if state else 'off'
-        ctrl_spec = self.registry[dev]
-        ctrl_pv = ctrl_spec['pv']
-        ctrl_val = ctrl_spec['value']
-        ctrl_pv.put(ctrl_val)
-
-    def on_feedback_changed(self, pv, value):
-        GLib.idle_add(self.update_switch, bool(value))
-
-    def update_switch(self, state):
-        if self.switch.get_active() == state:
-            return
-        self.updating_from_pv = True
-        self.switch.set_active(state)
-        self.updating_from_pv = False
+    def on_state_change(self, obj, value):
+        for state, spec in self.registry.items():
+            if value == spec['state']:
+                self.button.set_state(spec['active'])
+                break
 
     def on_realize(self, obj):
         self.registry = {
@@ -1675,7 +1664,7 @@ class OnOffSwitch(ActiveMixin, AlarmMixin, Gtk.Bin):
         }
         if not EDITOR:
             self.state_pv = PV(self.state_channel)
-            self.state_pv.connect('changed', self.on_feedback_changed)
+            self.state_pv.connect('changed', self.on_state_change)
             self.state_pv.connect('active', self.on_active)
             for state, spec in self.registry.items():
                 spec['pv'] = PV(spec['channel'])
@@ -1700,7 +1689,7 @@ class MessageButton(CommandButton):
                 value = converter(self.value)
                 self.pv.put(value)
             except ValueError as e:
-                logger.error('Invalid Value: {}'.format(e))
+                logger.error(f'Invalid Value: {e}')
 
 
 class ChoiceButton(ActiveMixin, AlarmMixin, Gtk.EventBox):
